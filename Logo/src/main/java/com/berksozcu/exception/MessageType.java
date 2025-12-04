@@ -9,6 +9,8 @@ public enum MessageType {
 
     MUSTERI_BULUNAMADI(1001,"Müşteri mevcut değil"),
     MALZEME_BULUNAMADI(1002,"Malzeme mevcut değil"),
+    TAHSILAT_BULUNAMADI(1004, "Tahsilat bulunamadı"),
+    ODEME_BULUNAMADI(1005, "Ödeme bulunamadı"),
     FATURA_BULUNAMADI(1003, "Fatura bulunamadı");
 
     private Integer code;

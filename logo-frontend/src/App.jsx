@@ -6,6 +6,8 @@ import PurchaseInvoiceForm from "./pages/PurchaseInvoiceForm";
 import SalesInvoiceForm from "./pages/SalesInvoiceForm";
 import ClientsPage from "./pages/ClientPage";
 import Invoice from "./pages/Invoice";
+import Collection from "./pages/Collection";
+import VaultOperations from "./pages/VaultOperations";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route path="/musteriler" element={<ClientsPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/faturalar" element={<Invoice />} />
+        <Route path="/tahsilatlar" element={<Collection />} />
+        <Route path="/kasa-islemleri" element={<VaultOperations />} />
       </Routes>
     </>
   );

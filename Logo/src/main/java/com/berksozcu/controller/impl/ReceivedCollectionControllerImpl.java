@@ -6,6 +6,8 @@ import com.berksozcu.service.IReceivedCollectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/rest/api/receive")
 public class ReceivedCollectionControllerImpl implements IReceivedCollectionController {
@@ -17,5 +19,17 @@ public class ReceivedCollectionControllerImpl implements IReceivedCollectionCont
     @PostMapping("/add/{id}")
     public ReceivedCollection addCollection(@PathVariable(name = "id") Long id, @RequestBody ReceivedCollection receivedCollection) {
         return receivedCollectionService.addCollection(id, receivedCollection);
+    }
+
+    @Override
+    @GetMapping("/find-all")
+    public List<ReceivedCollection> getAll() {
+        return receivedCollectionService.getAll();
+    }
+
+    @Override
+    @PutMapping("/edit/{id}")
+    public ReceivedCollection editReceivedCollection(@PathVariable(name ="id") Long id, @RequestBody ReceivedCollection receivedCollection) {
+        return receivedCollectionService.editReceivedCollection(id, receivedCollection);
     }
 }
