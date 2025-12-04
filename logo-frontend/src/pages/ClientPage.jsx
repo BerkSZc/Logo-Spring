@@ -17,6 +17,9 @@ export default function ClientsPage() {
 
   const [editClient, setEditClient] = useState(null);
 
+  // 🔍 Arama state’i
+  const [search, setSearch] = useState("");
+
   useEffect(() => {
     getAllCustomers();
   }, [getAllCustomers]);
@@ -73,11 +76,29 @@ export default function ClientsPage() {
     });
   };
 
+  // 🔍 Arama filtresi
+  const filteredCustomers = Array.isArray(customers)
+    ? customers.filter((c) =>
+        c.name?.toLowerCase().includes(search.toLowerCase())
+      )
+    : [];
+
   return (
     <div className="max-w-7xl mx-auto mt-10 bg-white p-6 shadow rounded-2xl">
       <h2 className="text-2xl font-semibold text-gray-700 mb-6">
         Müşteri Yönetimi
       </h2>
+
+      {/* 🔍 ARAMA ALANI */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Müşteri ara..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="border rounded-lg p-2 w-64"
+        />
+      </div>
 
       {/* 🧾 Yeni / Düzenle Formu */}
       <form
@@ -141,7 +162,6 @@ export default function ClientsPage() {
           />
         </div>
 
-        {/* 📌 EKLENEN ADRES ALANI */}
         <div>
           <label className="block text-sm text-gray-600">Adres</label>
           <input
@@ -173,6 +193,7 @@ export default function ClientsPage() {
           >
             {editClient ? "Güncelle" : "Ekle"}
           </button>
+
           {editClient && (
             <button
               type="button"
@@ -202,8 +223,8 @@ export default function ClientsPage() {
           </thead>
 
           <tbody>
-            {Array.isArray(customers) && customers.length > 0 ? (
-              customers.map((c) => (
+            {filteredCustomers.length > 0 ? (
+              filteredCustomers.map((c) => (
                 <tr key={c.id} className="border-t hover:bg-gray-50">
                   <td className="p-2">{c.name}</td>
                   <td className="p-2">{c.country}</td>
@@ -230,7 +251,7 @@ export default function ClientsPage() {
                   colSpan="8"
                   className="text-center text-gray-500 p-4 italic"
                 >
-                  Henüz müşteri eklenmemiş.
+                  Aramaya uygun müşteri bulunamadı.
                 </td>
               </tr>
             )}

@@ -14,6 +14,8 @@ export default function InvoicePage() {
   const [invoiceType, setInvoiceType] = useState("purchase");
   const [editingInvoice, setEditingInvoice] = useState(null);
 
+  const [searchTerm, setSearchTerm] = useState(""); // 🔍 ARAMA
+
   useEffect(() => {
     getMaterials();
     getAllCustomers();
@@ -22,6 +24,17 @@ export default function InvoicePage() {
   }, []);
 
   const invoicesToDisplay = invoiceType === "purchase" ? purchase : sales;
+
+  // 🔍 Arama uygulanmış sonuçlar
+  const filteredInvoices = invoicesToDisplay?.filter((inv) => {
+    const term = searchTerm.toLowerCase();
+
+    return (
+      inv.fileNo?.toString().toLowerCase().includes(term) ||
+      inv.customer?.name?.toLowerCase().includes(term) ||
+      inv.date?.toLowerCase().includes(term)
+    );
+  });
 
   const [form, setForm] = useState(null);
   const [totals, setTotals] = useState({ kdvToplam: 0, totalPrice: 0 });
@@ -46,9 +59,6 @@ export default function InvoicePage() {
     prepareEditForm(invoice);
   };
 
-  // -----------------------------------
-  //   YENİ: lineTotal burada hesaplanır
-  // -----------------------------------
   const handleItemChange = (i, e) => {
     const updated = [...form.items];
 
@@ -57,11 +67,10 @@ export default function InvoicePage() {
       [e.target.name]: e.target.value,
     };
 
-    // lineTotal yeniden hesaplanıyor
     const qty = Number(updated[i].quantity) || 0;
     const price = Number(updated[i].unitPrice) || 0;
-    updated[i].lineTotal = qty * price;
 
+    updated[i].lineTotal = qty * price;
     setForm({ ...form, items: updated });
   };
 
@@ -80,9 +89,6 @@ export default function InvoicePage() {
     setForm({ ...form, items: updated });
   };
 
-  // -----------------------------------
-  //   ARTIK BURADA setForm YOK → döngü yok
-  // -----------------------------------
   useEffect(() => {
     if (!form) return;
 
@@ -122,6 +128,9 @@ export default function InvoicePage() {
 
   return (
     <div className="max-w-7xl mx-auto mt-10 bg-white shadow-lg rounded-2xl p-6">
+      {/* ------------------------------ */}
+      {/*    BAŞLIK + FATURA TÜRÜ */}
+      {/* ------------------------------ */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold text-gray-700">Faturalar</h2>
 
@@ -135,7 +144,22 @@ export default function InvoicePage() {
         </select>
       </div>
 
-      {/* TABLE */}
+      {/* ------------------------------ */}
+      {/*           ARAMA */}
+      {/* ------------------------------ */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Fatura no, müşteri adı veya tarihe göre ara..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border p-3 rounded-lg"
+        />
+      </div>
+
+      {/* ------------------------------ */}
+      {/*           TABLO */}
+      {/* ------------------------------ */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm border border-gray-200 rounded-lg">
           <thead className="bg-gray-100">
@@ -149,8 +173,8 @@ export default function InvoicePage() {
           </thead>
 
           <tbody>
-            {invoicesToDisplay?.length ? (
-              invoicesToDisplay.map((inv) => (
+            {filteredInvoices?.length ? (
+              filteredInvoices.map((inv) => (
                 <tr key={inv.id} className="border-t hover:bg-gray-50">
                   <td className="p-2">{inv.fileNo}</td>
                   <td className="p-2">{inv.date}</td>
@@ -177,9 +201,9 @@ export default function InvoicePage() {
         </table>
       </div>
 
-      {/* =========================== */}
-      {/*        EDIT MODAL           */}
-      {/* =========================== */}
+      {/* ------------------------------------------------ */}
+      {/*                DÜZENLEME MODALİ */}
+      {/* ------------------------------------------------ */}
       {editingInvoice && form && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
           <div className="bg-white p-6 rounded-xl w-[900px] max-h-[90vh] overflow-auto shadow-xl">
@@ -225,7 +249,7 @@ export default function InvoicePage() {
               </div>
             </div>
 
-            {/* KALEMLER */}
+            {/* KALEM TABLOSU */}
             <table className="w-full text-sm border rounded-xl">
               <thead className="bg-gray-100">
                 <tr>
