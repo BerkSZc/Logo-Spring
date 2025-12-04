@@ -6,6 +6,8 @@ import com.berksozcu.service.IPaymentCompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/rest/api/payment")
 public class PaymentCompanyControllerImpl implements IPaymentCompanyController {
@@ -19,4 +21,17 @@ public class PaymentCompanyControllerImpl implements IPaymentCompanyController {
     public PaymentCompany addPaymentCompany(@PathVariable(name = "id") Long id, @RequestBody PaymentCompany paymentCompany) {
         return paymentCompanyService.addPaymentCompany(id, paymentCompany);
     }
+
+    @Override
+    @GetMapping("/find-all")
+    public List<PaymentCompany> getAll() {
+        return paymentCompanyService.getAll();
+    }
+
+    @Override
+    @PutMapping("/edit/{id}")
+    public PaymentCompany editPaymentCompany(@PathVariable(name = "id") Long id, @RequestBody PaymentCompany paymentCompany) {
+        return paymentCompanyService.editPaymentCompany(id, paymentCompany);
+    }
+
 }
