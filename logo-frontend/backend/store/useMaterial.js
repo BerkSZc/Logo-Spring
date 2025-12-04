@@ -9,6 +9,7 @@ export const useMaterial = create((set, get) => ({
     try {
       await axiosInstance.post("/material/add-material", material);
       toast.success("Malzeme eklendi");
+      await get().getMaterials();
     } catch (error) {
       toast.error("Error at addMaterial: ", error.message);
     }

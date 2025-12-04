@@ -13,6 +13,8 @@ export default function CollectionPage() {
   const [type, setType] = useState("received"); // received | payment
   const [editing, setEditing] = useState(null);
 
+  const [search, setSearch] = useState("");
+
   const [addForm, setAddForm] = useState({
     date: new Date().toISOString().slice(0, 10),
     customerId: "",
@@ -34,6 +36,20 @@ export default function CollectionPage() {
   }, []);
 
   const shownList = type === "received" ? collections : payments;
+
+  // -----------------------------
+  // 🔍 ARAMA FİLTRESİ
+  // -----------------------------
+  const filteredList = shownList.filter((item) => {
+    const text = search.toLowerCase();
+
+    return (
+      item.customer?.name?.toLowerCase().includes(text) ||
+      item.comment?.toLowerCase().includes(text) ||
+      item.date?.toLowerCase().includes(text) ||
+      String(item.price).includes(text)
+    );
+  });
 
   // -----------------------------
   //  EKLEME
@@ -128,6 +144,19 @@ export default function CollectionPage() {
       </div>
 
       {/* ------------------------
+            ARAMA ALANI
+      ------------------------ */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Ara (müşteri, açıklama, tarih, tutar...)"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full p-3 border rounded-lg"
+        />
+      </div>
+
+      {/* ------------------------
             EKLEME FORMU
       ------------------------ */}
       <div className="bg-gray-50 p-4 rounded-xl mb-6 border">
@@ -214,8 +243,8 @@ export default function CollectionPage() {
         </thead>
 
         <tbody>
-          {shownList?.length ? (
-            shownList.map((c) => (
+          {filteredList?.length ? (
+            filteredList.map((c) => (
               <tr key={c.id} className="border-t hover:bg-gray-50">
                 <td className="p-2">{c.date}</td>
                 <td className="p-2">{c.customer?.name}</td>

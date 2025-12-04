@@ -13,7 +13,7 @@ export default function PurchaseInvoiceForm() {
     fileNo: "",
     id: "",
     items: [
-      { materialId: "", unitPrice: "", quantity: "", kdv: 18, lineTotal: 0 },
+      { materialId: "", unitPrice: "", quantity: "", kdv: 20, lineTotal: 0 },
     ],
   });
 
@@ -22,7 +22,7 @@ export default function PurchaseInvoiceForm() {
   useEffect(() => {
     getMaterials();
     getAllCustomers();
-  }, [getMaterials, getAllCustomers]);
+  }, []);
 
   // Satır toplamı ve genel toplam hesapla (KDV dahil)
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function PurchaseInvoiceForm() {
       ...form,
       items: [
         ...form.items,
-        { materialId: "", unitPrice: "", quantity: "", kdv: 18, lineTotal: 0 },
+        { materialId: "", unitPrice: "", quantity: "", kdv: 20, lineTotal: 0 },
       ],
     });
   };
@@ -140,7 +140,7 @@ export default function PurchaseInvoiceForm() {
               <option value="">Seçiniz</option>
               {customers?.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} – {c.city}
+                  {c.name} – {c.balance}
                 </option>
               ))}
             </select>

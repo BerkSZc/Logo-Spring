@@ -144,7 +144,7 @@ export default function SalesInvoiceForm() {
               <option value="">Seçiniz</option>
               {customers?.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} – {c.local}
+                  {c.name} – {c.balance}
                 </option>
               ))}
             </select>
