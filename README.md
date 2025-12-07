@@ -21,7 +21,7 @@ Java 17
 Spring Boot
 Spring Data JPA (Hibernate)
 Lombok
-MySQL
+PostgresSQL
 RESTful API mimarisi
 
 
