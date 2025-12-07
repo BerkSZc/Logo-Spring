@@ -37,9 +37,6 @@ export default function CollectionPage() {
 
   const shownList = type === "received" ? collections : payments;
 
-  // -----------------------------
-  // 🔍 ARAMA FİLTRESİ
-  // -----------------------------
   const filteredList = shownList.filter((item) => {
     const text = search.toLowerCase();
 
@@ -51,9 +48,6 @@ export default function CollectionPage() {
     );
   });
 
-  // -----------------------------
-  //  EKLEME
-  // -----------------------------
   const handleAdd = async () => {
     const payload = {
       date: addForm.date,
@@ -87,9 +81,6 @@ export default function CollectionPage() {
     });
   };
 
-  // -----------------------------
-  //   DÜZENLEME MODALI AÇMA
-  // -----------------------------
   const handleEdit = (item) => {
     setEditing(item);
     setEditForm({
@@ -100,9 +91,6 @@ export default function CollectionPage() {
     });
   };
 
-  // -----------------------------
-  //  DÜZENLEMELİ KAYDETME
-  // -----------------------------
   const handleSave = async () => {
     const payload = {
       id: editing.id,
