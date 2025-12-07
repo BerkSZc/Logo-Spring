@@ -17,7 +17,6 @@ export default function ClientsPage() {
 
   const [editClient, setEditClient] = useState(null);
 
-  // 🔍 Arama state’i
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -76,7 +75,6 @@ export default function ClientsPage() {
     });
   };
 
-  // 🔍 Arama filtresi
   const filteredCustomers = Array.isArray(customers)
     ? customers.filter((c) =>
         c.name?.toLowerCase().includes(search.toLowerCase())

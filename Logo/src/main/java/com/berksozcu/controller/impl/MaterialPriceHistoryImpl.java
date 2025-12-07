@@ -1,5 +1,6 @@
 package com.berksozcu.controller.impl;
 
+import com.berksozcu.controller.IMaterialPriceHistoryController;
 import com.berksozcu.entites.InvoiceType;
 import com.berksozcu.entites.MaterialPriceHistory;
 import com.berksozcu.repository.MaterialPriceHistoryRepository;
@@ -11,17 +12,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/rest/api/history")
 
-public class MaterialPriceHistoryImpl {
+public class MaterialPriceHistoryImpl implements IMaterialPriceHistoryController {
 
     @Autowired
     private MaterialPriceHistoryRepository repository;
 
+    @Override
     @GetMapping("/find-all/{materialId}")
     public List<MaterialPriceHistory> findByMaterialIdOrderByDateDesc(@PathVariable(name ="materialId")
                                                           Long materialId) {
         return  repository.findByMaterialIdOrderByDateDesc(materialId);
     }
 
+    @Override
     @GetMapping("/find-by-type/{materialId}")
     public List<MaterialPriceHistory> findByMaterialIdAndTypeOrderByDateDesc(
             @PathVariable(name = "materialId") Long materialId, @RequestParam InvoiceType invoiceType
