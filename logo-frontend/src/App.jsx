@@ -8,6 +8,7 @@ import ClientsPage from "./pages/ClientPage";
 import Invoice from "./pages/Invoice";
 import Collection from "./pages/Collection";
 import CombinedInvoiceForm from "./pages/CombinedInvoiceForm";
+import PurchaseInvoiceXmlImport from "./XML/PurchaseInvoiceXmlImport";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/faturalar" element={<Invoice />} />
         <Route path="/tahsilatlar" element={<Collection />} />
         <Route path="/faturalar-islemleri" element={<CombinedInvoiceForm />} />
+        <Route path="/ekleme" element={<PurchaseInvoiceXmlImport />} />
       </Routes>
     </>
   );

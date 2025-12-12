@@ -12,32 +12,35 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Entity
 @Table(name = "Müşteri")
-public class Customer {
+    public class Customer {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @Column(name = "Müşteri Unvanı")
-    private String name;
+        @Column(name = "customer_code")
+        private String code;
 
-    @Column(name = "Bakiye", precision = 18, scale = 2)
-    private BigDecimal balance;
+        @Column(name = "Müşteri Unvanı")
+        private String name;
 
-    @Column(name = "Adres")
-    private String address;
+        @Column(name = "Bakiye", precision = 18, scale = 2)
+        private BigDecimal balance;
 
-    @Column(name = "Ülke")
-    private String country;
+        @Column(name = "Adres")
+        private String address;
 
-    @Column(name = "İl")
-    private String local;
+        @Column(name = "Ülke")
+        private String country;
 
-    @Column(name = "İlçe")
-    private String district;
+        @Column(name = "İl")
+        private String local;
 
-    @Column(name = "Vergi Dairesi No")
-    private BigDecimal vdNo;
+        @Column(name = "İlçe")
+        private String district;
 
-}
+        @Column(name = "Vergi Dairesi No")
+        private String vdNo;
+
+    }
 

@@ -28,6 +28,7 @@ export default function MaterialForm() {
 
     if (editId) {
       await updateMaterials(editId, form);
+      console.log(materials);
       setEditId(null);
     } else {
       await addMaterial(form);
@@ -146,7 +147,7 @@ export default function MaterialForm() {
           ) : (
             filteredMaterials.map((item) => (
               <div
-                key={item._id}
+                key={item?._id}
                 className="border p-4 rounded-xl flex justify-between items-center bg-gray-100 shadow-sm"
               >
                 <div>

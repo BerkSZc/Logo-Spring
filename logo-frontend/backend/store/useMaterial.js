@@ -26,7 +26,7 @@ export const useMaterial = create((set, get) => ({
 
   updateMaterials: async (id, updateMaterial) => {
     try {
-      await axiosInstance.put(
+      const res = await axiosInstance.put(
         `/material/update-material/${id}`,
         updateMaterial,
         {
@@ -35,6 +35,15 @@ export const useMaterial = create((set, get) => ({
           },
         }
       );
+
+      const updated = res.data;
+
+      set((state) => ({
+        materials: state.materials.map((mat) =>
+          String(mat._id) === String(updated._id || updated.id) ? updated : mat
+        ),
+      }));
+
       toast.success("malzeme değiştirildi");
       await get().getMaterials();
     } catch (error) {

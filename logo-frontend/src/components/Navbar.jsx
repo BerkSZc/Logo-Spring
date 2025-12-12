@@ -39,6 +39,10 @@ export default function Navbar() {
               Faturalar{" "}
             </Link>
 
+            <Link className="hover:text-gray-300" to={"/ekleme"}>
+              Araçlar{" "}
+            </Link>
+
             <Link className="hover:text-gray-300" to={"/musteriler"}>
               {" "}
               Müşteriler{" "}
