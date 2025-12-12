@@ -8,6 +8,7 @@ import ClientsPage from "./pages/ClientPage";
 import Invoice from "./pages/Invoice";
 import Collection from "./pages/Collection";
 import CombinedInvoiceForm from "./pages/CombinedInvoiceForm";
+import PurchaseInvoiceXmlImport from "./XML/PurchaseInvoiceXmlImport";
 import { useAuthentication } from "../backend/store/useAuthentication";
 import AuthPage from "./authentication/AuthPage";
 
@@ -36,6 +37,12 @@ function App() {
         {/* <Route path="/alma-fatura-ekle" element={<PurchaseInvoiceForm />} />
         <Route path="/satis-fatura-ekle" element={<SalesInvoiceForm />} /> */}
 
+        <Route path="/musteriler" element={<ClientsPage />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/faturalar" element={<Invoice />} />
+        <Route path="/tahsilatlar" element={<Collection />} />
+        <Route path="/faturalar-islemleri" element={<CombinedInvoiceForm />} />
+        <Route path="/ekleme" element={<PurchaseInvoiceXmlImport />} />
         <Route
           path="/musteriler"
           element={
