@@ -1,0 +1,47 @@
+package com.berksozcu.entites.customer;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "customer")
+    public class Customer {
+
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
+
+        @Column(name = "customer_code")
+        private String code;
+
+        //Müşteri Unvanı
+        private String name;
+
+        //Bakiye
+        @Column(name = "balance", precision = 18, scale = 2)
+        private BigDecimal balance;
+
+        //Adres
+        private String address;
+
+        //Ülke
+        private String country;
+
+        //İl
+        private String local;
+
+        //İlçe
+        private String district;
+
+        //
+        private String vdNo;
+
+    }
+

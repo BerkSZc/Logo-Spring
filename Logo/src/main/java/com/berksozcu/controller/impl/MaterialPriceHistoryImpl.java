@@ -1,8 +1,8 @@
 package com.berksozcu.controller.impl;
 
 import com.berksozcu.controller.IMaterialPriceHistoryController;
-import com.berksozcu.entites.InvoiceType;
-import com.berksozcu.entites.MaterialPriceHistory;
+import com.berksozcu.entites.material_price_history.InvoiceType;
+import com.berksozcu.entites.material_price_history.MaterialPriceHistory;
 import com.berksozcu.repository.MaterialPriceHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

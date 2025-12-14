@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthentication } from "../../backend/store/useAuthentication";
+import { useTenant } from "../context/TenantContext.jsx";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,12 +9,12 @@ export default function Navbar() {
 
   const { logout, isAuthenticated } = useAuthentication();
 
-  // Tema state (localStorage ile persist)
+  const { tenant, changeTenant } = useTenant();
+
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });
 
-  // Tema değiştiğinde HTML'e uygula
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add("dark");
@@ -117,6 +118,19 @@ export default function Navbar() {
               )}
             </div>
           </div>
+
+          {/* Şirket Seçimi */}
+          {!isAuthenticated && (
+            <div className="ml-4">
+              <select
+                value={tenant}
+                onChange={(e) => changeTenant(e.target.value)}
+              >
+                <option value="A">A Şirketi</option>
+                <option value="B">B Şirketi</option>
+              </select>
+            </div>
+          )}
 
           {/* MOBILE BUTTON */}
           <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>

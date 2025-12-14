@@ -1,8 +1,7 @@
 package com.berksozcu.repository;
 
-import com.berksozcu.entites.InvoiceType;
-import com.berksozcu.entites.Material;
-import com.berksozcu.entites.MaterialPriceHistory;
+import com.berksozcu.entites.material_price_history.InvoiceType;
+import com.berksozcu.entites.material_price_history.MaterialPriceHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

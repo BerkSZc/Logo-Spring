@@ -1,6 +1,6 @@
 package com.berksozcu.controller;
 
-import com.berksozcu.entites.Material;
+import com.berksozcu.entites.material.Material;
 
 import java.util.List;
 

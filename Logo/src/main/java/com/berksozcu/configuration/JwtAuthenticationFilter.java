@@ -1,6 +1,6 @@
 package com.berksozcu.configuration;
 
-import com.berksozcu.service.security.JwtService;
+import com.berksozcu.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

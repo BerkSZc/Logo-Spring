@@ -1,6 +1,6 @@
 package com.berksozcu.repository;
 
-import com.berksozcu.entites.Customer;
+import com.berksozcu.entites.customer.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

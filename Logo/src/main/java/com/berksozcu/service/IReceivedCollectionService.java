@@ -1,6 +1,6 @@
 package com.berksozcu.service;
 
-import com.berksozcu.entites.ReceivedCollection;
+import com.berksozcu.entites.collections.ReceivedCollection;
 
 import java.util.List;
 

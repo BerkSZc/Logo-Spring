@@ -231,8 +231,8 @@ export default function CombinedInvoiceForm() {
                       >
                         <option value="">Seçiniz</option>
                         {(Array.isArray(materials) ? materials : []).map(
-                          (m) => (
-                            <option key={m.id} value={m.id}>
+                          (m, index) => (
+                            <option key={m.id || index} value={m.id}>
                               {m.code} – {m.comment}
                             </option>
                           )

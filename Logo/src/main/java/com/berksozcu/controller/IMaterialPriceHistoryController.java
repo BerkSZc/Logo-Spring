@@ -1,7 +1,7 @@
 package com.berksozcu.controller;
 
-import com.berksozcu.entites.InvoiceType;
-import com.berksozcu.entites.MaterialPriceHistory;
+import com.berksozcu.entites.material_price_history.InvoiceType;
+import com.berksozcu.entites.material_price_history.MaterialPriceHistory;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 

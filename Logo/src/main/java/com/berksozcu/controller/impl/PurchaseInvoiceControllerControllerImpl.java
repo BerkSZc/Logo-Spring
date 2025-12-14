@@ -1,7 +1,7 @@
 package com.berksozcu.controller.impl;
 
 import com.berksozcu.controller.IPurchaseInvoiceController;
-import com.berksozcu.entites.PurchaseInvoice;
+import com.berksozcu.entites.purchase.PurchaseInvoice;
 import com.berksozcu.service.IPurchaseInvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

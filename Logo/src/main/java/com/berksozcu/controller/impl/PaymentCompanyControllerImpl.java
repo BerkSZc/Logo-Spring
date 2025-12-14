@@ -1,7 +1,7 @@
 package com.berksozcu.controller.impl;
 
 import com.berksozcu.controller.IPaymentCompanyController;
-import com.berksozcu.entites.PaymentCompany;
+import com.berksozcu.entites.collections.PaymentCompany;
 import com.berksozcu.service.IPaymentCompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

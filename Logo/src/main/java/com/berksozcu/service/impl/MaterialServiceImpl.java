@@ -1,6 +1,6 @@
 package com.berksozcu.service.impl;
 
-import com.berksozcu.entites.Material;
+import com.berksozcu.entites.material.Material;
 import com.berksozcu.repository.MaterialRepository;
 import com.berksozcu.service.IMaterialService;
 import org.springframework.beans.factory.annotation.Autowired;

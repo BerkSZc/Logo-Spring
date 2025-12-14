@@ -10,14 +10,15 @@ CREATE TABLE IF NOT EXISTS customer (
     country VARCHAR(100),
     local VARCHAR(100),
     district VARCHAR(100),
-    vdNo VARCHAR(50)
+    vdNo VARCHAR(50),
+    customer_code VARCHAR(255)
 );
 
 -- Örnek müşteriler
-INSERT INTO customer (name, balance, address, country, local, district, vdNo)
+INSERT INTO customer (name, balance, address, country, local, district, vdNo, customer_code)
 VALUES
-('Müşteri A', 1000.00, 'Adres 1', 'Türkiye', 'İstanbul', 'Kadıköy', '1234567890'),
-('Müşteri B', 500.00, 'Adres 2', 'Türkiye', 'Ankara', 'Çankaya', '0987654321');
+('Müşteri A', 1000.00, 'Adres 1', 'Türkiye', 'İstanbul', 'Kadıköy', '1234567890', 'dsadas'),
+('Müşteri B', 500.00, 'Adres 2', 'Türkiye', 'Ankara', 'Çankaya', '0987654321', 'dsadasdasd');
 
 -- ---------------------------
 -- 2. MALZEME TABLOSU
@@ -79,6 +80,7 @@ CREATE TABLE IF NOT EXISTS sales_invoice (
     customer BIGINT NOT NULL,
     totalPrice DECIMAL(15,2) DEFAULT 0,
     kdvToplam DECIMAL(15,2) DEFAULT 0,
+    type INTEGER,
     FOREIGN KEY (customer) REFERENCES customer(id)
 );
 
@@ -103,9 +105,9 @@ CREATE TYPE invoice_status AS ENUM ('PURCHASE', 'SALES');
 CREATE TABLE material_price_history (
     id BIGSERIAL PRIMARY KEY,
     material_id BIGINT,
-    fatura_tipi invoice_status,
-    fiyat DECIMAL(19,2),
-    tarih DATE,
+    invoice_type invoice_status,
+    price DECIMAL(19,2),
+    date DATE,
     customer_name VARCHAR(255),
     CONSTRAINT fk_material_price_history_material
         FOREIGN KEY (material_id) REFERENCES material(id)
@@ -125,8 +127,8 @@ VALUES (1, 1, 100, 2, 200, 36);
 -- ---------------------------
 -- Örnek Satış Faturası
 -- ---------------------------
-INSERT INTO sales_invoice (fileNo, date, customer, totalPrice, kdvToplam)
-VALUES ('SA-001', '2025-12-01', 2, 300, 54);
+INSERT INTO sales_invoice (fileNo, date, customer, totalPrice, kdvToplam, type)
+VALUES ('SA-001', '2025-12-01', 2, 300, 54, 1);
 
 INSERT INTO sales_invoice_item (sales_invoice_id, material_id, unit_price, quantity, line_total, kdv)
 VALUES (1, 2, 150, 2, 300, 54);
@@ -140,6 +142,7 @@ CREATE TABLE IF NOT EXISTS received_collection (
     comment VARCHAR(255),
     price DECIMAL(15,2) NOT NULL,
     customer_id BIGINT,
+    customerName VARCHAR(255),
     CONSTRAINT fk_received_customer FOREIGN KEY (customer_id) REFERENCES customer(id)
 );
 

@@ -2,9 +2,9 @@ package com.berksozcu.controller.impl;
 
 import com.berksozcu.controller.IUserController;
 import com.berksozcu.controller.base.RootEntity;
-import com.berksozcu.entites.User;
-import com.berksozcu.entites.UserResponse;
-import com.berksozcu.service.security.AuthenticationService;
+import com.berksozcu.entites.user.User;
+import com.berksozcu.entites.user.UserResponse;
+import com.berksozcu.security.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

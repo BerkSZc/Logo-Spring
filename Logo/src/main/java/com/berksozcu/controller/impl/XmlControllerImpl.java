@@ -1,7 +1,7 @@
 package com.berksozcu.controller.impl;
 
 import com.berksozcu.controller.IXmlController;
-import com.berksozcu.service.xmlService.XmlImportService;
+import com.berksozcu.xml.service.XmlImportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,10 +19,21 @@ public class XmlControllerImpl implements IXmlController {
 
     @Override
     @PostMapping("/purchase-invoice")
-    public ResponseEntity<?> importInvoice(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> importPurchaseInvoices(@RequestParam("file") MultipartFile file) {
         try {
             importService.importPurchaseInvoices(file);
-            return ResponseEntity.ok("XML Faturaları başarıyla aktarıldı!");
+            return ResponseEntity.ok("XML başarıyla aktarıldı!");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Hata: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @PostMapping("/sales-invoice")
+    public ResponseEntity<?> importSalesInvoices(MultipartFile file) {
+        try {
+            importService.importSalesInvoices(file);
+            return ResponseEntity.ok("XML başarıyla aktarıldı!");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Hata: " + e.getMessage());
         }
@@ -33,7 +44,7 @@ public class XmlControllerImpl implements IXmlController {
     public ResponseEntity<?> importMaterials(@RequestParam("file") MultipartFile file) {
         try {
             importService.importMaterials(file);
-            return ResponseEntity.ok("XML Faturaları başarıyla aktarıldı!");
+            return ResponseEntity.ok("XML başarıyla aktarıldı!");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Hata: " + e.getMessage());
         }
@@ -44,7 +55,7 @@ public class XmlControllerImpl implements IXmlController {
     public ResponseEntity<?> importCustomers(@RequestParam("file") MultipartFile file) {
         try {
             importService.importCustomers(file);
-            return ResponseEntity.ok("XML Faturaları başarıyla aktarıldı!");
+            return ResponseEntity.ok("XML başarıyla aktarıldı!");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Hata: " + e.getMessage());
         }
@@ -55,9 +66,11 @@ public class XmlControllerImpl implements IXmlController {
     public ResponseEntity<?> importCollections(@RequestParam("file") MultipartFile file) {
         try {
             importService.importCollections(file);
-            return ResponseEntity.ok("XML Faturaları başarıyla aktarıldı!");
+            return ResponseEntity.ok("XML başarıyla aktarıldı!");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Hata: " + e.getMessage());
         }
     }
+
+
 }

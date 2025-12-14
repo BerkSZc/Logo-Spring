@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useClient } from "../../backend/store/useClient";
 
 export default function ClientsPage() {
   const { customers, getAllCustomers, addCustomer, updateCustomer } =
     useClient();
+
+  const formRef = useRef(null); // Form için ref
 
   const [form, setForm] = useState({
     name: "",
@@ -16,7 +18,6 @@ export default function ClientsPage() {
   });
 
   const [editClient, setEditClient] = useState(null);
-
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -49,17 +50,20 @@ export default function ClientsPage() {
     });
   };
 
-  const handleEdit = (customers) => {
-    setEditClient(customers);
+  const handleEdit = (customer) => {
+    setEditClient(customer);
     setForm({
-      name: customers.name || "",
-      balance: customers.balance || "",
-      address: customers.address || "",
-      country: customers.country || "",
-      local: customers.local || "",
-      district: customers.district || "",
-      vdNo: customers.vdNo || "",
+      name: customer.name || "",
+      balance: customer.balance || "",
+      address: customer.address || "",
+      country: customer.country || "",
+      local: customer.local || "",
+      district: customer.district || "",
+      vdNo: customer.vdNo || "",
     });
+
+    // Formun bulunduğu bölüme kaydır
+    formRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleCancelEdit = () => {
@@ -100,6 +104,7 @@ export default function ClientsPage() {
 
       {/* 🧾 Yeni / Düzenle Formu */}
       <form
+        ref={formRef} // Form ref burada
         onSubmit={handleSubmit}
         className="grid grid-cols-3 gap-4 items-end mb-8"
       >

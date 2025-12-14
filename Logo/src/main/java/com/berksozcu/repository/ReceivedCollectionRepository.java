@@ -1,6 +1,6 @@
 package com.berksozcu.repository;
 
-import com.berksozcu.entites.ReceivedCollection;
+import com.berksozcu.entites.collections.ReceivedCollection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
