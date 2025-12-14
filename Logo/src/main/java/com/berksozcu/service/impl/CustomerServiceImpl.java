@@ -1,6 +1,6 @@
 package com.berksozcu.service.impl;
 
-import com.berksozcu.entites.Customer;
+import com.berksozcu.entites.customer.Customer;
 import com.berksozcu.exception.BaseException;
 import com.berksozcu.exception.ErrorMessage;
 import com.berksozcu.exception.MessageType;

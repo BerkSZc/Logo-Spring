@@ -5,12 +5,12 @@ import MaterialList from "./pages/MaterialList";
 import PurchaseInvoiceForm from "./pages/PurchaseInvoiceForm";
 import SalesInvoiceForm from "./pages/SalesInvoiceForm";
 import ClientsPage from "./pages/ClientPage";
-import Invoice from "./pages/Invoice";
-import Collection from "./pages/Collection";
+import InvoicePage from "./pages/InvoicePage";
+import CollectionPage from "./pages/CollectionPage";
 import CombinedInvoiceForm from "./pages/CombinedInvoiceForm";
-import PurchaseInvoiceXmlImport from "./XML/PurchaseInvoiceXmlImport";
 import { useAuthentication } from "../backend/store/useAuthentication";
 import AuthPage from "./authentication/AuthPage";
+import XmlImportPage from "./pages/XmlImportPage";
 
 function App() {
   const { isAuthenticated } = useAuthentication();
@@ -40,11 +40,7 @@ function App() {
         <Route
           path="/ekleme"
           element={
-            isAuthenticated ? (
-              <PurchaseInvoiceXmlImport />
-            ) : (
-              <Navigate to={"/login"} />
-            )
+            isAuthenticated ? <XmlImportPage /> : <Navigate to={"/login"} />
           }
         />
         <Route
@@ -59,12 +55,14 @@ function App() {
         />
         <Route
           path="/faturalar"
-          element={isAuthenticated ? <Invoice /> : <Navigate to={"/login"} />}
+          element={
+            isAuthenticated ? <InvoicePage /> : <Navigate to={"/login"} />
+          }
         />
         <Route
           path="/tahsilatlar"
           element={
-            isAuthenticated ? <Collection /> : <Navigate to={"/login"} />
+            isAuthenticated ? <CollectionPage /> : <Navigate to={"/login"} />
           }
         />
         <Route

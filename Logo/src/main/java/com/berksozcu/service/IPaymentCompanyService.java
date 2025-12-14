@@ -1,6 +1,6 @@
 package com.berksozcu.service;
 
-import com.berksozcu.entites.PaymentCompany;
+import com.berksozcu.entites.collections.PaymentCompany;
 
 import java.util.List;
 

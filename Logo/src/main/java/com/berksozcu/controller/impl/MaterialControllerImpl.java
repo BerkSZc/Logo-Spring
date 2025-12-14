@@ -1,7 +1,7 @@
 package com.berksozcu.controller.impl;
 
 import com.berksozcu.controller.IMaterialController;
-import com.berksozcu.entites.Material;
+import com.berksozcu.entites.material.Material;
 import com.berksozcu.service.IMaterialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

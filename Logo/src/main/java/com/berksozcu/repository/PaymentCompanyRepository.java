@@ -1,6 +1,6 @@
 package com.berksozcu.repository;
 
-import com.berksozcu.entites.PaymentCompany;
+import com.berksozcu.entites.collections.PaymentCompany;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

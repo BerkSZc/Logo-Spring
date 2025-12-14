@@ -34,6 +34,7 @@ export default function MaterialPriceTooltip({
   return (
     <>
       <button
+        type="button"
         onClick={() => !disabled && setOpen(true)}
         disabled={disabled}
         className={`px-2 py-1 text-gray-600 hover:text-gray-900 ${

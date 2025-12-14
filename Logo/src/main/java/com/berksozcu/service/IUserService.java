@@ -1,6 +1,6 @@
 package com.berksozcu.service;
 
-import com.berksozcu.entites.User;
+import com.berksozcu.entites.user.User;
 
 import java.util.Optional;
 

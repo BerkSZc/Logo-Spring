@@ -1,6 +1,6 @@
 package com.berksozcu.controller;
 
-import com.berksozcu.entites.ReceivedCollection;
+import com.berksozcu.entites.collections.ReceivedCollection;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 

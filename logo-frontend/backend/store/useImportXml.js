@@ -22,6 +22,25 @@ export const useImportXml = create(() => ({
       return false;
     }
   },
+
+  importSalesInvoice: async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      await axiosInstance.post("/import/sales-invoice", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      toast.success("Aktarma başarıyla tamamlandı");
+    } catch (error) {
+      const backendErr =
+        error?.response?.data?.exception?.message || "Bilinmeyen hata";
+      toast.error("Error at importPurchaseInvoice: " + backendErr);
+    }
+  },
+
   importMaterials: async (file) => {
     try {
       const formData = new FormData();

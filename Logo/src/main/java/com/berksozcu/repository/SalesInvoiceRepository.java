@@ -1,6 +1,6 @@
 package com.berksozcu.repository;
 
-import com.berksozcu.entites.SalesInvoice;
+import com.berksozcu.entites.sales.SalesInvoice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useMaterial } from "../../backend/store/useMaterial.js";
 
 export default function MaterialForm() {
+  const formRef = useRef(null); // Form için ref
+
   const [form, setForm] = useState({
     code: "",
     comment: "",
@@ -28,7 +30,6 @@ export default function MaterialForm() {
 
     if (editId) {
       await updateMaterials(editId, form);
-      console.log(materials);
       setEditId(null);
     } else {
       await addMaterial(form);
@@ -39,12 +40,15 @@ export default function MaterialForm() {
   };
 
   const handleEdit = (item) => {
-    setEditId(item._id);
+    setEditId(item.id);
     setForm({
       code: item.code,
       comment: item.comment,
       unit: item.unit,
     });
+
+    // Formun bulunduğu bölüme kaydır
+    formRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
   const filteredMaterials = (Array.isArray(materials) ? materials : []).filter(
@@ -52,15 +56,15 @@ export default function MaterialForm() {
       item.code?.toLowerCase().includes(search.toLowerCase()) ||
       item.comment?.toLowerCase().includes(search.toLowerCase())
   );
-
   return (
     <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-2xl p-8 mt-10 space-y-14">
       {/* FORM */}
-      <div>
+      <div ref={formRef}>
+        {" "}
+        {/* Form ref burada */}
         <h2 className="text-2xl font-semibold mb-6 text-gray-800">
           {editId ? "Malzeme Düzenle" : "Malzeme Ekle"}
         </h2>
-
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* CODE */}
           <div>
@@ -148,7 +152,7 @@ export default function MaterialForm() {
             Array.isArray(filteredMaterials) &&
             filteredMaterials.map((item) => (
               <div
-                key={item?._id}
+                key={item?._id ?? item.id}
                 className="border p-4 rounded-xl flex justify-between items-center bg-gray-100 shadow-sm"
               >
                 <div>

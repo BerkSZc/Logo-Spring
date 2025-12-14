@@ -1,6 +1,6 @@
 package com.berksozcu.service.impl;
 
-import com.berksozcu.entites.User;
+import com.berksozcu.entites.user.User;
 import com.berksozcu.repository.UserRepository;
 import com.berksozcu.service.IUserService;
 import lombok.AllArgsConstructor;

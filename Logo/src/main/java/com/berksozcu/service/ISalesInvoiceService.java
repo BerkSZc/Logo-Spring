@@ -1,6 +1,6 @@
 package com.berksozcu.service;
 
-import com.berksozcu.entites.SalesInvoice;
+import com.berksozcu.entites.sales.SalesInvoice;
 
 import java.util.List;
 

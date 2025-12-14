@@ -6,12 +6,22 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
+let selectedTenant = "A";
+export const setTenant = (tenant) => {
+  selectedTenant = tenant;
+};
+
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    if (selectedTenant) {
+      config.headers["X-Tenant-ID"] = selectedTenant;
+    }
+    console.log("Current tenant:", selectedTenant);
+
     return config;
   },
   (error) => Promise.reject(error)

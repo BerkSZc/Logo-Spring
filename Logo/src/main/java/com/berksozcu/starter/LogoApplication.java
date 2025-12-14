@@ -1,6 +1,6 @@
 package com.berksozcu.starter;
 
-import com.berksozcu.entites.Customer;
+import com.berksozcu.entites.customer.Customer;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

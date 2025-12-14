@@ -1,6 +1,6 @@
 package com.berksozcu.controller;
 
-import com.berksozcu.entites.PaymentCompany;
+import com.berksozcu.entites.collections.PaymentCompany;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 

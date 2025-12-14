@@ -3,7 +3,7 @@ package com.berksozcu.controller.impl;
 import com.berksozcu.controller.ICustomerController;
 import com.berksozcu.controller.base.RestBaseController;
 import com.berksozcu.controller.base.RootEntity;
-import com.berksozcu.entites.Customer;
+import com.berksozcu.entites.customer.Customer;
 import com.berksozcu.service.ICustomerService;
 import com.berksozcu.service.IPurchaseInvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;

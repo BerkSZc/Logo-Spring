@@ -5,13 +5,18 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Navbar.jsx";
+import TokenWatcher from "../backend/lib/TokenWatcher.js";
+import { TenantProvider } from "./context/TenantContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <Navbar />
-      <App />
-      <Toaster />
+      <TenantProvider>
+        <TokenWatcher />
+        <Navbar />
+        <App />
+        <Toaster />
+      </TenantProvider>
     </BrowserRouter>
   </StrictMode>
 );

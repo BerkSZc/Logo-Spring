@@ -1,8 +1,7 @@
 package com.berksozcu.controller;
 
 import com.berksozcu.controller.base.RootEntity;
-import com.berksozcu.entites.Customer;
-import com.berksozcu.entites.PurchaseInvoice;
+import com.berksozcu.entites.customer.Customer;
 
 import java.util.List;
 
