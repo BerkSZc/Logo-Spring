@@ -10,9 +10,11 @@ import com.berksozcu.repository.PaymentCompanyRepository;
 import com.berksozcu.service.IPaymentCompanyService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -102,5 +104,12 @@ public class PaymentCompanyServiceImpl implements IPaymentCompanyService {
         customer.setBalance(customer.getBalance().add(paymentCompany.getPrice()));
         customerRepository.save(customer);
         paymentCompanyRepository.deleteById(id);
+    }
+
+    @Override
+    public List<PaymentCompany> getPaymentCollectionsByYear(int year) {
+        LocalDate start = LocalDate.of(year, 1, 1);
+        LocalDate end = LocalDate.of(year, 12,31);
+        return paymentCompanyRepository.findByDateBetween(start, end);
     }
 }

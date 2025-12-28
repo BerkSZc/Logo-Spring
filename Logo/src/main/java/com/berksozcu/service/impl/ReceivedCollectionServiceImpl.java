@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -102,6 +103,13 @@ public class ReceivedCollectionServiceImpl implements IReceivedCollectionService
         customer.setBalance(customer.getBalance().add(receivedCollection.getPrice()));
         customerRepository.save(customer);
         receivedCollectionRepository.deleteById(id);
+    }
+
+    @Override
+    public List<ReceivedCollection> getReceivedCollectionsByYear(int year) {
+        LocalDate start = LocalDate.of(year, 1, 1);
+        LocalDate end = LocalDate.of(year, 12, 31);
+        return receivedCollectionRepository.findByDateBetween(start, end);
     }
 }
 

@@ -40,4 +40,10 @@ public class PaymentCompanyControllerImpl implements IPaymentCompanyController {
          paymentCompanyService.deletePaymentCompany(id);
     }
 
+    @Override
+    @GetMapping("/find-year/{year}")
+    public List<PaymentCompany> getPaymentCollectionsByYear(@PathVariable(name = "year") int year) {
+        return paymentCompanyService.getPaymentCollectionsByYear(year);
+    }
+
 }

@@ -14,7 +14,9 @@ export const useReceivedCollection = create((set) => ({
       });
       toast.success("Alınan tahsilat eklendi");
     } catch (error) {
-      toast.error("Error at addCollection: " + error);
+      const backendErr =
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
+      toast.error("Error at addCollection: " + backendErr);
     }
   },
 
@@ -23,7 +25,9 @@ export const useReceivedCollection = create((set) => ({
       const res = await axiosInstance.get("/receive/find-all");
       set({ collections: res.data });
     } catch (error) {
-      toast.error("Error at getCollections: " + error);
+      const backendErr =
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
+      toast.error("Error at getCollections: " + backendErr);
     }
   },
 
@@ -36,7 +40,9 @@ export const useReceivedCollection = create((set) => ({
       });
       toast.success("Tahsilat değiştrildi");
     } catch (error) {
-      toast.error("Error at editCollections: " + error);
+      const backendErr =
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
+      toast.error("Error at editCollections: " + backendErr);
     }
   },
   deleteReceivedCollection: async (id) => {
@@ -47,6 +53,18 @@ export const useReceivedCollection = create((set) => ({
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at deleteReceivedCollection: " + backendErr);
+    }
+  },
+  getReceivedCollectionsByYear: async (year) => {
+    try {
+      set({ collections: [] });
+      const res = await axiosInstance.get(`/receive/find-year/${year}`);
+      set({ collections: res.data });
+    } catch (error) {
+      const backendErr =
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
+      toast.error("Error at getReceivedCollectionsByYear: " + backendErr);
+      set({ collections: [] });
     }
   },
 }));

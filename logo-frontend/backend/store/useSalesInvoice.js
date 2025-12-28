@@ -15,7 +15,7 @@ export const useSalesInvoice = create((set) => ({
       toast.success("Fatura eklendi");
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at addSalesInvoice: " + backendErr);
     }
   },
@@ -26,7 +26,7 @@ export const useSalesInvoice = create((set) => ({
       set({ sales: res.data });
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at getAllSalesInvoices:" + backendErr);
     }
   },
@@ -41,7 +41,7 @@ export const useSalesInvoice = create((set) => ({
       toast.success("Fatura değiştirildi");
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at editPurchaseInvoice:" + backendErr);
     }
   },
@@ -52,18 +52,21 @@ export const useSalesInvoice = create((set) => ({
       toast.success("Fatura başarıyla silindi");
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at deleteSalesInvoice: " + backendErr);
     }
   },
 
   getSalesInvoicesByYear: async (year) => {
     try {
-      await axiosInstance.get(`/sales/find-date/${year}`);
+      set({ sales: [] });
+      const res = await axiosInstance.get(`/sales/find-year/${year}`);
+      set({ sales: res.data });
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
-      toast.error("Error at getInvoicesByYear: " + backendErr);
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
+      toast.error("Error at getSalesInvoicesByYear: " + backendErr);
+      set({ sales: [] });
     }
   },
 }));

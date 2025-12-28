@@ -2,8 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import MalzemeEkle from "./pages/MalzemeEkle";
 import MaterialList from "./pages/MaterialList";
-import PurchaseInvoiceForm from "./pages/PurchaseInvoiceForm";
-import SalesInvoiceForm from "./pages/SalesInvoiceForm";
+
 import ClientsPage from "./pages/ClientPage";
 import InvoicePage from "./pages/InvoicePage";
 import CollectionPage from "./pages/CollectionPage";
@@ -19,16 +18,7 @@ function App() {
   return (
     <>
       <Routes>
-        <Route
-          path="/devir"
-          element={
-            !isAuthenticated ? (
-              <Navigate to={"/home"} />
-            ) : (
-              <TransferOperationPage />
-            )
-          }
-        />
+        <Route path="/devir" element={<TransferOperationPage />} />
 
         <Route
           path="/login"
@@ -45,9 +35,6 @@ function App() {
           }
         />
         <Route path="/malzemeler" element={<MaterialList />} />
-
-        {/* <Route path="/alma-fatura-ekle" element={<PurchaseInvoiceForm />} />
-        <Route path="/satis-fatura-ekle" element={<SalesInvoiceForm />} /> */}
 
         <Route
           path="/ekleme"

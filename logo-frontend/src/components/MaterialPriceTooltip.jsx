@@ -37,100 +37,213 @@ export default function MaterialPriceTooltip({
         type="button"
         onClick={() => !disabled && setOpen(true)}
         disabled={disabled}
-        className={`px-2 py-1 text-gray-600 hover:text-gray-900 ${
-          disabled ? "opacity-50 cursor-not-allowed" : ""
+        className={`p-2 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-lg transition-all border border-gray-700 flex items-center justify-center ${
+          disabled
+            ? "opacity-30 cursor-not-allowed"
+            : "hover:text-blue-400 active:scale-95"
         }`}
+        title="Fiyat Geçmişi"
       >
-        ⋮
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg w-130 p-7 relative">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-[#0f172a] border border-gray-800 rounded-[2rem] shadow-2xl w-full max-w-md p-8 relative animate-in fade-in zoom-in duration-300">
             {/* Kapatma butonu */}
             <button
               onClick={() => setOpen(false)}
-              className="absolute top-1 right-1 text-red-500 text-lg font-bold"
+              className="absolute top-4 right-4 text-gray-500 hover:text-red-400 p-2 transition-colors"
             >
-              ✕
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
 
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <span className="p-2 bg-blue-600/20 text-blue-500 rounded-lg text-sm">
+                ₺
+              </span>
+              Fiyat Analizi
+            </h3>
+
             {/* Fatura tipi seçimi */}
-            <div className="mb-4">
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="border rounded p-1 w-full"
-              >
-                <option value="PURCHASE">Son Satın Alma</option>
-                <option value="SALES">Son Satış</option>
-              </select>
+            <div className="mb-8">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2 block ml-1">
+                İşlem Türü
+              </label>
+              <div className="grid grid-cols-2 gap-2 p-1 bg-gray-900 rounded-xl border border-gray-800">
+                <button
+                  onClick={() => setSelectedType("PURCHASE")}
+                  className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                    selectedType === "PURCHASE"
+                      ? "bg-blue-600 text-white shadow-lg"
+                      : "text-gray-500 hover:text-gray-300"
+                  }`}
+                >
+                  Alış
+                </button>
+                <button
+                  onClick={() => setSelectedType("SALES")}
+                  className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                    selectedType === "SALES"
+                      ? "bg-emerald-600 text-white shadow-lg"
+                      : "text-gray-500 hover:text-gray-300"
+                  }`}
+                >
+                  Satış
+                </button>
+              </div>
             </div>
 
-            {/* Fiyat geçmişi */}
-            <div className="text-center mb-4">
+            {/* Fiyat geçmişi kartı */}
+            <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 mb-8 min-h-[160px] flex flex-col justify-center relative overflow-hidden group">
               {currentItem ? (
                 <>
-                  <p>
-                    Fiyat: <strong>{currentItem.price?.toFixed(2)} ₺</strong>
-                  </p>
-                  <p>
-                    Miktar: <strong>{currentItem.quantity} </strong>
-                  </p>
-                  <p>Tarih: {currentItem.date}</p>
-                  {currentItem.customerName && (
-                    <p>Müşteri: {currentItem.customerName}</p>
-                  )}
+                  <div className="space-y-4 relative z-10">
+                    <div className="flex justify-between items-end">
+                      <span className="text-gray-500 text-xs">Birim Fiyat</span>
+                      <span
+                        className={`text-2xl font-black font-mono ${
+                          selectedType === "PURCHASE"
+                            ? "text-blue-400"
+                            : "text-emerald-400"
+                        }`}
+                      >
+                        {currentItem.price?.toLocaleString("tr-TR", {
+                          minimumFractionDigits: 2,
+                        })}{" "}
+                        ₺
+                      </span>
+                    </div>
 
-                  <p className="text-gray-400 text-sm">
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-800">
+                      <div>
+                        <span className="text-gray-500 text-[10px] uppercase block">
+                          Miktar
+                        </span>
+                        <span className="text-gray-200 font-bold text-sm">
+                          {currentItem.quantity}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-gray-500 text-[10px] uppercase block">
+                          Tarih
+                        </span>
+                        <span className="text-gray-200 font-bold text-sm">
+                          {currentItem.date}
+                        </span>
+                      </div>
+                    </div>
+
+                    {currentItem.customerName && (
+                      <div className="pt-2">
+                        <span className="text-gray-500 text-[10px] uppercase block">
+                          İlgili Cari
+                        </span>
+                        <span className="text-gray-300 text-xs font-medium truncate block italic">
+                          "{currentItem.customerName}"
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="absolute bottom-2 right-4 text-[10px] font-mono text-gray-700">
                     {currentIndex + 1} / {history.length}
-                  </p>
+                  </div>
                 </>
               ) : (
-                <p className="text-gray-400">Geçmiş yok</p>
+                <div className="text-center py-10">
+                  <div className="text-3xl mb-2">🔍</div>
+                  <p className="text-gray-500 text-sm italic font-medium">
+                    Bu işlem türünde kayıt bulunamadı
+                  </p>
+                </div>
               )}
             </div>
 
-            {/* İleri / Geri Butonları */}
-            <div className="flex justify-between mb-4">
+            {/* Navigasyon ve Seçim */}
+            <div className="flex items-center gap-3">
               <button
                 onClick={handlePrev}
                 disabled={currentIndex === 0}
-                className={`px-3 py-1 rounded ${
-                  currentIndex === 0
-                    ? "bg-gray-300 text-gray-600"
-                    : "bg-blue-500 text-white"
-                }`}
+                className="p-4 bg-gray-800 text-gray-300 rounded-2xl hover:bg-gray-700 disabled:opacity-20 disabled:grayscale transition-all active:scale-90"
               >
-                ← Geri
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
               </button>
+
+              {currentItem ? (
+                <button
+                  onClick={handleSelect}
+                  className={`flex-1 py-4 text-white font-bold rounded-2xl shadow-xl transition-all active:scale-95 ${
+                    selectedType === "PURCHASE"
+                      ? "bg-blue-600 hover:bg-blue-500 shadow-blue-900/20"
+                      : "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20"
+                  }`}
+                >
+                  Bu Fiyatı Kullan
+                </button>
+              ) : (
+                <div className="flex-1"></div>
+              )}
 
               <button
                 onClick={handleNext}
                 disabled={
-                  currentIndex === history?.length - 1 || !history?.length
+                  currentIndex === (history?.length || 1) - 1 ||
+                  !history?.length
                 }
-                className={`px-3 py-1 rounded ${
-                  currentIndex === history?.length - 1 || !history?.length
-                    ? "bg-gray-300 text-gray-600"
-                    : "bg-blue-500 text-white"
-                }`}
+                className="p-4 bg-gray-800 text-gray-300 rounded-2xl hover:bg-gray-700 disabled:opacity-20 disabled:grayscale transition-all active:scale-90"
               >
-                İleri →
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
               </button>
             </div>
-
-            {/* Seç Butonu */}
-            {currentItem && (
-              <div className="text-center">
-                <button
-                  onClick={handleSelect}
-                  className="px-4 py-2 bg-green-600 text-white rounded"
-                >
-                  Seç
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}

@@ -39,6 +39,7 @@ public class SalesInvoiceItem {
     private BigDecimal kdv;
 
     // Toplam Kdv Tutarı
+    @Column(name = "kdv_tutar")
     private BigDecimal kdvTutar;
 
     @Column(name = "line_total", precision = 18, scale = 2)

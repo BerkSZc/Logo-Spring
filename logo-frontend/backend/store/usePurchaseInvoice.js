@@ -15,7 +15,7 @@ export const usePurchaseInvoice = create((set) => ({
       toast.success("Fatura eklendi.");
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at addPurchaseInvoice: " + backendErr);
     }
   },
@@ -26,7 +26,7 @@ export const usePurchaseInvoice = create((set) => ({
       set({ purchase: res.data });
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at getAllPurchaseInvoice:" + backendErr);
     }
   },
@@ -41,7 +41,7 @@ export const usePurchaseInvoice = create((set) => ({
       toast.success("Fatura değiştirildi");
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at editPurchaseInvoice:" + backendErr);
     }
   },
@@ -52,18 +52,20 @@ export const usePurchaseInvoice = create((set) => ({
       toast.success("Fatura silindi");
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at deletePurchaseInvoice: " + backendErr);
     }
   },
   getPurchaseInvoiceByYear: async (year) => {
     try {
+      set({ purchase: [] });
       const res = await axiosInstance.get(`/purchase/find-year/${year}`);
       set({ purchase: res.data });
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at getPurchaseInvoiceByYear: " + backendErr);
+      set({ purchase: [] });
     }
   },
 }));

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -22,7 +23,7 @@ public class ReceivedCollection {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     //Tarih
-    private Date date;
+    private LocalDate date;
 
     //Açıklama
     private String comment;
@@ -35,5 +36,6 @@ public class ReceivedCollection {
     private Customer customer;
 
     //Müşteri ismi
+    @Column(name = "customer_name")
     private String customerName;
 }
