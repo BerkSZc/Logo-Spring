@@ -1,5 +1,6 @@
 package com.berksozcu.configuration;
 
+import com.berksozcu.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +28,8 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/rest/api/auth/login/**", "/rest/api/auth/save/**")
+                        .requestMatchers("/rest/api/auth/login/**", "/rest/api/auth/save/**",
+                                "/rest/api/company/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider)

@@ -25,6 +25,7 @@ public class MaterialPriceHistory {
 
     @Enumerated(EnumType.STRING)
     //Fatura tipi
+    @Column(name = "invoice_type")
     private InvoiceType invoiceType;
 
     //fiyat
@@ -34,6 +35,7 @@ public class MaterialPriceHistory {
     private LocalDate date;
 
     //Müşteri İsmi
+    @Column(name = "customer_name")
     private String customerName;
 
     //Miktar

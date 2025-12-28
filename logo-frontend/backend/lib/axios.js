@@ -6,23 +6,19 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-let selectedTenant = "A";
-export const setTenant = (tenant) => {
-  selectedTenant = tenant;
-};
-
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+
+    const currentTenant = localStorage.getItem("tenant") || "logo";
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    if (selectedTenant) {
-      config.headers["X-Tenant-ID"] = selectedTenant;
-    }
-    console.log("Current tenant:", selectedTenant);
+    config.headers["X-Tenant-ID"] = currentTenant;
+
+    console.log("Current tenant:", currentTenant);
 
     return config;
   },

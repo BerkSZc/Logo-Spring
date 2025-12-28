@@ -1,569 +1,388 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMaterial } from "../../backend/store/useMaterial.js";
 import { useClient } from "../../backend/store/useClient.js";
 import { useSalesInvoice } from "../../backend/store/useSalesInvoice.js";
 import { usePurchaseInvoice } from "../../backend/store/usePurchaseInvoice.js";
 import MaterialPriceTooltip from "../components/MaterialPriceTooltip.jsx";
 import MaterialSearchSelect from "../components/MaterialSearchSelect.jsx";
+import { useYear } from "../context/YearContext.jsx";
 
 export default function CombinedInvoiceForm() {
   const [mode, setMode] = useState("sales"); // "sales" | "purchase"
 
   const { materials, getMaterials } = useMaterial();
   const { customers, getAllCustomers } = useClient();
-  const { addSalesInvoice } = useSalesInvoice();
-  const { addPurchaseInvoice } = usePurchaseInvoice();
+  const { addSalesInvoice, getSalesInvoicesByYear } = useSalesInvoice();
+  const { addPurchaseInvoice, getPurchaseInvoiceByYear } = usePurchaseInvoice();
+
+  const { year } = useYear();
 
   // --- Formlar ---
+  const initalItem = {
+    materialId: "",
+    unitPrice: "",
+    quantity: "",
+    kdv: 20,
+    lineTotal: 0,
+  };
+
   const [salesForm, setSalesForm] = useState({
-    date: "",
+    date: new Date().toISOString().slice(0, 10),
     fileNo: "",
     customerId: "",
-    items: [
-      { materialId: "", unitPrice: "", quantity: "", kdv: 20, lineTotal: 0 },
-    ],
+    items: [{ ...initalItem }],
   });
 
   const [purchaseForm, setPurchaseForm] = useState({
-    date: "",
+    date: new Date().toISOString().slice(0, 10),
     fileNo: "",
-    id: "",
-    items: [
-      { materialId: "", unitPrice: "", quantity: "", kdv: 20, lineTotal: 0 },
-    ],
+    customerId: "",
+    items: [{ ...initalItem }],
   });
-
-  const [salesTotals, setSalesTotals] = useState({
-    kdvToplam: 0,
-    totalPrice: 0,
-  });
-
-  const [purchaseTotal, setPurchaseTotal] = useState(0);
 
   useEffect(() => {
     getMaterials();
     getAllCustomers();
   }, []);
 
-  // --- SATIŞ FATURASI HESAPLAMA ---
-  useEffect(() => {
-    let changed = false;
-
-    const updatedItems = salesForm.items.map((item) => {
-      const line = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
-      if (line !== item.lineTotal) changed = true;
-      return { ...item, lineTotal: line };
-    });
-
-    if (changed) {
-      setSalesForm((prev) => ({ ...prev, items: updatedItems }));
-    }
-
-    const total = updatedItems.reduce((s, i) => s + i.lineTotal, 0);
-    const kdv = updatedItems.reduce(
-      (s, i) => s + (i.lineTotal * i.kdv) / 100,
+  const salesCalculation = useMemo(() => {
+    const total = salesForm.items.reduce(
+      (s, i) => s + (Number(i.unitPrice) * Number(i.quantity) || 0),
       0
     );
-
-    setSalesTotals({
-      totalPrice: total,
-      kdvToplam: kdv,
-    });
+    const kdv = salesForm.items.reduce(
+      (s, i) =>
+        s +
+        ((Number(i.unitPrice) * Number(i.quantity) || 0) * Number(i.kdv)) / 100,
+      0
+    );
+    return { total, kdv, grandTotal: total + kdv };
   }, [salesForm.items]);
 
-  // --- SATIN ALMA FATURASI HESAPLAMA ---
-  useEffect(() => {
-    const updated = purchaseForm.items.map((i) => ({
-      ...i,
-      lineTotal:
-        i.unitPrice && i.quantity
-          ? Number(i.unitPrice) * Number(i.quantity) * (1 + (i.kdv || 0) / 100)
-          : 0,
-    }));
-
-    const changed =
-      JSON.stringify(updated) !== JSON.stringify(purchaseForm.items);
-
-    if (changed) {
-      setPurchaseForm((prev) => ({ ...prev, items: updated }));
-    }
-
-    const total = updated.reduce((s, i) => s + i.lineTotal, 0);
-    setPurchaseTotal(total);
+  // Satın Alma: KDV Dahil toplam
+  const purchaseCalculation = useMemo(() => {
+    return purchaseForm.items.reduce((s, i) => {
+      const base = Number(i.unitPrice) * Number(i.quantity) || 0;
+      return s + base * (1 + Number(i.kdv) / 100);
+    }, 0);
   }, [purchaseForm.items]);
 
-  // --- FORM GÖNDERME ---
-  const submitSales = (e) => {
-    e.preventDefault();
-    const payload = {
-      date: salesForm.date,
-      fileNo: salesForm.fileNo,
-      customer: { id: Number(salesForm.customerId) },
-      items: salesForm.items.map((i) => ({
-        material: { id: Number(i.materialId) },
-        unitPrice: Number(i.unitPrice),
-        quantity: Number(i.quantity),
-        kdv: Number(i.kdv),
-      })),
-    };
-    addSalesInvoice(Number(salesForm.customerId), payload);
+  // --- FORM İŞLEMLERİ ---
+  const handleItemChange = (formType, index, field, value) => {
+    const setter = formType === "sales" ? setSalesForm : setPurchaseForm;
+    setter((prev) => {
+      const newItems = [...prev.items];
+      newItems[index] = { ...newItems[index], [field]: value };
+      return { ...prev, items: newItems };
+    });
   };
 
-  const submitPurchase = (e) => {
+  const addItem = (formType) => {
+    const setter = formType === "sales" ? setSalesForm : setPurchaseForm;
+    setter((prev) => ({ ...prev, items: [...prev.items, { ...initialItem }] }));
+  };
+
+  const removeItem = (formType, index) => {
+    const setter = formType === "sales" ? setSalesForm : setPurchaseForm;
+    setter((prev) => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index),
+    }));
+  };
+
+  const submitForm = async (e) => {
     e.preventDefault();
+    const isSales = mode === "sales";
+    const currentForm = isSales ? salesForm : purchaseForm;
+
     const payload = {
-      date: purchaseForm.date,
-      fileNo: purchaseForm.fileNo,
-      items: purchaseForm.items.map((i) => ({
+      date: currentForm.date,
+      fileNo: currentForm.fileNo,
+      ...(isSales ? { customer: { id: Number(currentForm.customerId) } } : {}),
+      items: currentForm.items.map((i) => ({
         material: { id: Number(i.materialId) },
         unitPrice: Number(i.unitPrice),
         quantity: Number(i.quantity),
         kdv: Number(i.kdv),
       })),
     };
-    addPurchaseInvoice(purchaseForm.id, payload);
+
+    if (isSales) {
+      await addSalesInvoice(Number(currentForm.customerId), payload);
+      getSalesInvoicesByYear(year);
+    } else {
+      await addPurchaseInvoice(Number(currentForm.customerId), payload);
+      getPurchaseInvoiceByYear(year);
+    }
   };
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 bg-white shadow-xl rounded-2xl p-8">
-      {/* SAĞ ÜST SEÇİM */}
-      <div className="flex justify-end mb-6">
-        <select
-          className="border p-2 rounded-lg shadow"
-          value={mode}
-          onChange={(e) => setMode(e.target.value)}
-        >
-          <option value="sales">Satış Faturası</option>
-          <option value="purchase">Satın Alma Faturası</option>
-        </select>
-      </div>
+    <div className="min-h-screen w-full bg-[#0a0f1a] text-gray-100 p-6 lg:p-12">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* BAŞLIK VE MOD SEÇİMİ */}
+        <div className="flex justify-between items-center bg-gray-900/40 p-6 rounded-[2rem] border border-gray-800 backdrop-blur-sm">
+          <div>
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">
+              Fatura Oluştur
+            </h1>
+            <p className="text-gray-400 mt-1">
+              {mode === "sales" ? "Müşteriye Satış" : "Firmadan Satın Alma"}
+            </p>
+          </div>
+          <select
+            className="bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-2 text-white focus:border-blue-500 outline-none font-bold"
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+          >
+            <option value="sales">Satış Faturası</option>
+            <option value="purchase">Satın Alma Faturası</option>
+          </select>
+        </div>
 
-      {/* -------------------------------------- */}
-      {/* ----------- SATIŞ FATURASI ----------- */}
-      {/* -------------------------------------- */}
-      {mode === "sales" && (
-        <form onSubmit={submitSales} className="space-y-8">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-4">
-            Satış Faturası Oluştur
-          </h1>
-
-          <div className="grid grid-cols-3 gap-6">
-            <div>
-              <label className="text-sm text-gray-600">Tarih</label>
+        {/* ANA FORM */}
+        <form onSubmit={submitForm} className="space-y-8">
+          {/* ÜST BİLGİLER */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8 bg-gray-900/40 border border-gray-800 rounded-[2.5rem]">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
+                Tarih
+              </label>
               <input
                 type="date"
-                name="date"
-                value={salesForm.date}
-                onChange={(e) =>
-                  setSalesForm({ ...salesForm, date: e.target.value })
-                }
-                className="mt-1 w-full border p-2 rounded-lg"
                 required
+                value={mode === "sales" ? salesForm.date : purchaseForm.date}
+                onChange={(e) =>
+                  mode === "sales"
+                    ? setSalesForm({ ...salesForm, date: e.target.value })
+                    : setPurchaseForm({ ...purchaseForm, date: e.target.value })
+                }
+                className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none"
               />
             </div>
-
-            <div>
-              <label className="text-sm text-gray-600">Belge No</label>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
+                Belge No
+              </label>
               <input
                 type="text"
-                name="fileNo"
-                value={salesForm.fileNo}
-                onChange={(e) =>
-                  setSalesForm({ ...salesForm, fileNo: e.target.value })
-                }
-                className="mt-1 w-full border p-2 rounded-lg"
                 required
+                placeholder="Örn: FAT2025001"
+                value={
+                  mode === "sales" ? salesForm.fileNo : purchaseForm.fileNo
+                }
+                onChange={(e) =>
+                  mode === "sales"
+                    ? setSalesForm({ ...salesForm, fileNo: e.target.value })
+                    : setPurchaseForm({
+                        ...purchaseForm,
+                        fileNo: e.target.value,
+                      })
+                }
+                className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none"
               />
             </div>
-
-            <div>
-              <label className="text-sm text-gray-600">Müşteri</label>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
+                Müşteri / Firma
+              </label>
               <select
-                name="customerId"
-                value={salesForm.customerId}
-                onChange={(e) =>
-                  setSalesForm({ ...salesForm, customerId: e.target.value })
-                }
-                className="mt-1 w-full border p-2 rounded-lg"
                 required
+                value={
+                  mode === "sales"
+                    ? salesForm.customerId
+                    : purchaseForm.customerId
+                }
+                onChange={(e) =>
+                  mode === "sales"
+                    ? setSalesForm({ ...salesForm, customerId: e.target.value })
+                    : setPurchaseForm({
+                        ...purchaseForm,
+                        customerId: e.target.value,
+                      })
+                }
+                className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none cursor-pointer"
               >
-                <option value="">Seçiniz</option>
+                <option value="">Seçiniz...</option>
                 {customers?.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} – {c.balance}
+                    {c.name} - (Bakiye: {c.balance}₺)
                   </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* KALEM TABLOSU */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-700 mb-3">
-              Kalemler
-            </h2>
-
-            <table className="w-full text-sm border rounded-xl overflow-hidden">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-3 text-left">Malzeme</th>
-                  <th className="p-3 text-left">Birim Fiyat</th>
-                  <th className="p-3 text-left">Miktar</th>
-                  <th className="p-3 text-left">KDV %</th>
-                  <th className="p-3 text-right">Toplam</th>
-                  <th></th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {salesForm.items.map((item, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="p-3">
-                      <MaterialSearchSelect
-                        materials={materials}
-                        value={item.materialId}
-                        onChange={(id) => {
-                          const updated = [...salesForm.items];
-                          updated[i].materialId = id;
-                          setSalesForm({ ...salesForm, items: updated });
-                        }}
-                      />
-                    </td>
-
-                    <td className="p-2 flex items-center gap-1">
-                      <input
-                        type="number"
-                        name="unitPrice"
-                        value={item.unitPrice}
-                        onChange={(e) => {
-                          const updated = [...salesForm.items];
-                          updated[i].unitPrice = e.target.value;
-                          setSalesForm({ ...salesForm, items: updated });
-                        }}
-                        className="w-full border p-2 rounded-lg"
-                      />
-                      <MaterialPriceTooltip
-                        materialId={item.materialId}
-                        onSelect={(price) => {
-                          const updated = [...salesForm.items];
-                          updated[i].unitPrice = price;
-                          setSalesForm({ ...salesForm, items: updated });
-                        }}
-                        disabled={!item.materialId}
-                      />
-                    </td>
-
-                    <td className="p-3">
-                      <input
-                        type="number"
-                        name="quantity"
-                        value={item.quantity}
-                        onChange={(e) => {
-                          const updated = [...salesForm.items];
-                          updated[i].quantity = e.target.value;
-                          setSalesForm({ ...salesForm, items: updated });
-                        }}
-                        className="w-full border p-2 rounded-lg"
-                      />
-                    </td>
-
-                    <td className="p-3">
-                      <input
-                        type="number"
-                        name="kdv"
-                        value={item.kdv}
-                        onChange={(e) => {
-                          const updated = [...salesForm.items];
-                          updated[i].kdv = e.target.value;
-                          setSalesForm({ ...salesForm, items: updated });
-                        }}
-                        className="w-full border p-2 rounded-lg"
-                      />
-                    </td>
-
-                    <td className="p-3 text-right font-semibold text-gray-700">
-                      {item.lineTotal.toFixed(2)} ₺
-                    </td>
-
-                    <td className="p-3 text-right">
-                      {salesForm.items.length > 1 && (
+          {/* KALEMLER TABLOSU */}
+          <div className="bg-gray-900/40 border border-gray-800 rounded-[2.5rem] overflow-hidden">
+            <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-800/30">
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
+                Fatura Kalemleri
+              </h3>
+            </div>
+            <div className="overflow-x-auto p-4">
+              <table className="w-full text-left border-separate border-spacing-y-2">
+                <thead>
+                  <tr className="text-gray-500 text-xs uppercase tracking-widest">
+                    <th className="px-4 py-2">Malzeme</th>
+                    <th className="px-4 py-2">Birim Fiyat</th>
+                    <th className="px-4 py-2">Miktar</th>
+                    <th className="px-4 py-2">KDV %</th>
+                    <th className="px-4 py-2 text-right">Satır Toplamı</th>
+                    <th className="px-4 py-2 w-10"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(mode === "sales"
+                    ? salesForm.items
+                    : purchaseForm.items
+                  ).map((item, i) => (
+                    <tr key={i} className="bg-gray-800/50 group">
+                      <td className="px-4 py-3 rounded-l-xl w-1/3">
+                        <MaterialSearchSelect
+                          materials={materials}
+                          value={item.materialId}
+                          onChange={(id) =>
+                            handleItemChange(mode, i, "materialId", id)
+                          }
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                            value={item.unitPrice}
+                            onChange={(e) =>
+                              handleItemChange(
+                                mode,
+                                i,
+                                "unitPrice",
+                                e.target.value
+                              )
+                            }
+                          />
+                          <MaterialPriceTooltip
+                            materialId={item.materialId}
+                            onSelect={(p) =>
+                              handleItemChange(mode, i, "unitPrice", p)
+                            }
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleItemChange(
+                              mode,
+                              i,
+                              "quantity",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                          value={item.kdv}
+                          onChange={(e) =>
+                            handleItemChange(mode, i, "kdv", e.target.value)
+                          }
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-blue-400">
+                        {(
+                          Number(item.unitPrice) * Number(item.quantity) || 0
+                        ).toLocaleString()}{" "}
+                        ₺
+                      </td>
+                      <td className="px-4 py-3 rounded-r-xl">
                         <button
                           type="button"
-                          onClick={() => {
-                            setSalesForm({
-                              ...salesForm,
-                              items: salesForm.items.filter(
-                                (_, idx) => idx !== i
-                              ),
-                            });
-                          }}
-                          className="px-3 py-1 text-red-600 hover:text-red-800"
+                          onClick={() => removeItem(mode, i)}
+                          className="text-gray-500 hover:text-red-500 transition-colors"
                         >
-                          Sil
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
                         </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <button
-              type="button"
-              onClick={() =>
-                setSalesForm({
-                  ...salesForm,
-                  items: [
-                    ...salesForm.items,
-                    {
-                      materialId: "",
-                      unitPrice: "",
-                      quantity: "",
-                      kdv: 20,
-                      lineTotal: 0,
-                    },
-                  ],
-                })
-              }
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              + Yeni Kalem
-            </button>
-          </div>
-
-          {/* TOPLAM */}
-          <div className="flex justify-end text-right mt-5">
-            <div>
-              <p className="text-sm text-gray-600">KDV Toplam</p>
-              <p className="text-xl font-semibold text-blue-600">
-                {salesTotals.kdvToplam.toFixed(2)} ₺
-              </p>
-
-              <p className="text-sm text-gray-600 mt-2">Genel Toplam</p>
-              <p className="text-2xl font-bold text-green-600">
-                {(salesTotals.totalPrice + salesTotals.kdvToplam).toFixed(2)} ₺
-              </p>
-            </div>
-          </div>
-
-          {/* KAYDET */}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 shadow-lg transition"
-            >
-              Faturayı Kaydet
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* -------------------------------------- */}
-      {/* -------- SATIN ALMA FATURASI --------- */}
-      {/* -------------------------------------- */}
-      {mode === "purchase" && (
-        <form onSubmit={submitPurchase} className="space-y-8">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-4">
-            Satın Alma Faturası Oluştur
-          </h1>
-
-          <div className="grid grid-cols-3 gap-6">
-            <div>
-              <label className="text-sm text-gray-600">Tarih</label>
-              <input
-                type="date"
-                name="date"
-                value={purchaseForm.date}
-                onChange={(e) =>
-                  setPurchaseForm({ ...purchaseForm, date: e.target.value })
-                }
-                className="mt-1 w-full border p-2 rounded-lg"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-gray-600">Belge No</label>
-              <input
-                type="text"
-                name="fileNo"
-                value={purchaseForm.fileNo}
-                onChange={(e) =>
-                  setPurchaseForm({ ...purchaseForm, fileNo: e.target.value })
-                }
-                className="mt-1 w-full border p-2 rounded-lg"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-gray-600">Müşteri</label>
-              <select
-                name="id"
-                value={purchaseForm.id}
-                onChange={(e) =>
-                  setPurchaseForm({ ...purchaseForm, id: e.target.value })
-                }
-                className="mt-1 w-full border p-2 rounded-lg"
-                required
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <button
+                type="button"
+                onClick={() => addItem(mode)}
+                className="mt-4 flex items-center gap-2 text-blue-400 hover:text-blue-300 font-bold px-4 py-2 rounded-lg transition-all"
               >
-                <option value="">Seçiniz</option>
-                {customers?.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} – {c.balance}
-                  </option>
-                ))}
-              </select>
+                <span className="text-xl">+</span> Yeni Kalem Ekle
+              </button>
             </div>
           </div>
 
-          {/* KALEM TABLOSU */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-700 mb-3">
-              Kalemler
-            </h2>
-
-            <table className="w-full text-sm border rounded-xl overflow-hidden">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-3 text-left">Malzeme</th>
-                  <th className="p-3 text-left">Birim Fiyat</th>
-                  <th className="p-3 text-left">Miktar</th>
-                  <th className="p-3 text-left">KDV %</th>
-                  <th className="p-3 text-right">Toplam (KDV Dahil)</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {purchaseForm.items.map((item, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="p-3">
-                      <MaterialSearchSelect
-                        materials={materials}
-                        value={item.materialId}
-                        onChange={(id) => {
-                          const updated = [...purchaseForm.items];
-                          updated[i].materialId = id;
-                          setSalesForm({ ...purchaseForm, items: updated });
-                        }}
-                      />
-                    </td>
-
-                    <td className="p-2 flex items-center gap-1">
-                      <input
-                        type="number"
-                        name="unitPrice"
-                        value={item.unitPrice}
-                        onChange={(e) => {
-                          const updated = [...purchaseForm.items];
-                          updated[i].unitPrice = e.target.value;
-                          setPurchaseForm({
-                            ...purchaseForm,
-                            items: updated,
-                          });
-                        }}
-                        className="w-full border p-2 rounded-lg"
-                      />
-                      <MaterialPriceTooltip
-                        materialId={item.materialId}
-                        onSelect={(price) => {
-                          const updated = [...purchaseForm.items];
-                          updated[i].unitPrice = price;
-                          setPurchaseForm({
-                            ...purchaseForm,
-                            items: updated,
-                          });
-                        }}
-                        disabled={!item.materialId}
-                      />
-                    </td>
-
-                    <td className="p-3">
-                      <input
-                        type="number"
-                        name="quantity"
-                        value={item.quantity}
-                        onChange={(e) => {
-                          const updated = [...purchaseForm.items];
-                          updated[i].quantity = e.target.value;
-                          setPurchaseForm({
-                            ...purchaseForm,
-                            items: updated,
-                          });
-                        }}
-                        className="w-full border p-2 rounded-lg"
-                      />
-                    </td>
-
-                    <td className="p-3">
-                      <input
-                        type="number"
-                        name="kdv"
-                        value={item.kdv}
-                        onChange={(e) =>
-                          setPurchaseForm({
-                            ...purchaseForm,
-                            items: purchaseForm.items.map((itm, idx) =>
-                              idx === i ? { ...itm, kdv: e.target.value } : itm
-                            ),
-                          })
-                        }
-                        className="w-full border p-2 rounded-lg"
-                      />
-                    </td>
-
-                    <td className="p-3 text-right font-semibold text-gray-700">
-                      {item.lineTotal.toFixed(2)} ₺
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <button
-              type="button"
-              onClick={() =>
-                setPurchaseForm({
-                  ...purchaseForm,
-                  items: [
-                    ...purchaseForm.items,
-                    {
-                      materialId: "",
-                      unitPrice: "",
-                      quantity: "",
-                      kdv: 20,
-                      lineTotal: 0,
-                    },
-                  ],
-                })
-              }
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              + Yeni Kalem
-            </button>
-          </div>
-
-          {/* TOPLAM */}
-          <div className="flex justify-end text-right mt-5">
-            <div>
-              <p className="text-sm text-gray-600">Genel Toplam (KDV Dahil)</p>
-              <p className="text-2xl font-bold text-green-600">
-                {purchaseTotal.toFixed(2)} ₺
-              </p>
+          {/* ALT TOPLAMLAR VE KAYDET */}
+          <div className="flex flex-col md:flex-row justify-between items-end gap-6 bg-gray-900/40 p-8 rounded-[2.5rem] border border-gray-800">
+            <div className="space-y-2 text-gray-400 text-sm italic">
+              * Kalemlerin toplamı otomatik olarak hesaplanmaktadır.
             </div>
-          </div>
 
-          {/* KAYDET */}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 shadow-lg transition"
-            >
-              Faturayı Kaydet
-            </button>
+            <div className="space-y-4 text-right min-w-[250px]">
+              {mode === "sales" ? (
+                <>
+                  <div className="flex justify-between items-center text-gray-400">
+                    <span>Ara Toplam:</span>
+                    <span className="font-mono text-white">
+                      {salesCalculation.total.toLocaleString()} ₺
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-400">
+                    <span>KDV Toplam:</span>
+                    <span className="font-mono text-blue-400">
+                      {salesCalculation.kdv.toLocaleString()} ₺
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-2xl font-bold border-t border-gray-800 pt-2">
+                    <span className="text-white">Genel Toplam:</span>
+                    <span className="text-emerald-400">
+                      {salesCalculation.grandTotal.toLocaleString()} ₺
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-between items-center text-2xl font-bold pt-2">
+                  <span className="text-white">Genel Toplam (KDV Dahil):</span>
+                  <span className="text-emerald-400">
+                    {purchaseCalculation.toLocaleString()} ₺
+                  </span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full mt-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
+              >
+                Faturayı Kaydet ve Sisteme İşle
+              </button>
+            </div>
           </div>
         </form>
-      )}
+      </div>
     </div>
   );
 }

@@ -38,4 +38,10 @@ public class ReceivedCollectionControllerImpl implements IReceivedCollectionCont
     public void deleteReceivedCollection(@PathVariable(name = "id") Long id) {
         receivedCollectionService.deleteReceivedCollection(id);
     }
+
+    @Override
+    @GetMapping("/find-year/{year}")
+    public List<ReceivedCollection> getReceivedCollectionByYear(@PathVariable(name = "year") int year) {
+        return receivedCollectionService.getReceivedCollectionsByYear(year);
+    }
 }

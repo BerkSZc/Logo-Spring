@@ -1,22 +1,27 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { setTenant } from "../../backend/lib/axios.js";
+import { useCompany } from "../../backend/store/useCompany.js";
 
 const TenantContext = createContext();
 
 export const TenantProvider = ({ children }) => {
-  const [tenant, setTenantState] = useState(() => {
-    return localStorage.getItem("tenant") || "A";
-  });
+  const { getAllCompanies } = useCompany();
 
-  const changeTenant = (newTenant) => {
-    setTenantState(newTenant);
-    setTenant(newTenant);
-    localStorage.setItem("tenant", newTenant);
-  };
+  const [tenant, setTenantState] = useState(
+    localStorage.getItem("tenant") || "logo"
+  );
+
+  // Şirketleri state içinde tutuyoruz
 
   useEffect(() => {
-    setTenant(tenant);
-  }, [tenant]);
+    getAllCompanies();
+  }, []);
+
+  const changeTenant = (newTenant) => {
+    const val = String(newTenant);
+    setTenantState(val);
+    localStorage.setItem("tenant", val);
+    // Axios header güncellemelerini burada yapıyorsun zaten
+  };
 
   return (
     <TenantContext.Provider value={{ tenant, changeTenant }}>
@@ -24,5 +29,4 @@ export const TenantProvider = ({ children }) => {
     </TenantContext.Provider>
   );
 };
-
 export const useTenant = () => useContext(TenantContext);

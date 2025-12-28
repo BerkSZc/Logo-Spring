@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthentication } from "../../backend/store/useAuthentication";
-import { useTenant } from "../context/TenantContext.jsx";
-import { useYear } from "../context/YearContext.jsx";
 import YearDropdown from "./YearDropdown.jsx";
 
 export default function Navbar() {
@@ -10,10 +8,6 @@ export default function Navbar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { logout, isAuthenticated } = useAuthentication();
-
-  const { tenant, changeTenant } = useTenant();
-
-  const { year } = useYear();
 
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem("theme") === "dark";
@@ -106,7 +100,7 @@ export default function Navbar() {
                     to="/devir"
                     className="block px-4 py-2 hover:bg-gray-600 dark:hover:bg-gray-700"
                   >
-                    Devir İşlemleri
+                    Şirket Seçim
                   </Link>
 
                   {/* DARK MODE TOGGLE */}
@@ -136,86 +130,8 @@ export default function Navbar() {
               </div>
             </nav>
           )}
-
-          {/* Şirket Seçimi */}
-          {!isAuthenticated && (
-            <div className="ml-4">
-              <select
-                value={tenant}
-                onChange={(e) => changeTenant(e.target.value)}
-                className="bg-gray-700 text-white px-2 py-1 rounded"
-              >
-                <option value="A">A Şirketi</option>
-                <option value="B">B Şirketi</option>
-              </select>
-            </div>
-          )}
-
-          {/* MOBILE BUTTON */}
-          <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
         </div>
       </div>
-
-      {/* MOBILE MENU */}
-      {isOpen && (
-        <div className="md:hidden bg-gray-700 dark:bg-gray-800 px-4 py-3 space-y-2">
-          <Link className="block hover:text-gray-300" to={"/malzeme-ekle"}>
-            Malzeme Ekle
-          </Link>
-
-          <Link className="block hover:text-gray-300" to={"/faturalar"}>
-            Faturalar
-          </Link>
-
-          <Link className="block hover:text-gray-300" to={"/musteriler"}>
-            Müşteriler
-          </Link>
-
-          <button
-            onClick={() => setSettingsOpen(!settingsOpen)}
-            className="block w-full text-left hover:text-gray-300"
-          >
-            Ayarlar
-          </button>
-
-          {settingsOpen && (
-            <div className="ml-4 space-y-2">
-              <Link className="block hover:text-gray-300" to="/profil">
-                Profil
-              </Link>
-
-              <button
-                onClick={toggleTheme}
-                className="block hover:text-gray-300"
-              >
-                {isDark ? "Aydınlık Tema" : "Koyu Tema"}
-              </button>
-
-              {isAuthenticated && (
-                <button
-                  onClick={logout}
-                  className="block text-red-400 hover:text-red-200"
-                >
-                  Çıkış Yap
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
     </nav>
   );
 }

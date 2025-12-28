@@ -19,7 +19,9 @@ export const usePaymentCompany = create((set) => ({
       toast.success("Firmaya ödeme gerçekleştirildi");
       set((state) => ({ payments: [...state.payments, res.data] }));
     } catch (error) {
-      toast.error("Error at addPayment: " + error);
+      const backendErr =
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
+      toast.error("Error at addPayment: " + backendErr);
     }
   },
 
@@ -40,7 +42,9 @@ export const usePaymentCompany = create((set) => ({
       });
       toast.success("Ödeme değiştirildi");
     } catch (error) {
-      toast.error("Error at editPayment: " + error);
+      const backendErr =
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
+      toast.error("Error at editPayment: " + backendErr);
     }
   },
   deletePaymentCompany: async (id) => {
@@ -51,6 +55,18 @@ export const usePaymentCompany = create((set) => ({
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at deletePayment: " + backendErr);
+    }
+  },
+  getPaymentCollectionsByYear: async (year) => {
+    try {
+      set({ payments: [] });
+      const res = await axiosInstance.get(`/payment/find-year/${year}`);
+      set({ payments: res.data });
+    } catch (error) {
+      const backendErr =
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
+      toast.error("Error at getPaymentCollectionsByYear: " + backendErr);
+      set({ sales: [] });
     }
   },
 }));

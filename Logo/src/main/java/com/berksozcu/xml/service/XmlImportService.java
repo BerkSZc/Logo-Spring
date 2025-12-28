@@ -318,9 +318,10 @@ public class XmlImportService {
                 continue;
             }
 
-            Date date;
+            LocalDate date;
             try {
-                date = new SimpleDateFormat("dd.MM.yyyy").parse(c.getDATE());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                date = LocalDate.parse(c.getDATE(), formatter);
             } catch (Exception e) {
                 System.out.println("Hatalı tarih formatı: " + c.getDATE() + " - kayıt: " + c.getNUMBER());
                 continue;

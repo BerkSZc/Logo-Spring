@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS customer (
     country VARCHAR(100),
     local VARCHAR(100),
     district VARCHAR(100),
-    vdNo VARCHAR(50),
+    vd_no VARCHAR(50),
     customer_code VARCHAR(255),
     archived BOOLEAN NOT NULL DEFAULT FALSE;
 );
@@ -47,11 +47,11 @@ VALUES
 -- ---------------------------
 CREATE TABLE IF NOT EXISTS purchase_invoice (
     id BIGSERIAL PRIMARY KEY ,
-    fileNo VARCHAR(50) NOT NULL,
+    file_no VARCHAR(50) NOT NULL,
     date DATE NOT NULL,
     customer BIGINT NOT NULL,
-    totalPrice DECIMAL(15,2) DEFAULT 0,
-    kdvToplam DECIMAL(15,2) DEFAULT 0,
+    total_price DECIMAL(15,2) DEFAULT 0,
+    kdv_toplam DECIMAL(15,2) DEFAULT 0,
     FOREIGN KEY (customer) REFERENCES customer(id)
 );
 
@@ -79,8 +79,8 @@ CREATE TABLE IF NOT EXISTS sales_invoice (
     fileNo VARCHAR(50) NOT NULL,
     date DATE NOT NULL,
     customer BIGINT NOT NULL,
-    totalPrice DECIMAL(15,2) DEFAULT 0,
-    kdvToplam DECIMAL(15,2) DEFAULT 0,
+    total_price DECIMAL(15,2) DEFAULT 0,
+    kdv_toplam DECIMAL(15,2) DEFAULT 0,
     type INTEGER,
     FOREIGN KEY (customer) REFERENCES customer(id)
 );
@@ -119,7 +119,7 @@ CREATE TABLE material_price_history (
 -- ---------------------------
 -- Örnek Satın Alma Faturası
 -- ---------------------------
-INSERT INTO purchase_invoice (fileNo, date, customer, totalPrice, kdvToplam)
+INSERT INTO purchase_invoice (fileNo, date, customer, total_price, kdv_toplam)
 VALUES ('PA-001', '2025-12-01', 1, 200, 36);
 
 INSERT INTO purchase_invoice_item (purchase_invoice_id, material_id, unit_price, quantity, line_total, kdv)
@@ -128,7 +128,7 @@ VALUES (1, 1, 100, 2, 200, 36);
 -- ---------------------------
 -- Örnek Satış Faturası
 -- ---------------------------
-INSERT INTO sales_invoice (fileNo, date, customer, totalPrice, kdvToplam, type)
+INSERT INTO sales_invoice (fileNo, date, customer, total_price, kdv_toplam, type)
 VALUES ('SA-001', '2025-12-01', 2, 300, 54, 1);
 
 INSERT INTO sales_invoice_item (sales_invoice_id, material_id, unit_price, quantity, line_total, kdv)
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS received_collection (
     comment VARCHAR(255),
     price DECIMAL(15,2) NOT NULL,
     customer_id BIGINT,
-    customerName VARCHAR(255),
+    customer_name VARCHAR(255),
     CONSTRAINT fk_received_customer FOREIGN KEY (customer_id) REFERENCES customer(id)
 );
 
@@ -161,8 +161,16 @@ CREATE TABLE IF NOT EXISTS payment_company (
 );
 
 -- Kullanıcı Tablosu
-CREATE TABLE IF NOT EXISTS logo_user(
+CREATE TABLE IF NOT EXISTS app_user(
 id BIGSERIAL PRIMARY KEY,
 username VARCHAR(255) NOT NULL,
 password VARCHAR(255) NOT NULL
+)
+
+-- Şirket Tablosu
+CREATE TABLE IF NOT EXISTS company (
+id BIGSERIAL PRIMARY KEY,
+name VARCHAR(255),
+schema_name VARCHAR(255),
+description VARCHAR(255)
 )

@@ -11,7 +11,7 @@ export const useClient = create((set, get) => ({
       set({ customers: res.data.data });
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at getAllClient:" + backendErr);
     }
   },
@@ -22,7 +22,7 @@ export const useClient = create((set, get) => ({
       await get().getAllCustomers();
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at addCustomer:" + backendErr);
     }
   },
@@ -42,7 +42,7 @@ export const useClient = create((set, get) => ({
       await get().getAllCustomers();
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at updateCustomer:" + backendErr);
     }
   },
@@ -56,7 +56,7 @@ export const useClient = create((set, get) => ({
       await get().getAllCustomers();
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at setArchived: " + backendErr);
     }
   },

@@ -35,6 +35,7 @@ public class SalesInvoice {
     private String fileNo;
 
     //Kdv Toplam
+    @Column(name = "kdv_toplam")
     private BigDecimal kdvToplam;
 
 
@@ -42,6 +43,7 @@ public class SalesInvoice {
     private Integer type;
 
     //Toplam Tutar
+    @Column(name = "total_price")
     private BigDecimal totalPrice;
 
     @OneToMany(mappedBy = "salesInvoice", cascade=CascadeType.ALL, orphanRemoval = true)

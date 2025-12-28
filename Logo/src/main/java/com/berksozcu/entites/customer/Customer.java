@@ -41,6 +41,7 @@ import java.math.BigDecimal;
         private String district;
 
         //
+        @Column(name= "vd_no")
         private String vdNo;
 
         @Column(nullable = false)

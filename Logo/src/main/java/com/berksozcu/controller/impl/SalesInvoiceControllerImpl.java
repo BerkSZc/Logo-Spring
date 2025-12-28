@@ -40,7 +40,7 @@ public class SalesInvoiceControllerImpl implements ISalesInvoiceController {
     }
 
     @Override
-    @GetMapping("/find-date/{year}")
+    @GetMapping("/find-year/{year}")
     public List<SalesInvoice> getSalesInvoiceByYear(@PathVariable(name = "year") int year) {
         return salesInvoiceService.getSalesInvoicesByYear(year);
     }

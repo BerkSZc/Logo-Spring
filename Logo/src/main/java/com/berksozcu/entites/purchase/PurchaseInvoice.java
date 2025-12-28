@@ -26,6 +26,7 @@ public class PurchaseInvoice {
     private LocalDate date;
 
     //Belge No
+    @Column(name = "file_no")
     private String fileNo;
 
     @ManyToOne
@@ -33,9 +34,11 @@ public class PurchaseInvoice {
     private Customer customer;
 
     //Kdv Toplam kdv_toplam
+    @Column(name = "kdv_toplam")
     private BigDecimal kdvToplam;
 
     //Tutar
+    @Column(name = "total_price")
     private BigDecimal totalPrice;
 
 

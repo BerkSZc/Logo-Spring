@@ -12,7 +12,7 @@ export const useMaterial = create((set, get) => ({
       await get().getMaterials();
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at addMaterial: ", backendErr);
     }
   },
@@ -23,7 +23,7 @@ export const useMaterial = create((set, get) => ({
       set({ materials: res.data });
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at getMaterials:", backendErr);
     }
   },
@@ -52,7 +52,7 @@ export const useMaterial = create((set, get) => ({
       await get().getMaterials();
     } catch (error) {
       const backendErr =
-        error.response.data.exception.message || "Bilinmeyen Hata";
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at updateMaterials: ", backendErr);
     }
   },
