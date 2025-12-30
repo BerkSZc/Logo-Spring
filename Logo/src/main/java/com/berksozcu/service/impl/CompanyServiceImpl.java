@@ -1,6 +1,9 @@
 package com.berksozcu.service.impl;
 
 import com.berksozcu.entites.company.Company;
+import com.berksozcu.exception.BaseException;
+import com.berksozcu.exception.ErrorMessage;
+import com.berksozcu.exception.MessageType;
 import com.berksozcu.repository.CompanyRepository;
 import com.berksozcu.service.ICompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,8 @@ public class CompanyServiceImpl implements ICompanyService {
         if (!schemaName.matches("^[a-zA-Z0-9_]+$")) {
             throw new IllegalArgumentException("Geçersiz şema ismi!");
         }
+        if(companyRepository.existsBySchemaName(schemaName))
+            throw new BaseException(new ErrorMessage(MessageType.SIRKET_KODU_MEVCUT));
 
         //Kopyalanacak Tablolar
         String[] allTables = {"customer", "material", "material_price_history"

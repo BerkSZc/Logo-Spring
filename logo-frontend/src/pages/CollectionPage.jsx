@@ -9,7 +9,6 @@ export default function CollectionPage() {
   const { year } = useYear();
   const {
     collections,
-    getCollections,
     addCollection,
     editCollection,
     deleteReceivedCollection,
@@ -17,7 +16,6 @@ export default function CollectionPage() {
   } = useReceivedCollection();
   const {
     payments,
-    getPayments,
     addPayment,
     editPayment,
     deletePaymentCompany,
@@ -72,29 +70,27 @@ export default function CollectionPage() {
     }
   );
 
-  const handleAdd = async () => {
+  const handleAdd = async (e) => {
+    e.preventDefault();
+
+    const customerId = Number(addForm.customerId);
+    const price = Number(addForm.price);
+
     const payload = {
       date: addForm.date,
       comment: addForm.comment,
-      price: Number(addForm.price || 0),
+      price: price,
       customer: {
-        id: Number(addForm.customerId),
+        id: customerId,
       },
     };
 
-    const customerId = Number(addForm.customerId);
-
-    if (!customerId) {
-      alert("Müşteri seçilmedi!");
-      return;
-    }
-
     if (type === "received") {
       await addCollection(customerId, payload);
-      getReceivedCollectionsByYear(year)();
+      await getReceivedCollectionsByYear(year);
     } else {
       await addPayment(customerId, payload);
-      getPaymentCollectionsByYear(year)();
+      await getPaymentCollectionsByYear(year);
     }
 
     setAddForm({
@@ -115,14 +111,19 @@ export default function CollectionPage() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e.preventDefault();
+
+    const customerId = Number(editForm.customerId);
+    const price = Number(editForm.price);
+
     const payload = {
       id: editing.id,
       date: editForm.date,
       comment: editForm.comment,
-      price: Number(editForm.price),
+      price: price,
       customer: {
-        id: Number(editForm.customerId),
+        id: customerId,
       },
     };
 
@@ -192,7 +193,10 @@ export default function CollectionPage() {
                 : "Yeni Ödeme Girişi"}
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <form
+              onSubmit={handleAdd} // İşlemi butondan alıp buraya verdik
+              className="grid grid-cols-1 md:grid-cols-4 gap-4"
+            >
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase ml-1">
                   Tarih
@@ -200,6 +204,7 @@ export default function CollectionPage() {
                 <input
                   type="date"
                   value={addForm.date}
+                  required
                   onChange={(e) =>
                     setAddForm({ ...addForm, date: e.target.value })
                   }
@@ -211,6 +216,7 @@ export default function CollectionPage() {
                   Müşteri / Firma
                 </label>
                 <select
+                  required
                   value={addForm.customerId}
                   onChange={(e) =>
                     setAddForm({ ...addForm, customerId: e.target.value })
@@ -230,6 +236,7 @@ export default function CollectionPage() {
                   Tutar (₺)
                 </label>
                 <input
+                  required
                   type="number"
                   placeholder="0.00"
                   value={addForm.price}
@@ -254,7 +261,7 @@ export default function CollectionPage() {
                     className="flex-1 bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none transition"
                   />
                   <button
-                    onClick={handleAdd}
+                    type="submit"
                     className={`px-6 py-3 rounded-xl font-bold transition-all active:scale-95 shadow-lg ${
                       type === "received"
                         ? "bg-emerald-600 hover:bg-emerald-500"
@@ -265,250 +272,257 @@ export default function CollectionPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
+      </div>
 
-        {/* Liste Tablosu */}
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold flex items-center gap-3">
-              <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
-              İşlem Geçmişi
-            </h3>
-            <input
-              type="text"
-              placeholder="Listede ara..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-gray-900 border-2 border-gray-800 rounded-xl px-4 py-2 text-sm focus:border-blue-500 outline-none"
-            />
-          </div>
+      {/* Liste Tablosu */}
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-semibold flex items-center gap-3">
+            <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
+            İşlem Geçmişi
+          </h3>
+          <input
+            type="text"
+            placeholder="Listede ara..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-gray-900 border-2 border-gray-800 rounded-xl px-4 py-2 text-sm focus:border-blue-500 outline-none"
+          />
+        </div>
 
-          <div className="bg-gray-900/40 border border-gray-800 rounded-[2.5rem] overflow-hidden backdrop-blur-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gray-800/30 text-gray-500 border-b border-gray-800">
-                    <th className="p-5 text-xs font-bold uppercase tracking-widest">
-                      Tarih
-                    </th>
-                    <th className="p-5 text-xs font-bold uppercase tracking-widest">
-                      Müşteri / Firma
-                    </th>
-                    <th className="p-5 text-xs font-bold uppercase tracking-widest">
-                      Açıklama
-                    </th>
-                    <th className="p-5 text-xs font-bold uppercase tracking-widest text-right">
-                      Tutar
-                    </th>
-                    <th className="p-5 text-xs font-bold uppercase tracking-widest text-center w-24">
-                      İşlem
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800/50">
-                  {filteredList.length > 0 ? (
-                    filteredList.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-blue-500/5 transition-all group"
-                      >
-                        <td className="p-5 text-gray-300 font-mono text-sm">
-                          {item.date}
-                        </td>
-                        <td className="p-5 font-bold text-white">
-                          {item.customer?.name}
-                        </td>
-                        <td className="p-5 text-gray-400 text-sm">
-                          {item.comment || "-"}
-                        </td>
-                        <td className="p-5 text-right">
-                          <span
-                            className={`text-lg font-bold font-mono ${
-                              type === "received"
-                                ? "text-emerald-400"
-                                : "text-orange-400"
-                            }`}
-                          >
-                            ₺{" "}
-                            {Number(item.price).toLocaleString("tr-TR", {
-                              minimumFractionDigits: 2,
-                            })}
-                          </span>
-                        </td>
-                        <td className="p-5 text-center relative">
-                          <button
-                            onClick={() => toggleMenu(item.id)}
-                            className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-400 transition-all"
-                          >
-                            ⋮
-                          </button>
-                          {openMenuId === item.id && (
-                            <div className="absolute right-12 top-0 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-36 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
-                              <button
-                                onClick={() => {
-                                  handleEdit(item);
-                                  setOpenMenuId(null);
-                                }}
-                                className="w-full text-left px-4 py-3 hover:bg-blue-500/10 text-sm text-blue-400 flex items-center gap-2"
-                              >
-                                ✏️ Düzenle
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setDeleteTarget(item);
-                                  setOpenMenuId(null);
-                                }}
-                                className="w-full text-left px-4 py-3 hover:bg-red-500/10 text-sm text-red-400 border-t border-gray-800 flex items-center gap-2"
-                              >
-                                🗑️ Sil
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="5"
-                        className="p-20 text-center text-gray-600 italic"
-                      >
-                        Kayıt bulunamadı.
+        <div className="bg-gray-900/40 border border-gray-800 rounded-[2.5rem] overflow-hidden backdrop-blur-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-800/30 text-gray-500 border-b border-gray-800">
+                  <th className="p-5 text-xs font-bold uppercase tracking-widest">
+                    Tarih
+                  </th>
+                  <th className="p-5 text-xs font-bold uppercase tracking-widest">
+                    Müşteri / Firma
+                  </th>
+                  <th className="p-5 text-xs font-bold uppercase tracking-widest">
+                    Açıklama
+                  </th>
+                  <th className="p-5 text-xs font-bold uppercase tracking-widest text-right">
+                    Tutar
+                  </th>
+                  <th className="p-5 text-xs font-bold uppercase tracking-widest text-center w-24">
+                    İşlem
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800/50">
+                {filteredList.length > 0 ? (
+                  filteredList.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-blue-500/5 transition-all group"
+                    >
+                      <td className="p-5 text-gray-300 font-mono text-sm">
+                        {item.date}
+                      </td>
+                      <td className="p-5 font-bold text-white max-w-[300px] truncate">
+                        {item.customer?.name}
+                      </td>
+                      <td className="p-5 text-gray-400 text-sm max-w-[250px] truncate">
+                        {item.comment || "-"}
+                      </td>
+                      <td className="p-5 text-right">
+                        <span
+                          className={`text-lg font-bold font-mono ${
+                            type === "received"
+                              ? "text-emerald-400"
+                              : "text-orange-400"
+                          }`}
+                        >
+                          ₺{" "}
+                          {Number(item.price).toLocaleString("tr-TR", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </span>
+                      </td>
+                      <td className="p-5 text-center relative">
+                        <button
+                          onClick={() => toggleMenu(item.id)}
+                          className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-400 transition-all"
+                        >
+                          ⋮
+                        </button>
+                        {openMenuId === item.id && (
+                          <div className="absolute right-12 top-0 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-36 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+                            <button
+                              onClick={() => {
+                                handleEdit(item);
+                                setOpenMenuId(null);
+                              }}
+                              className="w-full text-left px-4 py-3 hover:bg-blue-500/10 text-sm text-blue-400 flex items-center gap-2"
+                            >
+                              ✏️ Düzenle
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDeleteTarget(item);
+                                setOpenMenuId(null);
+                              }}
+                              className="w-full text-left px-4 py-3 hover:bg-red-500/10 text-sm text-red-400 border-t border-gray-800 flex items-center gap-2"
+                            >
+                              🗑️ Sil
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="p-20 text-center text-gray-600 italic"
+                    >
+                      Kayıt bulunamadı.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Silme Onay Modalı */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-[100] backdrop-blur-md">
+          <div className="bg-[#0f172a] border border-gray-800 p-8 rounded-[2.5rem] w-[450px] shadow-2xl transform transition-all animate-in zoom-in duration-300">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-3xl">⚠️</span>
+            </div>
+            <h2 className="text-2xl font-bold mb-4 text-center text-white">
+              Kaydı Sil
+            </h2>
+            <p className="mb-8 text-gray-400 text-center leading-relaxed">
+              <b className="text-white">{deleteTarget.customer?.name}</b> için
+              oluşturulan
+              <span className="text-red-400 font-mono block text-xl mt-2 font-bold italic">
+                {Number(deleteTarget.price).toLocaleString()} ₺
+              </span>
+              tutarındaki bu işlem kalıcı olarak silinecektir. Emin misiniz?
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 px-6 py-4 bg-gray-800 text-gray-300 font-bold rounded-2xl hover:bg-gray-700 transition"
+              >
+                Vazgeç
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 px-6 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-500 shadow-lg shadow-red-600/20 transition"
+              >
+                Evet, Sil
+              </button>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Silme Onay Modalı */}
-        {deleteTarget && (
-          <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-[100] backdrop-blur-md">
-            <div className="bg-[#0f172a] border border-gray-800 p-8 rounded-[2.5rem] w-[450px] shadow-2xl transform transition-all animate-in zoom-in duration-300">
-              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl">⚠️</span>
-              </div>
-              <h2 className="text-2xl font-bold mb-4 text-center text-white">
-                Kaydı Sil
-              </h2>
-              <p className="mb-8 text-gray-400 text-center leading-relaxed">
-                <b className="text-white">{deleteTarget.customer?.name}</b> için
-                oluşturulan
-                <span className="text-red-400 font-mono block text-xl mt-2 font-bold italic">
-                  {Number(deleteTarget.price).toLocaleString()} ₺
-                </span>
-                tutarındaki bu işlem kalıcı olarak silinecektir. Emin misiniz?
-              </p>
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setDeleteTarget(null)}
-                  className="flex-1 px-6 py-4 bg-gray-800 text-gray-300 font-bold rounded-2xl hover:bg-gray-700 transition"
-                >
-                  Vazgeç
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="flex-1 px-6 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-500 shadow-lg shadow-red-600/20 transition"
-                >
-                  Evet, Sil
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Düzenleme Modalı */}
-        {editing && (
-          <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-[100] backdrop-blur-md px-4">
-            <div className="bg-[#0f172a] border border-gray-800 p-10 rounded-[3rem] w-full max-w-[550px] shadow-2xl animate-in fade-in zoom-in duration-300">
-              <h2 className="text-3xl font-extrabold mb-8 text-white flex items-center gap-3">
-                <span className="p-2 bg-blue-600 rounded-xl text-xl">📝</span>
-                İşlemi Güncelle
-              </h2>
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1 tracking-widest">
-                      Tarih
-                    </label>
-                    <input
-                      type="date"
-                      value={editForm.date}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, date: e.target.value })
-                      }
-                      className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1 tracking-widest">
-                      Tutar (₺)
-                    </label>
-                    <input
-                      type="number"
-                      value={editForm.price}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, price: e.target.value })
-                      }
-                      className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition font-mono"
-                    />
-                  </div>
+      {/* Düzenleme Modalı */}
+      {editing && (
+        <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-[100] backdrop-blur-md px-4">
+          <form
+            onSubmit={handleSave}
+            className="bg-[#0f172a] border border-gray-800 p-10 rounded-[3rem] w-full max-w-[550px] shadow-2xl animate-in fade-in zoom-in duration-300"
+          >
+            <h2 className="text-3xl font-extrabold mb-8 text-white flex items-center gap-3">
+              <span className="p-2 bg-blue-600 rounded-xl text-xl">📝</span>
+              İşlemi Güncelle
+            </h2>
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase ml-1 tracking-widest">
+                    Tarih
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    value={editForm.date}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, date: e.target.value })
+                    }
+                    className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition"
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-gray-500 uppercase ml-1 tracking-widest">
-                    Müşteri / Firma
+                    Tutar (₺)
                   </label>
-                  <select
-                    value={editForm.customerId}
+                  <input
+                    required
+                    type="number"
+                    value={editForm.price}
                     onChange={(e) =>
-                      setEditForm({ ...editForm, customerId: e.target.value })
+                      setEditForm({ ...editForm, price: e.target.value })
                     }
-                    className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition cursor-pointer"
-                  >
-                    {customers?.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1 tracking-widest">
-                    Açıklama
-                  </label>
-                  <textarea
-                    rows="3"
-                    value={editForm.comment || ""}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, comment: e.target.value })
-                    }
-                    className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition resize-none"
-                    placeholder="İşlem detaylarını buraya yazın..."
-                  ></textarea>
+                    className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition font-mono"
+                  />
                 </div>
               </div>
-              <div className="flex gap-4 mt-10 font-bold">
-                <button
-                  onClick={() => setEditing(null)}
-                  className="flex-1 py-4 bg-gray-800 text-gray-400 rounded-2xl hover:bg-gray-700 transition"
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1 tracking-widest">
+                  Müşteri / Firma
+                </label>
+                <select
+                  value={editForm.customerId}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, customerId: e.target.value })
+                  }
+                  className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition cursor-pointer"
                 >
-                  İptal
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="flex-1 py-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-500 shadow-xl shadow-blue-600/20 transition"
-                >
-                  Değişiklikleri Kaydet
-                </button>
+                  {customers?.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase ml-1 tracking-widest">
+                  Açıklama
+                </label>
+                <textarea
+                  rows="3"
+                  value={editForm.comment || ""}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, comment: e.target.value })
+                  }
+                  className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition resize-none"
+                  placeholder="İşlem detaylarını buraya yazın..."
+                ></textarea>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+            <div className="flex gap-4 mt-10 font-bold">
+              <button
+                type="button"
+                onClick={() => setEditing(null)}
+                className="flex-1 py-4 bg-gray-800 text-gray-400 rounded-2xl hover:bg-gray-700 transition"
+              >
+                İptal
+              </button>
+              <button
+                type="submit"
+                onClick={handleSave}
+                className="flex-1 py-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-500 shadow-xl shadow-blue-600/20 transition"
+              >
+                Değişiklikleri Kaydet
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

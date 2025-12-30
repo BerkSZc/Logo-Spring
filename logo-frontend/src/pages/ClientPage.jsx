@@ -18,16 +18,7 @@ export default function ClientsPage() {
   } = useClient();
 
   const formRef = useRef(null);
-
-  const [form, setForm] = useState({
-    name: "",
-    balance: 0,
-    address: "",
-    country: "",
-    local: "",
-    district: "",
-    vdNo: "",
-  });
+  const closeMenuRef = useRef(null);
 
   const [archiveAction, setArchiveAction] = useState("archive");
   const [contextMenu, setContextMenu] = useState(null);
@@ -97,6 +88,27 @@ export default function ClientsPage() {
     }
   };
 
+  useEffect(() => {
+    const handleCloseModal = (event) => {
+      // Eğer tıklanan yer bir "işlem butonu" veya "menü içeriği" değilse menüyü kapat
+      if (openMenuId && !event.target.closest(".action-menu-container")) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleCloseModal);
+    return () => document.removeEventListener("mousedown", handleCloseModal);
+  }, [openMenuId]);
+
+  const [form, setForm] = useState({
+    name: "",
+    balance: 0,
+    address: "",
+    country: "",
+    local: "",
+    district: "",
+    vdNo: "",
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editClient) {
@@ -146,7 +158,14 @@ export default function ClientsPage() {
 
   const filteredCustomers = Array.isArray(customers)
     ? customers
-        .filter((c) => c.name?.toLowerCase().includes(search.toLowerCase()))
+        .filter((c) => {
+          if (!search) return true; // Arama boşsa hepsini göster
+
+          const customerName = (c.name || "").toLocaleLowerCase("tr-TR");
+          const searchKey = search.toLocaleLowerCase("tr-TR");
+
+          return customerName.includes(searchKey);
+        })
         .filter((c) => (showArchived ? c.archived : !c.archived))
     : [];
 
@@ -169,12 +188,16 @@ export default function ClientsPage() {
 
   const handleArchiveModal = async () => {
     const archivedValue = archiveAction === "archive";
-    for (const id of selectedCustomers) {
-      await setArchived(id, archivedValue);
+
+    try {
+      await setArchived(selectedCustomers, archivedValue);
+
+      setSelectedCustomers([]);
+      setShowArchiveModal(false);
+      setOpenMenuId(null);
+    } catch (error) {
+      console.log("Error" + error);
     }
-    setSelectedCustomers([]);
-    setShowArchiveModal(false);
-    setOpenMenuId(null);
   };
 
   useEffect(() => {
@@ -281,7 +304,9 @@ export default function ClientsPage() {
                   name={key}
                   value={form[key]}
                   onChange={handleChange}
-                  className="w-full bg-gray-900/60 border-2 border-gray-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 transition-all outline-none"
+                  required
+                  className="w-full bg-gray-900/60 border-2 border-gray-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 transition-all outline-none
+                   [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             ))}
@@ -294,6 +319,7 @@ export default function ClientsPage() {
                 name="address"
                 value={form.address}
                 onChange={handleChange}
+                required
                 className="w-full bg-gray-900/60 border-2 border-gray-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 transition-all outline-none"
               />
             </div>
@@ -375,6 +401,29 @@ export default function ClientsPage() {
                         <div className="font-bold text-white text-lg">
                           {c.name}
                         </div>
+                        <div className="flex items-center gap-2">
+                          {c.vdNo ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 tracking-wider">
+                              <svg
+                                className="w-3 h-3 mr-1"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                <path
+                                  fillRule="evenodd"
+                                  d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              VN: {c.vdNo}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-gray-600 italic">
+                              Vergi No Girilmemiş
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-gray-500 mt-1">
                           {c.address || "Adres yok"}
                         </div>
@@ -401,9 +450,12 @@ export default function ClientsPage() {
                           })}
                         </span>
                       </td>
-                      <td className="p-5 text-center relative">
+                      <td className="p-5 text-center relative action-menu-container">
                         <button
-                          onClick={() => toggleMenu(c.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMenu(c.id);
+                          }}
                           className="p-2 hover:bg-gray-800 rounded-lg text-gray-500 transition-all"
                         >
                           <svg

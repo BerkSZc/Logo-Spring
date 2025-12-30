@@ -6,6 +6,7 @@ import { usePurchaseInvoice } from "../../backend/store/usePurchaseInvoice.js";
 import MaterialPriceTooltip from "../components/MaterialPriceTooltip.jsx";
 import MaterialSearchSelect from "../components/MaterialSearchSelect.jsx";
 import { useYear } from "../context/YearContext.jsx";
+import toast from "react-hot-toast";
 
 export default function CombinedInvoiceForm() {
   const [mode, setMode] = useState("sales"); // "sales" | "purchase"
@@ -59,12 +60,19 @@ export default function CombinedInvoiceForm() {
     return { total, kdv, grandTotal: total + kdv };
   }, [salesForm.items]);
 
-  // Satın Alma: KDV Dahil toplam
+  // Satın Alma Hesaplamaları
   const purchaseCalculation = useMemo(() => {
-    return purchaseForm.items.reduce((s, i) => {
-      const base = Number(i.unitPrice) * Number(i.quantity) || 0;
-      return s + base * (1 + Number(i.kdv) / 100);
-    }, 0);
+    const total = purchaseForm.items.reduce(
+      (s, i) => s + (Number(i.unitPrice) * Number(i.quantity) || 0),
+      0
+    );
+    const kdv = purchaseForm.items.reduce(
+      (s, i) =>
+        s +
+        ((Number(i.unitPrice) * Number(i.quantity) || 0) * Number(i.kdv)) / 100,
+      0
+    );
+    return { total, kdv, grandTotal: total + kdv };
   }, [purchaseForm.items]);
 
   // --- FORM İŞLEMLERİ ---
@@ -94,6 +102,15 @@ export default function CombinedInvoiceForm() {
     e.preventDefault();
     const isSales = mode === "sales";
     const currentForm = isSales ? salesForm : purchaseForm;
+
+    const validItems = currentForm.items.filter(
+      (item) => item.materialId !== ""
+    );
+
+    if (validItems.length === 0) {
+      toast.error("Faturaya en az bir malzeme seçerek eklemelisiniz!");
+      return;
+    }
 
     const payload = {
       date: currentForm.date,
@@ -251,7 +268,8 @@ export default function CombinedInvoiceForm() {
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
-                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none
+                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             value={item.unitPrice}
                             onChange={(e) =>
                               handleItemChange(
@@ -264,16 +282,19 @@ export default function CombinedInvoiceForm() {
                           />
                           <MaterialPriceTooltip
                             materialId={item.materialId}
-                            onSelect={(p) =>
-                              handleItemChange(mode, i, "unitPrice", p)
-                            }
+                            onSelect={(p, e) => {
+                              if (e) e.stopPropagation();
+                              handleItemChange(mode, i, "unitPrice", p);
+                            }}
+                            disabled={!item?.materialId}
                           />
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         <input
                           type="number"
-                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none
+                          [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           value={item.quantity}
                           onChange={(e) =>
                             handleItemChange(
@@ -288,7 +309,8 @@ export default function CombinedInvoiceForm() {
                       <td className="px-4 py-3">
                         <input
                           type="number"
-                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none
+                          [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           value={item.kdv}
                           onChange={(e) =>
                             handleItemChange(mode, i, "kdv", e.target.value)
@@ -348,29 +370,63 @@ export default function CombinedInvoiceForm() {
                   <div className="flex justify-between items-center text-gray-400">
                     <span>Ara Toplam:</span>
                     <span className="font-mono text-white">
-                      {salesCalculation.total.toLocaleString()} ₺
+                      {salesCalculation.total.toLocaleString("tr-TR", {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      ₺
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-gray-400">
                     <span>KDV Toplam:</span>
                     <span className="font-mono text-blue-400">
-                      {salesCalculation.kdv.toLocaleString()} ₺
+                      {salesCalculation.kdv.toLocaleString("tr-TR", {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      ₺
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-2xl font-bold border-t border-gray-800 pt-2">
                     <span className="text-white">Genel Toplam:</span>
                     <span className="text-emerald-400">
-                      {salesCalculation.grandTotal.toLocaleString()} ₺
+                      {salesCalculation.grandTotal.toLocaleString("tr-TR", {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      ₺
                     </span>
                   </div>
                 </>
               ) : (
-                <div className="flex justify-between items-center text-2xl font-bold pt-2">
-                  <span className="text-white">Genel Toplam (KDV Dahil):</span>
-                  <span className="text-emerald-400">
-                    {purchaseCalculation.toLocaleString()} ₺
-                  </span>
-                </div>
+                <>
+                  <div className="flex justify-between items-center text-gray-400">
+                    <span>Ara Toplam:</span>
+                    <span className="font-mono text-white">
+                      {purchaseCalculation.total.toLocaleString("tr-TR", {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      ₺
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-400">
+                    <span>KDV Toplam:</span>
+                    <span className="font-mono text-blue-400">
+                      {purchaseCalculation.kdv.toLocaleString("tr-TR", {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      ₺
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-2xl font-bold border-t border-gray-800 pt-2">
+                    <span className="text-white">
+                      Genel Toplam (KDV Dahil):
+                    </span>
+                    <span className="text-emerald-400">
+                      {purchaseCalculation.grandTotal.toLocaleString("tr-TR", {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      ₺
+                    </span>
+                  </div>
+                </>
               )}
 
               <button

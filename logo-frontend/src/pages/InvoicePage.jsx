@@ -214,7 +214,12 @@ export default function InvoicePage() {
     setOpenMenuId(openMenuId === id ? null : id);
   };
 
-  const handlePriceSelect = (index, price) => {
+  const handlePriceSelect = (index, price, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     const updated = [...form.items];
     updated[index].unitPrice = price;
 
@@ -356,9 +361,9 @@ export default function InvoicePage() {
                                 setPrintItem(inv);
                                 setOpenMenuId(null);
                               }}
-                              className="w-full text-left px-4 py-3 hover:bg-red-500/10 text-sm text-red-400 border-t border-gray-800 flex items-center gap-2"
+                              className="w-full text-left px-4 py-3 hover:bg-red-500/10 text-sm text-white-400 border-t border-gray-800 flex items-center gap-2"
                             >
-                              Yazdır
+                              🖨️ Yazdır
                             </button>
                           </div>
                         )}
@@ -482,7 +487,7 @@ export default function InvoicePage() {
                             />
                             <MaterialPriceTooltip
                               materialId={item.materialId}
-                              onSelect={(p) => handlePriceSelect(i, p)}
+                              onSelect={(p, e) => handlePriceSelect(i, p, e)}
                               disabled={!item.materialId}
                             />
                           </div>

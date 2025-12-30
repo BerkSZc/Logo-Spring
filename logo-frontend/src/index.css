@@ -1,1 +1,120 @@
 @import "tailwindcss";
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #0f172a; /* Dropdown arka planıyla aynı */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155; /* Çubuğun rengi (koyu gri) */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #475569; /* Üzerine gelince biraz daha açık gri */
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox için */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+@media print {
+  /* 1. Sayfa Dışı Her Şeyi Gizle */
+  header,
+  footer,
+  nav,
+  aside,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* 2. Sayfa Yapısı */
+  @page {
+    size: A4;
+    margin: 10mm !important; /* Standart A4 kenar boşluğu */
+  }
+
+  html,
+  body {
+    width: 210mm;
+    height: 297mm;
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 3. Tabloyu A4'e Hapseden Kritik Ayarlar */
+  table {
+    width: 100% !important;
+    table-layout: fixed !important; /* Verileri hücre içine zorlar, sağa taşırmaz */
+    border-collapse: collapse !important;
+    word-wrap: break-word !important;
+  }
+
+  th,
+  td {
+    border: 1px solid #ddd !important; /* Çıktıda çizgiler görünsün */
+    padding: 8px !important;
+    font-size: 10pt !important; /* A4 için ideal okuma boyutu */
+    overflow: hidden !important;
+    word-break: break-word !important; /* Uzun unvanları alt satıra kırar */
+  }
+
+  /* Sütun Genişlikleri (Toplam %100) */
+  .col-tarih {
+    width: 15%;
+  }
+  .col-aciklama {
+    width: 45%;
+  }
+  .col-borc {
+    width: 13%;
+  }
+  .col-alacak {
+    width: 13%;
+  }
+  .col-bakiye {
+    width: 14%;
+  }
+
+  /* Sayfa sonu tablo başlığı tekrarı */
+  thead {
+    display: table-header-group !important;
+  }
+  tr {
+    page-break-inside: avoid !important;
+  }
+}
+
+/* Tüm sayfa için scrollbar genişliği */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Scrollbar'ın arkasındaki kanal (Track) */
+::-webkit-scrollbar-track {
+  background: #030712; /* Uygulamanın arka plan rengiyle aynı yap */
+}
+
+/* Kayan çubuk (Thumb) */
+::-webkit-scrollbar-thumb {
+  background: #1f2937; /* Koyu gri bir ton */
+  border-radius: 10px;
+  border: 2px solid #030712; /* Kenarlardan boşluk varmış gibi göstermek için */
+}
+
+/* Üzerine gelince rengini değiştir */
+::-webkit-scrollbar-thumb:hover {
+  background: #374151;
+}

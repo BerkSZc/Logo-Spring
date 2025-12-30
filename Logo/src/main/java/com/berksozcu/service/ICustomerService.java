@@ -5,11 +5,11 @@ import com.berksozcu.entites.customer.Customer;
 import java.util.List;
 
 public interface ICustomerService {
-    public Customer findCustomerById(Long id);
-    public Customer addCustomer(Customer customer);
-    public List<Customer> getAllCustomer();
-    public void updateCustomer(Long id, Customer updateCustomer);
-    public List<Customer> findByArchivedTrue();
-    public List<Customer> findByArchivedFalse();
-    public void setArchived(Long id, boolean archived);
+     Customer findCustomerById(Long id);
+     Customer addCustomer(Customer customer);
+     List<Customer> getAllCustomer();
+     void updateCustomer(Long id, Customer updateCustomer);
+     List<Customer> findByArchivedTrue();
+     List<Customer> findByArchivedFalse();
+     void setArchived(List<Long> ids, boolean archived);
 }

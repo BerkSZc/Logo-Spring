@@ -1,17 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthentication } from "../../backend/store/useAuthentication";
 import YearDropdown from "./YearDropdown.jsx";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { logout, isAuthenticated } = useAuthentication();
 
+  const dropDownRef = useRef(null);
+
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        settingsOpen &&
+        dropDownRef.current &&
+        !dropDownRef.current.contains(event.target)
+      )
+        setSettingsOpen(false);
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [settingsOpen]);
 
   useEffect(() => {
     if (isDark) {
@@ -67,7 +84,7 @@ export default function Navbar() {
             )}
 
             {/* AYARLAR MENÜSÜ */}
-            <div className="relative">
+            <div className="relative" ref={dropDownRef}>
               <button
                 onClick={() => setSettingsOpen((prev) => !prev)}
                 className="hover:text-gray-300 flex items-center"
