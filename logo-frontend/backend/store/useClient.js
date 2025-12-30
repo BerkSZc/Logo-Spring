@@ -47,11 +47,18 @@ export const useClient = create((set, get) => ({
     }
   },
 
-  setArchived: async (id, archived) => {
+  setArchived: async (ids, archived) => {
+    const idList = Array.isArray(ids) ? ids : [ids];
+
     try {
-      await axiosInstance.put(`/customer/archive/${id}?archived=${archived}`);
+      await axiosInstance.post(
+        `/customer/archive?archived=${archived}`,
+        idList
+      );
       toast.success(
-        archived ? "Müşteri arşivlendi" : "Müşteri arşivden çıkartıldı"
+        archived
+          ? `${idList.length} müşteri arşivlendi`
+          : `${idList.length} müşteri arşivden çıkartıldı`
       );
       await get().getAllCustomers();
     } catch (error) {

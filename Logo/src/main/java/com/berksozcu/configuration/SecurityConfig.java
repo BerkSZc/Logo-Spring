@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/rest/api/auth/login/**", "/rest/api/auth/save/**",
                                 "/rest/api/company/**")
+                        .permitAll().requestMatchers("/", "/index.html", "/static/**", "/*.js", "/*.json", "/*.css", "/assets/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider)

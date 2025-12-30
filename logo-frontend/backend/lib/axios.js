@@ -18,8 +18,6 @@ axiosInstance.interceptors.request.use(
 
     config.headers["X-Tenant-ID"] = currentTenant;
 
-    console.log("Current tenant:", currentTenant);
-
     return config;
   },
   (error) => Promise.reject(error)
@@ -36,3 +34,44 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// EKSTRA 403 kontrolü
+
+// let isDirecting = false;
+
+// axiosInstance.interceptors.request.use(
+//   (config) => {
+//     const token = localStorage.getItem("token");
+
+//     const currentTenant = localStorage.getItem("tenant") || "logo";
+
+//     //Eğer yönlendiriliyor ise isteği engelle.
+//     if (isDirecting) {
+//       return Promise.reject("Oturum Kapandı");
+//     }
+
+//     if (token) {
+//       config.headers.Authorization = `Bearer ${token}`;
+//     }
+
+//     config.headers["X-Tenant-ID"] = currentTenant;
+
+//     return config;
+//   },
+//   (error) => Promise.reject(error)
+// );
+
+// axiosInstance.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     const status = error.response ? error.response.status : null;
+
+//     if ((status === 401 || status === 403) && !isDirecting) {
+//       isDirecting = true;
+//       // Token süresi dolmuş
+//       localStorage.removeItem("token");
+//       window.location.href = "/login"; // otomatik yönlendirme
+//     }
+//     return Promise.reject(error);
+//   }
+// );

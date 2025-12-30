@@ -46,7 +46,7 @@ public class PaymentCompanyServiceImpl implements IPaymentCompanyService {
         paymentCompany.setPrice(paymentCompany.getPrice());
         paymentCompany.setCustomerName(paymentCompany.getCustomer().getName());
 
-        customer.setBalance(customer.getBalance().subtract(paymentCompany.getPrice()));
+        customer.setBalance(customer.getBalance().add(paymentCompany.getPrice()));
 
         customerRepository.save(customer);
         paymentCompanyRepository.save(paymentCompany);

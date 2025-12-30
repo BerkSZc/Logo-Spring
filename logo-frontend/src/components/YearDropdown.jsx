@@ -1,12 +1,34 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useYear } from "../context/YearContext";
 
 export default function YearDropdown() {
   const { year, years, changeYear } = useYear();
   const [open, setOpen] = useState(false);
 
+  const dropDownRef = useRef(null);
+
+  useEffect(() => {
+    //Tıklanan yerin ref içinde olup olmadığını kontrol eder
+    const handleOutsideClick = (event) => {
+      if (
+        open &&
+        dropDownRef.current &&
+        !dropDownRef.current.contains(event.target)
+      )
+        setOpen(false);
+    };
+
+    //Bir yere tıklanırsa haberimiz olmamız için koyarız
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      // Sonrada performans için sileriz.
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [open]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropDownRef}>
       {/* BUTTON */}
       <button
         onClick={() => setOpen(!open)}

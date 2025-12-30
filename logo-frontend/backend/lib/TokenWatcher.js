@@ -1,29 +1,51 @@
-import { useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
+import { useEffect, useRef } from "react";
 import { useAuthentication } from "../store/useAuthentication.js";
 
 export default function TokenWatcher() {
   const { logout } = useAuthentication();
+  const timerRef = useRef(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+  // 15 dakika (milisaniye cinsinden: 15 * 60 * 1000)
+  const INACTIVITY_LIMIT = 15 * 60 * 1000;
 
-    const decoded = jwtDecode(token);
-    const now = Date.now() / 1000; // saniye cinsinden
-    const timeLeft = decoded.exp - now;
-
-    if (timeLeft <= 0) {
-      logout(); // token süresi zaten dolmuşsa hemen logout
-      return;
+  const resetTimer = () => {
+    // Mevcut zamanlayıcıyı temizle
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
     }
 
-    // Token süresi dolunca otomatik logout
-    const timeout = setTimeout(() => {
+    // Yeni zamanlayıcı başlat
+    timerRef.current = setTimeout(() => {
+      console.log("15 dakika hareketsizlik tespit edildi, çıkış yapılıyor...");
       logout();
-    }, timeLeft * 1000);
+    }, INACTIVITY_LIMIT);
+  };
 
-    return () => clearTimeout(timeout); // cleanup
+  useEffect(() => {
+    // Uygulama ilk açıldığında zamanlayıcıyı başlat
+    resetTimer();
+
+    // Takip edilecek kullanıcı hareketleri
+    const events = [
+      "mousedown",
+      "mousemove",
+      "keypress",
+      "scroll",
+      "touchstart",
+    ];
+
+    // Her hareket algılandığında süreyi sıfırla
+    events.forEach((event) => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Bileşen kapandığında (cleanup) olayları temizle
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      events.forEach((event) => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
   }, [logout]);
 
   return null;

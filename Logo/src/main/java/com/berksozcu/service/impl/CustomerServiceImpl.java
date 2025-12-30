@@ -8,6 +8,7 @@ import com.berksozcu.repository.CustomerRepository;
 import com.berksozcu.repository.MaterialRepository;
 import com.berksozcu.repository.PurchaseInvoiceRepository;
 import com.berksozcu.service.ICustomerService;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,12 +86,9 @@ public class CustomerServiceImpl implements ICustomerService {
     }
 
     @Override
-    public void setArchived(Long id, boolean archived) {
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.MUSTERI_BULUNAMADI)));
-
-        customer.setArchived(archived);
-        customerRepository.save(customer);
+    @Transactional
+    public void setArchived(List<Long> ids, boolean archived) {
+        customerRepository.updateArchivedStatus(ids, archived);
     }
 }
 

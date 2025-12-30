@@ -24,7 +24,11 @@ export default function MaterialPriceTooltip({
 
   const currentItem = history?.[currentIndex];
 
-  const handleSelect = () => {
+  const handleSelect = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (currentItem && onSelect) {
       onSelect(currentItem.price);
       setOpen(false);
@@ -64,6 +68,7 @@ export default function MaterialPriceTooltip({
           <div className="bg-[#0f172a] border border-gray-800 rounded-[2rem] shadow-2xl w-full max-w-md p-8 relative animate-in fade-in zoom-in duration-300">
             {/* Kapatma butonu */}
             <button
+              type="button"
               onClick={() => setOpen(false)}
               className="absolute top-4 right-4 text-gray-500 hover:text-red-400 p-2 transition-colors"
             >
@@ -96,7 +101,11 @@ export default function MaterialPriceTooltip({
               </label>
               <div className="grid grid-cols-2 gap-2 p-1 bg-gray-900 rounded-xl border border-gray-800">
                 <button
-                  onClick={() => setSelectedType("PURCHASE")}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedType("PURCHASE");
+                  }}
                   className={`py-2 text-xs font-bold rounded-lg transition-all ${
                     selectedType === "PURCHASE"
                       ? "bg-blue-600 text-white shadow-lg"
@@ -106,6 +115,7 @@ export default function MaterialPriceTooltip({
                   Alış
                 </button>
                 <button
+                  type="button"
                   onClick={() => setSelectedType("SALES")}
                   className={`py-2 text-xs font-bold rounded-lg transition-all ${
                     selectedType === "SALES"
@@ -187,6 +197,7 @@ export default function MaterialPriceTooltip({
             {/* Navigasyon ve Seçim */}
             <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={handlePrev}
                 disabled={currentIndex === 0}
                 className="p-4 bg-gray-800 text-gray-300 rounded-2xl hover:bg-gray-700 disabled:opacity-20 disabled:grayscale transition-all active:scale-90"
@@ -208,6 +219,7 @@ export default function MaterialPriceTooltip({
 
               {currentItem ? (
                 <button
+                  type="button"
                   onClick={handleSelect}
                   className={`flex-1 py-4 text-white font-bold rounded-2xl shadow-xl transition-all active:scale-95 ${
                     selectedType === "PURCHASE"
@@ -222,6 +234,7 @@ export default function MaterialPriceTooltip({
               )}
 
               <button
+                type="button"
                 onClick={handleNext}
                 disabled={
                   currentIndex === (history?.length || 1) - 1 ||

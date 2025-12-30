@@ -53,28 +53,33 @@ public class PurchaseInvoiceServiceImpl implements IPurchaseInvoiceService {
 
         BigDecimal totalPrice = BigDecimal.ZERO;
         BigDecimal kdvToplam = BigDecimal.ZERO;
+
         if (newPurchaseInvoice.getItems() != null) {
             for (PurchaseInvoiceItem item : newPurchaseInvoice.getItems()) {
 
                 Material material = materialRepository
                         .findById(item.getMaterial().getId())
-                        .orElseThrow(() -> new RuntimeException("Material not found"));
+                        .orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.MALZEME_BULUNAMADI)));
 
                 item.setMaterial(material);
                 item.setPurchaseInvoice(newPurchaseInvoice);
 
                 //KDV HESAPLAMA
-                BigDecimal kdv = item.getKdv().add(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(100));
-
-
-                // TOPLAM KDV Yİ TOPLAM ÜCRET E EKLEME
-                BigDecimal lineTotal = item.getUnitPrice().multiply(kdv)
-                        .multiply(item.getQuantity());
+                BigDecimal kdv = item.getKdv().divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
 
 
                 //  TOPLAM KDV HESAPLAMA
-                BigDecimal kdvTutarHesaplama = item.getKdv().divide(BigDecimal.valueOf(100))
-                        .multiply(item.getUnitPrice()).multiply(item.getQuantity());
+                BigDecimal kdvTutarHesaplama = item.getUnitPrice().multiply(kdv)
+                        .multiply(item.getQuantity())
+                        .setScale(2, RoundingMode.HALF_UP);
+
+                // TOPLAM KDV Yİ TOPLAM ÜCRET E EKLEME
+                BigDecimal lineTotal = item.getUnitPrice()
+                        .multiply(item.getQuantity()).add(kdvTutarHesaplama)
+                        .setScale(2, RoundingMode.HALF_UP);
+
+
+
 
                 item.setKdvTutar(kdvTutarHesaplama);
 
@@ -90,7 +95,7 @@ public class PurchaseInvoiceServiceImpl implements IPurchaseInvoiceService {
         newPurchaseInvoice.setTotalPrice(totalPrice);
 
         // Müşteri bakiyesini güncelle
-        customer.setBalance(customer.getBalance().add(totalPrice));
+        customer.setBalance(customer.getBalance().subtract(totalPrice));
 
         // Cascade ALL olduğundan invoice save = items save
         purchaseInvoiceRepository.save(newPurchaseInvoice);
@@ -194,7 +199,7 @@ public class PurchaseInvoiceServiceImpl implements IPurchaseInvoiceService {
         oldInvoice.setTotalPrice(total);
         oldInvoice.setKdvToplam(kdvToplam);
 
-        customer.setBalance(customer.getBalance().add(total));
+        customer.setBalance(customer.getBalance().subtract(total));
         customerRepository.save(customer);
 
         return purchaseInvoiceRepository.save(oldInvoice);

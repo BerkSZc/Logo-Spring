@@ -14,6 +14,7 @@ public enum MessageType {
     KULLANICI_MEVCUT(1007, "Kullanıcı Mevcut"),
     ARP_BILGISI_EKSIK(1009, "ARP bilgisi Eksik"),
     ARP_KODU_BOS(1010, "ARP kodu boş"),
+    SIRKET_KODU_MEVCUT(1014, "Şirket kodu mevcut farklı bir kod kullanın."),
     YANLIS_SIFRE(1011, "Şifreniz yanlış"),
     ARSIV_MUSTERI(1012, "Arşivdeki müşteriye işlem yapılamaz"),
     SIRKET_HATA(1013, "Şirket kodu veya adı boş olamaz"),
