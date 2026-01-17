@@ -1,9 +1,12 @@
 import { createContext, useContext, useState } from "react";
+import { useVoucher } from "../../backend/store/useVoucher";
 
 const YearContext = createContext();
 
 export const YearProvider = ({ children }) => {
   const currentYear = new Date().getFullYear();
+
+  const { transferBalance } = useVoucher();
 
   const [years, setYears] = useState(() => {
     const stored = localStorage.getItem("years");
@@ -21,7 +24,7 @@ export const YearProvider = ({ children }) => {
     localStorage.setItem("year", y);
   };
 
-  const addYear = (newYear) => {
+  const addYear = async (newYear, activeCustomerId = null) => {
     const y = Number(newYear);
     if (!y || years.includes(y)) return;
 

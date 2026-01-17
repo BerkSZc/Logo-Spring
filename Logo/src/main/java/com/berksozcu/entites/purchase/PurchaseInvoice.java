@@ -41,6 +41,12 @@ public class PurchaseInvoice {
     @Column(name = "total_price", precision = 18, scale = 2)
     private BigDecimal totalPrice;
 
+    @Column(name = "eur_selling_rate", precision = 18, scale = 4)
+    private BigDecimal eurSellingRate;
+
+    @Column(name = "usd_selling_rate", precision = 18, scale = 4)
+    private BigDecimal usdSellingRate;
+
 
     //Burda mappdeBy Jpa tarafına çocuk görevi görür ve ilişkide etkisiz kalır.
     // Yazdığımız "purchaseInvoice" ise karşı class taki nesnenin ebeveyn olduğunu belirtir.

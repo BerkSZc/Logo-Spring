@@ -13,4 +13,7 @@ public interface SalesInvoiceRepository extends JpaRepository<SalesInvoice, Long
 
     boolean existsByFileNo(String fileNo);
 
+   // List<SalesInvoice> findByCustomerIdAndDateBetween(Long customerId, LocalDate start, LocalDate end);
+
+    List<SalesInvoice> findByCustomerIdAndDateBefore(Long customerId, LocalDate date);
 }

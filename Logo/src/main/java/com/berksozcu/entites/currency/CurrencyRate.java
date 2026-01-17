@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,5 +32,5 @@ public class CurrencyRate {
     private BigDecimal sellingRate;
 
     @Column(name = "last_updated")
-    private LocalDateTime lastUpdated;
+    private LocalDate lastUpdated;
 }

@@ -131,11 +131,11 @@ export const usePayrollLogic = () => {
       transactionDate: item.transactionDate,
       expiredDate: item.expiredDate,
       customerId: item.customer?.id || "",
-      amount: item.amount,
-      fileNo: item.fileNo,
-      bankName: item.bankName,
-      bankBranch: item.bankBranch,
-      comment: item.comment,
+      amount: item.amount || "",
+      fileNo: item.fileNo || "",
+      bankName: item.bankName || "",
+      bankBranch: item.bankBranch || "",
+      comment: item.comment || "",
     });
   };
 

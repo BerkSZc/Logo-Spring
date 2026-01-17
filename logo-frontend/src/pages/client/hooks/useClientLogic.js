@@ -7,6 +7,7 @@ import { useReceivedCollection } from "../../../../backend/store/useReceivedColl
 import { useYear } from "../../../context/YearContext.jsx";
 import { accountStatementHelper } from "../utils/accountStatementHelper.js";
 import { usePayroll } from "../../../../backend/store/usePayroll.js";
+import { useVoucher } from "../../../../backend/store/useVoucher.js";
 
 export const useClientLogic = () => {
   const {
@@ -21,6 +22,7 @@ export const useClientLogic = () => {
   const { payments, getPaymentCollectionsByYear } = usePaymentCompany();
   const { collections, getReceivedCollectionsByYear } = useReceivedCollection();
   const { payrolls, getPayrollByYear } = usePayroll();
+  const { getOpeningVoucherByYear } = useVoucher();
   const { year } = useYear();
 
   const formRef = useRef(null);
@@ -97,8 +99,17 @@ export const useClientLogic = () => {
   };
 
   const handleOpenStatement = async (customer) => {
-    setSelectedCustomerForStatement(customer);
     setOpenMenuId(null);
+    const date = `${year}-01-01`;
+    const voucher = await getOpeningVoucherByYear(customer.id, date);
+    const updatedCustomer = {
+      ...customer,
+      // Veritabanında 353.068,39 ₺ varsa onu al, yoksa 0 setle
+      openingBalance: voucher ? voucher.debit - voucher.credit : 0,
+    };
+
+    // 3. Güncellenmiş müşteri ile ekstre verilerini hazırla
+    setSelectedCustomerForStatement(updatedCustomer);
     await Promise.all([
       getSalesInvoicesByYear(year),
       getPurchaseInvoiceByYear(year),

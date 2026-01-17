@@ -2,17 +2,21 @@ export const YearManager = ({
   year,
   years,
   newYear,
+  shouldTransfer, // Yeni prop
   onYearChange,
   onYearRemove,
   onYearAdd,
   onNewYearChange,
+  onTransferChange, // Yeni prop: setShouldTransfer'i tetikler
 }) => (
   <div className="space-y-6">
     <h3 className="text-xl font-semibold flex items-center gap-3">
       <span className="w-1.5 h-6 bg-green-500 rounded-full"></span>
       Mali Yıl Yönetimi
     </h3>
+
     <div className="bg-gray-900/60 border border-gray-800 rounded-3xl p-6 space-y-8">
+      {/* Kayıtlı Dönemler Bölümü */}
       <div className="space-y-4">
         <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">
           Kayıtlı Dönemler
@@ -59,21 +63,39 @@ export const YearManager = ({
             ))}
         </div>
       </div>
+
+      {/* Yeni Dönem Açma ve Devir İşlemi Bölümü */}
       <div className="pt-6 border-t border-gray-800 space-y-4">
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-          Yeni Dönem Aç
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+            Yeni Dönem Aç
+          </label>
+
+          {/* Fonksiyonel Checkbox */}
+          <label className="flex items-center gap-2 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={shouldTransfer}
+              onChange={(e) => onTransferChange(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-green-500 focus:ring-green-500/50 transition cursor-pointer"
+            />
+            <span className="text-xs font-medium text-gray-400 group-hover:text-gray-300 transition">
+              Bakiye Devri Yapılsın
+            </span>
+          </label>
+        </div>
+
         <div className="flex gap-2">
           <input
             type="number"
             placeholder="Örn: 2026"
             value={newYear}
             onChange={(e) => onNewYearChange(e.target.value)}
-            className="flex-1 bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-green-500 outline-none"
+            className="flex-1 bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-green-500 outline-none transition"
           />
           <button
             onClick={onYearAdd}
-            className="bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-3 rounded-xl transition-all"
+            className="bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-3 rounded-xl transition-all active:scale-95"
           >
             Ekle
           </button>

@@ -11,4 +11,6 @@ import java.util.List;
 @Repository
 public interface ReceivedCollectionRepository extends JpaRepository<ReceivedCollection, Long> {
     List<ReceivedCollection> findByDateBetween(LocalDate start, LocalDate end);
+   // List<ReceivedCollection> findByCustomerIdAndDateBetween(Long customerId, LocalDate start, LocalDate end);
+    List<ReceivedCollection> findByCustomerIdAndDateBefore(Long customerId, LocalDate date);
 }

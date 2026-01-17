@@ -16,4 +16,16 @@ export const useCurrency = create(() => ({
       toast.error("Error at convertCurrency: " + backendErr);
     }
   },
+  getDailyRates: async (currencyDate) => {
+    try {
+      const res = await axiosInstance.get("/currency/today-rates", {
+        params: { currencyDate: currencyDate },
+      });
+      return res.data;
+    } catch (error) {
+      const backendErr =
+        error?.response?.exception?.data?.message || "Günlük Kur bulunamadı";
+      toast.error("Error at getDailyRates: " + backendErr);
+    }
+  },
 }));

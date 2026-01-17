@@ -19,10 +19,10 @@ export default function InvoiceForm() {
 
   return (
     <div className="min-h-screen w-full bg-[#0a0f1a] text-gray-100 p-6 lg:p-12">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-8 text-left">
         {/* BAŞLIK VE MOD SEÇİMİ */}
         <div className="flex justify-between items-center bg-gray-900/40 p-6 rounded-[2rem] border border-gray-800 backdrop-blur-sm">
-          <div>
+          <div className="text-left">
             <h1 className="text-3xl font-extrabold text-white tracking-tight">
               Fatura Oluştur
             </h1>
@@ -43,7 +43,7 @@ export default function InvoiceForm() {
         <form onSubmit={handlers.submitForm} className="space-y-8">
           {/* ÜST BİLGİLER */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8 bg-gray-900/40 border border-gray-800 rounded-[2.5rem]">
-            <div className="space-y-2">
+            <div className="space-y-2 text-left">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
                 Tarih
               </label>
@@ -62,10 +62,10 @@ export default function InvoiceForm() {
                         date: e.target.value,
                       })
                 }
-                className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none"
+                className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none transition-all"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 text-left">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
                 Belge No
               </label>
@@ -85,10 +85,10 @@ export default function InvoiceForm() {
                         fileNo: e.target.value,
                       })
                 }
-                className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none"
+                className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none transition-all"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 text-left">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
                 Müşteri / Firma
               </label>
@@ -107,6 +107,7 @@ export default function InvoiceForm() {
             </div>
           </div>
 
+          {/* TABLO VE DÖVİZ KURLARI */}
           <InvoiceItemsTable
             mode={mode}
             items={currentForm.items}
@@ -114,37 +115,45 @@ export default function InvoiceForm() {
             onItemChange={handlers.handleItemChange}
             onAddItem={handlers.addItem}
             onRemoveItem={handlers.removeItem}
+            currencyRates={{
+              usd: currentForm.usdSellingRate,
+              eur: currentForm.eurSellingRate,
+            }}
+            onRateChange={handlers.handleRateChange}
           />
 
           {/* ALT TOPLAMLAR VE KAYDET */}
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 bg-gray-900/40 p-8 rounded-[2.5rem] border border-gray-800">
-            <div className="space-y-2 text-gray-400 text-sm italic">
+            <div className="space-y-2 text-gray-500 text-sm italic text-left">
               * Kalemlerin toplamı otomatik olarak hesaplanmaktadır.
             </div>
-            <div className="space-y-4 text-right min-w-[250px]">
-              <div className="flex justify-between items-center text-gray-400">
-                <span>Ara Toplam:</span>
+            <div className="space-y-4 text-right min-w-[280px]">
+              <div className="flex justify-between items-center text-gray-400 text-sm">
+                <span>Ara Toplam (Matrah):</span>
                 <span className="font-mono text-white">
                   {currentCalc.total.toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
                   })}{" "}
                   ₺
                 </span>
               </div>
-              <div className="flex justify-between items-center text-gray-400">
+              <div className="flex justify-between items-center text-gray-400 text-sm">
                 <span>KDV Toplam:</span>
-                <span className="font-mono text-blue-400">
+                <span className="font-mono text-blue-400 font-bold">
                   {currentCalc.kdv.toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
                   })}{" "}
                   ₺
                 </span>
               </div>
-              <div className="flex justify-between items-center text-2xl font-bold border-t border-gray-800 pt-2">
-                <span className="text-white">Genel Toplam:</span>
-                <span className="text-emerald-400">
+              <div className="flex justify-between items-center text-2xl font-black border-t border-gray-800 pt-3 mt-2">
+                <span className="text-white text-lg">Genel Toplam:</span>
+                <span className="text-emerald-400 font-mono tracking-tighter">
                   {currentCalc.grandTotal.toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
                   })}{" "}
                   ₺
                 </span>

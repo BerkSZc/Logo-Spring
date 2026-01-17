@@ -1,11 +1,17 @@
 import MaterialSearchSelect from "../../../components/MaterialSearchSelect";
 import MaterialPriceTooltip from "../../../components/MaterialPriceTooltip";
+import { useMemo } from "react";
 
 export default function InvoiceEditModal({
   editingInvoice,
   form,
   setForm,
   onItemChange,
+  onRateChange,
+  modalTotals,
+  addItem,
+  removeItem,
+  handlePriceSelect,
   totals,
   invoiceType,
   materials,
@@ -15,42 +21,89 @@ export default function InvoiceEditModal({
 }) {
   if (!editingInvoice || !form) return null;
 
-  const handleItemChange = (i, e) => {
+  const handleLocalItemChange = (i, e) => {
     const { name, value } = e.target;
-    const updated = [...form.items];
-    updated[i] = { ...updated[i], [name]: value };
-    const qty = Number(updated[i].quantity) || 0;
-    const price = Number(updated[i].unitPrice) || 0;
-    const kdv = Number(updated[i].kdv) || 0;
-    updated[i].lineTotal =
-      invoiceType === "purchase" ? price * qty * (1 + kdv / 100) : price * qty;
-    setForm({ ...form, items: updated });
+    onItemChange(i, name, value);
   };
 
-  const handlePriceSelect = (index, price, e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    const updated = [...form.items];
-    updated[index].unitPrice = price;
-    const qty = Number(updated[index].quantity) || 0;
-    const kdv = Number(updated[index].kdv) || 0;
-    updated[index].lineTotal =
-      invoiceType === "purchase" ? price * qty * (1 + kdv / 100) : price * qty;
-    setForm({ ...form, items: updated });
-  };
+  // const handleItemChange = (i, e) => {
+  //   const { name, value } = e.target;
+  //   const updated = [...form.items];
 
-  const addItem = () =>
-    setForm({
-      ...form,
-      items: [
-        ...form.items,
-        { materialId: "", unitPrice: "", quantity: "", kdv: 20, lineTotal: 0 },
-      ],
-    });
-  const removeItem = (idx) =>
-    setForm({ ...form, items: form.items.filter((_, i) => i !== idx) });
+  //   updated[i] = { ...updated[i], [name]: value };
+  //   const qty = Number(updated[i].quantity) || 0;
+  //   const price = Number(updated[i].unitPrice) || 0;
+  //   const kdv = Number(updated[i].kdv) || 0;
+
+  //   const currentLineTotal = price * qty;
+  //   const currentKdvTutar = (currentLineTotal * kdv) / 100;
+
+  //   updated[i].lineTotal = currentLineTotal;
+  //   updated[i].kdvTutar = currentKdvTutar;
+  //   setForm({ ...form, items: updated });
+  // };
+
+  // const handlePriceSelect = (index, price, e) => {
+  //   if (e) {
+  //     e.preventDefault();
+  //     e.stopPropagation();
+  //   }
+  //   const updated = [...form.items];
+  //   updated[index].unitPrice = price;
+
+  //   const qty = Number(updated[index].quantity) || 0;
+  //   const kdv = Number(updated[index].kdv) || 0;
+
+  //   const currentLineTotal = price * qty;
+  //   const currentKdvTutar = (currentLineTotal * kdv) / 100;
+
+  //   updated[index].lineTotal = currentLineTotal;
+  //   updated[index].kdvTutar = currentKdvTutar;
+  //   setForm({ ...form, items: updated });
+  // };
+
+  // const calculateRow = (price, qty, kdvRate) => {
+  //   const lineTotal = (Number(price) || 0) * (Number(qty) || 0);
+  //   const kdvTutar = (lineTotal * (Number(kdvRate) || 0)) / 100;
+  //   return { lineTotal, kdvTutar };
+  // };
+
+  // const currentTotals = useMemo(() => {
+  //   return form.items.reduce(
+  //     (acc, item) => {
+  //       const { lineTotal, kdvTutar } = calculateRow(
+  //         item.unitPrice,
+  //         item.quantity,
+  //         item.kdv
+  //       );
+
+  //       return {
+  //         subTotal: acc.subTotal + lineTotal,
+  //         kdvTotal: acc.kdvTotal + kdvTutar,
+  //       };
+  //     },
+  //     { subTotal: 0, kdvTotal: 0 }
+  //   );
+  // }, [form.items]);
+
+  // const addItem = () =>
+  //   setForm({
+  //     ...form,
+  //     items: [
+  //       ...form.items,
+  //       {
+  //         materialId: "",
+  //         unitPrice: "",
+  //         quantity: "",
+  //         kdv: 20,
+  //         kdvTutar: "",
+  //         lineTotal: 0,
+  //       },
+  //     ],
+  //   });
+
+  // const removeItem = (idx) =>
+  //   setForm({ ...form, items: form.items.filter((_, i) => i !== idx) });
 
   return (
     <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-[100] backdrop-blur-md px-4">
@@ -98,6 +151,46 @@ export default function InvoiceEditModal({
               ))}
             </select>
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 p-6 bg-gray-800/30 rounded-3xl border border-gray-700/50">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-blue-400 uppercase ml-1 tracking-widest">
+                USD Satış Kuru
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                  $
+                </span>
+                <input
+                  type="text"
+                  value={form.usdSellingRate || ""}
+                  onChange={(e) =>
+                    onRateChange("usdSellingRate", e.target.value)
+                  }
+                  className="w-full bg-gray-900/50 border-2 border-gray-700 rounded-2xl px-8 py-3 text-white outline-none focus:border-blue-500 transition-all font-mono"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-pink-400 uppercase ml-1 tracking-widest">
+                EUR Satış Kuru
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                  €
+                </span>
+                <input
+                  type="text"
+                  value={form.eurSellingRate || ""}
+                  onChange={(e) =>
+                    onRateChange("eurSellingRate", e.target.value)
+                  }
+                  className="w-full bg-gray-900/50 border-2 border-gray-700 rounded-2xl px-8 py-3 text-white outline-none focus:border-pink-500 transition-all font-mono"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div className="bg-gray-900/60 border border-gray-800 rounded-3xl p-6 overflow-hidden mb-8">
           <table className="w-full text-left border-separate border-spacing-y-2">
@@ -130,7 +223,7 @@ export default function InvoiceEditModal({
                         type="number"
                         name="unitPrice"
                         value={item.unitPrice}
-                        onChange={(e) => handleItemChange(i, e)}
+                        onChange={(e) => handleLocalItemChange(i, e)}
                         className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-1 py-2 text-white focus:border-blue-500 outline-none"
                       />
                       <MaterialPriceTooltip
@@ -145,7 +238,7 @@ export default function InvoiceEditModal({
                       type="number"
                       name="quantity"
                       value={item.quantity}
-                      onChange={(e) => handleItemChange(i, e)}
+                      onChange={(e) => handleLocalItemChange(i, e)}
                       className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
                     />
                   </td>
@@ -154,26 +247,21 @@ export default function InvoiceEditModal({
                       type="number"
                       name="kdv"
                       value={item.kdv}
-                      onChange={(e) => handleItemChange(i, e)}
+                      onChange={(e) => handleLocalItemChange(i, e)}
                       className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
                     />
                   </td>
                   <td className="px-4 py-3 text-right font-mono text-xs text-gray-400 italic">
-                    {(
-                      (Number(item.unitPrice) *
-                        Number(item.quantity) *
-                        Number(item.kdv)) /
-                      100
-                    ).toLocaleString("tr-TR", {
+                    {Number(item.kdvTutar || 0).toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
                     })}{" "}
                     ₺
                   </td>
                   <td className="px-4 py-3 text-right font-mono font-bold text-blue-400">
-                    {(
-                      Number(item.unitPrice) * Number(item.quantity) || 0
-                    ).toLocaleString("tr-TR", {
+                    {(Number(item.lineTotal) || 0).toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
                     })}{" "}
                     ₺
                   </td>
@@ -206,8 +294,9 @@ export default function InvoiceEditModal({
             <div className="flex justify-between text-gray-400 text-sm">
               <span>Ara Toplam:</span>
               <span className="font-mono text-white">
-                {totals.totalPrice.toLocaleString("tr-TR", {
+                {modalTotals.subTotal.toLocaleString("tr-TR", {
                   minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
                 })}{" "}
                 ₺
               </span>
@@ -216,8 +305,9 @@ export default function InvoiceEditModal({
               <span>Hesaplanan KDV:</span>
               <span className="font-mono">
                 +
-                {totals.kdvToplam.toLocaleString("tr-TR", {
+                {modalTotals.kdvTotal.toLocaleString("tr-TR", {
                   minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
                 })}{" "}
                 ₺
               </span>
@@ -225,9 +315,12 @@ export default function InvoiceEditModal({
             <div className="flex justify-between text-2xl font-black pt-3 border-t border-gray-700 mt-2">
               <span className="text-white">Genel Toplam:</span>
               <span className="text-emerald-400">
-                {(totals.totalPrice + totals.kdvToplam).toLocaleString(
+                {(modalTotals.kdvTotal + modalTotals.subTotal).toLocaleString(
                   "tr-TR",
-                  { minimumFractionDigits: 2 }
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }
                 )}{" "}
                 ₺
               </span>
