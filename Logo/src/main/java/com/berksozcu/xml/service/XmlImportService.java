@@ -1,5 +1,6 @@
 package com.berksozcu.xml.service;
 
+import com.berksozcu.entites.customer.OpeningVoucher;
 import com.berksozcu.entites.collections.PaymentCompany;
 import com.berksozcu.entites.collections.ReceivedCollection;
 import com.berksozcu.entites.customer.Customer;
@@ -21,6 +22,9 @@ import com.berksozcu.xml.entites.customer.CustomerXml;
 import com.berksozcu.xml.entites.customer.CustomersXml;
 import com.berksozcu.xml.entites.materials.ItemsXml;
 import com.berksozcu.xml.entites.materials.MaterialXml;
+import com.berksozcu.xml.entites.opening_balances.ArpTransactionXml;
+import com.berksozcu.xml.entites.opening_balances.ArpVoucherXml;
+import com.berksozcu.xml.entites.opening_balances.ArpVouchersXml;
 import com.berksozcu.xml.entites.payrolls.PayrollRollXml;
 import com.berksozcu.xml.entites.payrolls.PayrollTxXml;
 import com.berksozcu.xml.entites.payrolls.PayrollsXml;
@@ -37,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -72,6 +77,9 @@ public class XmlImportService {
     @Autowired
     private PayrollRepository payrollRepository;
 
+    @Autowired
+    private OpeningVoucherRepository openingBalanceRepository;
+
     @Transactional
     public void importPurchaseInvoices(MultipartFile file) throws Exception {
 
@@ -96,8 +104,12 @@ public class XmlImportService {
             invoice.setDate(LocalDate.parse(xmlInv.getDATE(), DateTimeFormatter.ofPattern("dd.MM.yyyy")));
 
             invoice.setFileNo(xmlInv.getDOC_NUMBER());
-            invoice.setKdvToplam(xmlInv.getTOTAL_VAT());
-            invoice.setTotalPrice(xmlInv.getTOTAL_NET());
+
+            BigDecimal kdvToplam = xmlInv.getTOTAL_VAT() != null ? xmlInv.getTOTAL_VAT() : BigDecimal.ZERO;
+            invoice.setKdvToplam(kdvToplam.setScale(2, RoundingMode.HALF_UP));
+
+            BigDecimal totalPrice = xmlInv.getTOTAL_NET() != null ? xmlInv.getTOTAL_NET() : BigDecimal.ZERO;
+            invoice.setTotalPrice(totalPrice.setScale(2, RoundingMode.HALF_UP));
             // Customer eşleştirme
             Customer customer = customerRepository.findByCode(xmlInv.getARP_CODE()).orElse(null);
 
@@ -111,54 +123,62 @@ public class XmlImportService {
             List<PurchaseInvoiceItem> itemList = new ArrayList<>();
 
             // Fatura satırları
-            for (TransactionXml tx : xmlInv.getTRANSACTIONS().getList()) {
+            if(xmlInv.getTRANSACTIONS() != null && xmlInv.getTRANSACTIONS().getList() != null) {
+                for (TransactionXml tx : xmlInv.getTRANSACTIONS().getList()) {
 
-                if (tx.getMASTER_CODE() == null || tx.getMASTER_CODE().isBlank()) {
-                    System.err.println("HATA: MASTER_CODE boş! Satır numarası: " + tx);
-                    continue;
+                    if (tx.getMASTER_CODE() == null || tx.getMASTER_CODE().isBlank()) {
+                        System.err.println("HATA: MASTER_CODE boş! Satır numarası: " + tx);
+                        continue;
+                    }
+                    // Malzeme eşleştirme
+                    String masterCode = tx.getMASTER_CODE().trim().toUpperCase();
+                    Material material = materialMap.get(masterCode);
+
+                    if (material == null) {
+                        System.err.println("HATA: Malzeme bulunamadı, satır atlandı → " + tx.getMASTER_CODE());
+                        continue; // veya throw new BaseException(...) ile işlemi durdur
+                    }
+
+                    //Malzeme Fiyat Geçmişi Kayıt İşlemi
+                    saveMaterialPrice(material,
+                            LocalDate.parse(xmlInv.getDATE(), DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                            customer.getName(),
+                            tx.getPRICE(),
+                            tx.getQUANTITY(),
+                            InvoiceType.PURCHASE);
+
+                    //Fatura Kalemleri
+                    PurchaseInvoiceItem item = new PurchaseInvoiceItem();
+                    item.setPurchaseInvoice(invoice);
+                    item.setMaterial(material);
+
+                    BigDecimal quantity = tx.getQUANTITY() != null ? tx.getQUANTITY() : BigDecimal.ZERO;
+                    BigDecimal unitPrice = tx.getPRICE() != null ? tx.getPRICE() : BigDecimal.ZERO;
+                    BigDecimal kdv = tx.getVAT_RATE() != null ? tx.getVAT_RATE() : BigDecimal.ZERO;
+                    BigDecimal kdvTutar = tx.getVAT_AMOUNT() != null ? tx.getVAT_AMOUNT() : BigDecimal.ZERO;
+                    BigDecimal lineTotal = tx.getTOTAL() != null ? tx.getTOTAL() : BigDecimal.ZERO;
+
+                    item.setQuantity(quantity.setScale(2, RoundingMode.HALF_UP));
+                    item.setUnitPrice(unitPrice.setScale(2, RoundingMode.HALF_UP));
+                    item.setKdv(kdv.setScale(2, RoundingMode.HALF_UP));
+                    item.setKdvTutar(kdvTutar.setScale(2, RoundingMode.HALF_UP));
+                    item.setLineTotal(lineTotal.setScale(2, RoundingMode.HALF_UP));
+
+                    System.out.println(
+                            "ITEM → " + material.getCode() + " | ID=" + material.getId()
+                    );
+                    itemList.add(item);
                 }
-                // Malzeme eşleştirme
-                String masterCode = tx.getMASTER_CODE().trim().toUpperCase();
-                Material material = materialMap.get(masterCode);
 
-                if (material == null) {
-                    System.err.println("HATA: Malzeme bulunamadı, satır atlandı → " + tx.getMASTER_CODE());
-                    continue; // veya throw new BaseException(...) ile işlemi durdur
-                }
+                invoice.setItems(itemList);
 
-                //Malzeme Fiyat Geçmişi Kayıt İşlemi
-                saveMaterialPrice(material,
-                        LocalDate.parse(xmlInv.getDATE(), DateTimeFormatter.ofPattern("dd.MM.yyyy")),
-                        customer.getName(),
-                        tx.getPRICE(),
-                        tx.getQUANTITY(),
-                        InvoiceType.PURCHASE);
+                BigDecimal currentBalance = customer.getBalance() != null ? customer.getBalance() : BigDecimal.ZERO;
+                customer.setBalance(currentBalance.subtract(invoice.getTotalPrice()).setScale(2, RoundingMode.HALF_UP));
 
-                //Fatura Kalemleri
-                PurchaseInvoiceItem item = new PurchaseInvoiceItem();
-                item.setPurchaseInvoice(invoice);
-                item.setMaterial(material);
-
-                item.setQuantity(tx.getQUANTITY());
-                item.setUnitPrice(tx.getPRICE());
-                item.setKdv(tx.getVAT_RATE());
-                item.setKdvTutar(tx.getVAT_AMOUNT());
-                item.setLineTotal(tx.getTOTAL());
-
-                System.out.println(
-                        "ITEM → " + material.getCode() + " | ID=" + material.getId()
-                );
-                itemList.add(item);
+                customerRepository.save(customer);
+                // Cascade ALL sayesinde item'lar otomatik kaydedilir
+                invoiceRepository.save(invoice);
             }
-
-            invoice.setItems(itemList);
-
-            BigDecimal currentBalance = customer.getBalance() != null ? customer.getBalance() : BigDecimal.ZERO;
-            customer.setBalance(currentBalance.subtract(invoice.getTotalPrice()));
-
-            customerRepository.save(customer);
-            // Cascade ALL sayesinde item'lar otomatik kaydedilir
-            invoiceRepository.save(invoice);
         }
     }
 
@@ -178,8 +198,9 @@ public class XmlImportService {
 
             invoice.setFileNo(xmlInv.getNUMBER());
             invoice.setDate(LocalDate.parse(xmlInv.getDATE(), DateTimeFormatter.ofPattern("dd.MM.yyyy")));
-            invoice.setTotalPrice(xmlInv.getTOTAL_NET());
-            invoice.setKdvToplam(xmlInv.getTOTAL_VAT());
+            invoice.setTotalPrice(xmlInv.getTOTAL_NET().setScale(2, RoundingMode.HALF_UP));
+
+            invoice.setKdvToplam(xmlInv.getTOTAL_VAT().setScale(2, RoundingMode.HALF_UP));
 
             Customer customer = customerRepository.findByCode(xmlInv.getARP_CODE()).orElse(null);
 
@@ -287,9 +308,8 @@ public class XmlImportService {
             customer.setDistrict(c.getDISTRICT());
             customer.setAddress(c.getADDRESS1());
 
-            BigDecimal initialRisk = parseBigDecimal(c.getACC_RISK_TOTAL());
-            customer.setOpeningBalance(initialRisk);
-            customer.setBalance(initialRisk);
+            customer.setOpeningBalance(BigDecimal.ZERO);
+            customer.setBalance(BigDecimal.ZERO);
             customer.setVdNo(c.getTAX_ID());
 
             customerRepository.save(customer);
@@ -339,9 +359,9 @@ public class XmlImportService {
 
             Integer type = c.getTYPE();
             String sdCode = c.getSD_CODE();
-            Integer sign = (c.getSIGN() == null ? 1 : c.getSIGN());
 
             // --- AYRIM ---
+            BigDecimal currentBalance = customer.getBalance() != null ? customer.getBalance() : BigDecimal.ZERO;
 
             if (type == 11) {
                 // Tahsilat
@@ -351,7 +371,7 @@ public class XmlImportService {
                 rc.setPrice(total);
                 rc.setCustomerName(customer.getName());
                 rc.setComment(c.getDESCRIPTION());
-                customer.setBalance(customer.getBalance().subtract(total));
+                customer.setBalance(currentBalance.subtract(total).setScale(2, RoundingMode.HALF_UP));
                 customerRepository.save(customer);
                 receivedCollectionRepository.save(rc);
                 receivedCollectionRepository.save(rc);
@@ -364,7 +384,7 @@ public class XmlImportService {
                 py.setComment(c.getDESCRIPTION());
                 py.setCustomerName(customer.getName());
                 py.setPrice(total);
-                customer.setBalance(customer.getBalance().add(total));
+                customer.setBalance(currentBalance.add(total).setScale(2, RoundingMode.HALF_UP));
                 customerRepository.save(customer);
                 paymentCompanyRepository.save(py);
                 paymentCompanyRepository.save(py);
@@ -390,7 +410,7 @@ public class XmlImportService {
                 System.err.println("Müşteri bulunamadı: " + customerCode + " -> Bordro atlandı.");
                 continue;
             }
-            PayrollModel model = (roll.getType() <= 2) ? PayrollModel.INPUT : PayrollModel.OUTPUT;
+            PayrollModel model = (roll.getType() != null && roll.getType() <= 2) ? PayrollModel.INPUT : PayrollModel.OUTPUT;
 
             if (roll.getTransactions() != null && roll.getTransactions().getList() != null) {
                 for (PayrollTxXml tx : roll.getTransactions().getList()) {
@@ -398,7 +418,7 @@ public class XmlImportService {
                     payroll.setCustomer(customer);
                     payroll.setFileNo(tx.getNumber());
 
-                    BigDecimal amount = parseBigDecimal(tx.getAmount());
+                    BigDecimal amount = parseBigDecimal(tx.getAmount()).setScale(2, RoundingMode.HALF_UP);
                     payroll.setAmount(amount);
 
                     payroll.setTransactionDate(LocalDate.parse(tx.getDate(), dtf));
@@ -408,19 +428,88 @@ public class XmlImportService {
                     // Varsayılan tip çek olsun (XML'den çek-senet ayrımı da yapılabilir)
                     payroll.setPayrollType(PayrollType.CHEQUE);
 
+                    BigDecimal currentBalance = customer.getBalance() != null ? customer.getBalance() : BigDecimal.ZERO;
+
                     // 3. Müşteri Bakiyesini Güncelle
                     if (model == PayrollModel.INPUT) {
                         // Müşteriden çek aldık, borcu azalır (Subtract)
-                        customer.setBalance(customer.getBalance().subtract(amount));
+                        customer.setBalance(currentBalance.subtract(amount).setScale(2, RoundingMode.HALF_UP));
                     } else {
                         // Müşteriye çek verdik veya ciro ettik, borcu/alacağı artar (Add)
-                        customer.setBalance(customer.getBalance().add(amount));
+                        customer.setBalance(currentBalance.add(amount).setScale(2, RoundingMode.HALF_UP));
                     }
 
                     payrollRepository.save(payroll);
                 }
             }
             customerRepository.save(customer);
+        }
+    }
+
+    @Transactional
+    public void importOpeningVouchers(MultipartFile file) throws Exception {
+        JAXBContext context = JAXBContext.newInstance(ArpVouchersXml.class);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        ArpVouchersXml vouchersXml = (ArpVouchersXml) unmarshaller.unmarshal(file.getInputStream());
+
+        if (vouchersXml.getVouchers() == null) return;
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+        for (ArpVoucherXml voucherXml : vouchersXml.getVouchers()) {
+            if (voucherXml.getTransactions() == null || voucherXml.getTransactions().getList() == null) continue;
+
+
+            LocalDate voucherDate;
+            try {
+                voucherDate = LocalDate.parse(voucherXml.getDate(), dtf);
+            } catch (Exception e) {
+                voucherDate = LocalDate.of(LocalDate.now().getYear(), 1, 1);
+            }
+
+            for (ArpTransactionXml tx : voucherXml.getTransactions().getList()) {
+                String arpCode = tx.getARP_CODE() != null ? tx.getARP_CODE().trim() : "";
+                Customer customer = customerRepository.findByCode(arpCode).orElse(null);
+
+                if (customer == null) continue;
+
+                BigDecimal newDebit = parseBigDecimal(tx.getDEBIT()).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal newCredit = parseBigDecimal(tx.getCREDIT()).setScale(2, RoundingMode.HALF_UP);
+
+
+                OpeningVoucher openingBalance = openingBalanceRepository
+                        .findByCustomerIdAndDate(customer.getId(), voucherDate)
+                        .orElse(new OpeningVoucher());
+
+                if (openingBalance.getId() == null) {
+                    openingBalance.setCustomer(customer);
+                    openingBalance.setCustomerName(customer.getName());
+                    openingBalance.setDate(voucherDate);
+                    openingBalance.setDebit(BigDecimal.ZERO);
+                    openingBalance.setCredit(BigDecimal.ZERO);
+                    openingBalance.setAmount(BigDecimal.ZERO);
+                }
+
+
+                openingBalance.setDebit(openingBalance.getDebit().add(newDebit));
+                openingBalance.setCredit(openingBalance.getCredit().add(newCredit));
+
+                BigDecimal rowEffect = newDebit.subtract(newCredit);
+                openingBalance.setAmount(openingBalance.getAmount().add(rowEffect));
+
+                openingBalance.setFileNo(tx.getTRANNO());
+                openingBalance.setDescription(tx.getDESCRIPTION() != null ? tx.getDESCRIPTION().trim() : "Devir Bakiye");
+
+
+                BigDecimal currentTotalBalance = customer.getBalance() != null ? customer.getBalance() : BigDecimal.ZERO;
+                BigDecimal currentOpeningBalance = customer.getOpeningBalance() != null ? customer.getOpeningBalance() : BigDecimal.ZERO;
+
+                customer.setBalance(currentTotalBalance.add(rowEffect).setScale(2, RoundingMode.HALF_UP));
+                customer.setOpeningBalance(currentOpeningBalance.add(rowEffect).setScale(2, RoundingMode.HALF_UP));
+
+                openingBalanceRepository.save(openingBalance);
+                customerRepository.save(customer);
+            }
         }
     }
 

@@ -1,91 +1,126 @@
-// Yazılacak faturanın Templati ayarlaması
 export const generateInvoiceHTML = (inv, invoiceType) => {
-  // 1. ARA TOPLAM (MATRAH) HESAPLA: Sadece Fiyat * Miktar (Tutarlılık için kalemlerden hesaplanmaya devam ediyor)
-  const araToplam = (inv?.items || []).reduce((acc, item) => {
-    return acc + Number(item.unitPrice) * Number(item.quantity);
-  }, 0);
+  const kdvToplam = Number(inv?.kdvToplam || 0);
+  const totalPrice = Number(inv?.totalPrice || 0);
+  const subTotal = totalPrice - kdvToplam || 0;
 
-  // 2. KDV MİKTARINI AL: Doğrudan inv nesnesinden alıyoruz
-  const kdvMiktari = Number(inv?.kdvToplam || 0);
+  const isPurchase = invoiceType === "purchase";
+  const typeTitle = isPurchase ? "Satın Alma Faturası" : "Satış Faturası";
+  const primaryColor = isPurchase ? "" : "#1e3a8a";
 
-  // 3. GENEL TOPLAM: Hesaplanan matrah + gelen KDV miktarı
-  const finalTotal = araToplam + kdvMiktari;
+  const currentBalance = Number(inv?.customer?.balance || 0);
+  const usdRate = Number(inv?.usdSellingRate || 0);
+  const eurRate = Number(inv?.eurSellingRate || 0);
 
-  // 4. TARİH FORMATI: ISO (YYYY-MM-DD) -> TR (DD.MM.YYYY)
   const formattedDate = inv?.date?.includes("-")
     ? inv.date.split("-").reverse().join(".")
     : inv?.date;
 
   return `
-    <html>
+  <html>
       <head>
-        <title>Fatura_${inv?.fileNo}</title>
+        <title>${typeTitle}_${inv?.fileNo}</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
           @media print {
-            body { margin: 0; padding: 5mm; }
-            @page { size: A4; margin: 0; }
+            body { margin: 0; padding: 0; }
+            @page { size: A4; margin: 12mm; }
           }
-          body { font-family: 'serif'; background: white; color: black; padding: 40px; }
-          .invoice-box { max-width: 800px; margin: auto; }
+          body { 
+            font-family: 'Inter', sans-serif; 
+            background: white; 
+            color: #111827; 
+            -webkit-print-color-adjust: exact;
+          }
+          .invoice-box { max-width: 800px; margin: auto; padding: 10px; }
+          
+          .customer-card {
+            border-right: 3px solid ${primaryColor};
+            background: #f9fafb;
+            padding: 16px 20px;
+            border-radius: 12px 0 0 12px;
+            text-align: right;
+          }
         </style>
       </head>
       <body>
         <div class="invoice-box">
-          <div class="border-b-4 border-black pb-6 mb-8 flex justify-between items-center">
-            <div>
-              <h1 class="text-5xl font-black uppercase tracking-tighter">FATURA</h1>
-              <p class="font-mono font-bold mt-2 text-xl tracking-tight">NO: ${
-                inv?.fileNo
+          
+          <div class="flex justify-between items-start mb-12">
+            <div class="space-y-4">
+               <div>
+                  <h2 class="text-lg font-extrabold text-blue-900 leading-tight">
+                    SÖZCÜ MATBAA <br> MALZEMELERİ LTD. ŞTİ.
+                  </h2>
+                  <p class="text-[10px] text-gray-500 mt-1 leading-relaxed uppercase">
+                    Himaye-i Etfal Sok. Aydoğmuş İş Hanı 7/1<br>
+                    Cağaloğlu / İSTANBUL<br>
+                    <span class="font-semibold text-gray-900">VERGİ NO: 7800063113</span>
+                  </p>
+               </div>
+               <div class="pt-3 border-t border-gray-100">
+                  <h1 class="text-base font-bold tracking-tight" style="color: ${primaryColor}">
+                    ${typeTitle.toUpperCase()}
+                  </h1>
+                  <p class="text-xs font-mono mt-0.5 text-gray-700">NO: <b>${
+                    inv?.fileNo
+                  }</b></p>
+                  <p class="text-[10px] text-gray-500 italic">Tarih: ${formattedDate}</p>
+               </div>
+            </div>
+
+            <div class="customer-card w-full max-w-[380px] border border-gray-100 border-r-0">
+              <h3 class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">FATURA EDİLEN MÜŞTERİ</h3>
+              <p class="text-base font-bold uppercase mb-1 text-gray-900 leading-tight">${
+                inv?.customer?.name || "—"
               }</p>
-              <p class="italic text-sm">Tarih: ${formattedDate}</p>
-            </div>
-            <div class="text-right">
-              <h2 class="text-3xl font-extrabold uppercase text-blue-900">ŞİRKET ADI</h2>
-              <p class="text-xs uppercase tracking-widest mt-1 text-gray-600">ADRES BİLGİLERİ / VERGİ DAİRESİ<br>VERGİ NO: 0000000000</p>
+              <p class="text-[11px] text-gray-600 mb-3 leading-snug ml-auto max-w-[280px]">
+                ${inv?.customer?.address || "Adres bilgisi mevcut değil."}
+              </p>
+              <span class="inline-block px-2 py-0.5 bg-white border border-gray-200 rounded text-[10px] font-semibold font-mono text-gray-600">
+                VD & NO: ${inv?.customer?.vdNo || "—"}
+              </span>
             </div>
           </div>
 
-          <div class="p-6 border-2 border-black rounded-3xl mb-12 w-2/3 shadow-sm">
-            <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 border-b">Müşteri Bilgileri</h3>
-            <p class="text-xl font-bold uppercase leading-tight">${
-              inv?.customer?.name || ""
-            }</p>
-            <p class="text-sm text-gray-700 mt-1">${
-              inv?.customer?.address || "Adres bilgisi yok."
-            }</p>
-            <p class="text-xs mt-2 font-mono bg-black text-white inline-block px-2 py-1 rounded">VN: ${
-              inv?.customer?.vdNo || ""
-            }</p>
-          </div>
-
-          <table class="w-full text-left border-collapse mb-10">
+          <table class="w-full text-left mb-8">
             <thead>
-              <tr class="border-b-2 border-black text-[10px] font-black uppercase bg-gray-50">
-                <th class="py-4 px-2">Açıklama</th>
-                <th class="py-4 px-2 text-center">Miktar</th>
-                <th class="py-4 px-2 text-right">Birim Fiyat</th>
-                <th class="py-4 px-2 text-right">Toplam (KDV Hariç)</th>
+              <tr class="text-[9px] font-bold uppercase text-gray-400 border-b border-gray-200">
+                <th class="py-3 px-2">Açıklama / Ürün Kodu</th>
+                <th class="py-3 px-2 text-center">Miktar</th>
+                <th class="py-3 px-2 text-right">Birim Fiyat</th>
+                <th class="py-3 px-2 text-right">Kdv Tutarı</th>
+                <th class="py-3 px-2 text-right">Satır Toplam</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="text-[11px] divide-y divide-gray-50">
               ${inv?.items
                 ?.map(
                   (item) => `
-                <tr class="border-b border-gray-200">
-                  <td class="py-4 px-2 font-bold text-sm">${
-                    item?.material?.code
-                  } - ${item?.material?.comment || ""}</td>
-                  <td class="py-4 px-2 text-center font-mono">${
+                <tr>
+                  <td class="py-3 px-2">
+                    <div class="font-semibold text-gray-900">${
+                      item?.material?.code
+                    }</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5 italic">${
+                      item?.material?.comment || ""
+                    }</div>
+                  </td>
+                  <td class="py-3 px-2 text-center font-mono text-gray-600">${
                     item?.quantity
                   }</td>
-                  <td class="py-4 px-2 text-right font-mono">${Number(
+                  <td class="py-3 px-2 text-right font-mono text-gray-600">${Number(
                     item?.unitPrice
                   ).toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                   })} ₺</td>
-                  <td class="py-4 px-2 text-right font-black text-sm">${(
-                    Number(item?.unitPrice) * Number(item?.quantity)
+                  <td class="py-3 px-2 text-right font-mono text-gray-500">${Number(
+                    item?.kdvTutar || 0
+                  ).toLocaleString("tr-TR", {
+                    minimumFractionDigits: 2,
+                  })} ₺</td>
+                  <td class="py-3 px-2 text-right font-bold text-gray-900">${Number(
+                    item.lineTotal
                   ).toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                   })} ₺</td>
@@ -96,39 +131,70 @@ export const generateInvoiceHTML = (inv, invoiceType) => {
             </tbody>
           </table>
 
-          <div class="flex justify-end pt-8">
-            <div class="w-80 space-y-3">
-              <div class="flex justify-between text-xs font-bold border-b pb-1 text-gray-500 uppercase tracking-tighter">
-                <span>Ara Toplam (Matrah)</span>
-                <span class="text-black font-mono">${araToplam.toLocaleString(
-                  "tr-TR",
-                  { minimumFractionDigits: 2 }
-                )} ₺</span>
+          <div class="grid grid-cols-2 gap-10 items-end">
+            <div class="space-y-6 pb-2">
+              <div class="flex gap-6 border-l-2 border-gray-100 pl-3">
+                ${
+                  usdRate > 0
+                    ? `
+                  <div>
+                    <p class="text-[8px] font-bold text-gray-400 uppercase">USD KURU</p>
+                    <p class="text-xs font-mono font-bold">${usdRate.toLocaleString(
+                      "tr-TR",
+                      { minimumFractionDigits: 4 }
+                    )} ₺</p>
+                  </div>
+                `
+                    : ""
+                }
+                ${
+                  eurRate > 0
+                    ? `
+                  <div>
+                    <p class="text-[8px] font-bold text-gray-400 uppercase">EUR KURU</p>
+                    <p class="text-xs font-mono font-bold">${eurRate.toLocaleString(
+                      "tr-TR",
+                      { minimumFractionDigits: 4 }
+                    )} ₺</p>
+                  </div>
+                `
+                    : ""
+                }
               </div>
-              <div class="flex justify-between text-xs font-bold border-b pb-1 text-gray-500 uppercase tracking-tighter">
-                <span>Toplam KDV</span>
-                <span class="text-black font-mono">${kdvMiktari.toLocaleString(
-                  "tr-TR",
-                  { minimumFractionDigits: 2 }
-                )} ₺</span>
-              </div>
-              <div class="flex justify-between text-3xl font-black bg-gray-100 p-4 rounded-2xl border-2 border-black">
-                <span class="text-sm self-center uppercase tracking-tighter">Genel Toplam</span>
-                <span class="font-mono">${finalTotal.toLocaleString("tr-TR", {
-                  minimumFractionDigits: 2,
-                })} ₺</span>
-              </div>
-            </div>
-          </div>
 
-          <div class="mt-24 flex justify-around opacity-40 grayscale">
-            <div class="text-center">
-              <div class="w-32 h-32 border border-gray-400 border-dashed rounded-full flex items-center justify-center font-bold text-[10px] uppercase text-gray-400">Kaşe / İmza</div>
-              <p class="text-[10px] mt-2 font-bold">TESLİM EDEN</p>
+              <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 w-fit min-w-[180px]">
+                <p class="text-[8px] font-bold text-gray-400 uppercase mb-0.5 tracking-wider">GÜNCEL TOPLAM BAKİYE</p>
+                <p class="text-lg font-bold text-gray-900 font-mono">
+                   ${currentBalance.toLocaleString("tr-TR", {
+                     minimumFractionDigits: 2,
+                   })} ₺
+                </p>
+              </div>
             </div>
-            <div class="text-center">
-              <div class="w-32 h-32 border border-gray-400 border-dashed rounded-full flex items-center justify-center font-bold text-[10px] uppercase text-gray-400">İmza</div>
-              <p class="text-[10px] mt-2 font-bold">TESLİM ALAN</p>
+
+            <div class="space-y-2 bg-white">
+              <div class="flex justify-between text-[10px] text-gray-500 font-medium px-1">
+                <span>ARA TOPLAM (MATRAH)</span>
+                <span class="font-mono text-gray-800">${subTotal.toLocaleString(
+                  "tr-TR",
+                  { minimumFractionDigits: 2 }
+                )} ₺</span>
+              </div>
+              <div class="flex justify-between text-[10px] text-gray-500 font-medium px-1 pb-1">
+                <span>TOPLAM KDV</span>
+                <span class="font-mono text-gray-800">${kdvToplam.toLocaleString(
+                  "tr-TR",
+                  { minimumFractionDigits: 2 }
+                )} ₺</span>
+              </div>
+              <div class="flex justify-between items-center p-3 rounded-xl border border-gray-900 bg-gray-50/30">
+                <span class="text-[10px] font-bold uppercase tracking-tight text-gray-600">GENEL TOPLAM</span>
+                <span class="text-xl font-extrabold tracking-tight" style="color: ${primaryColor}">
+                  ${totalPrice.toLocaleString("tr-TR", {
+                    minimumFractionDigits: 2,
+                  })} ₺
+                </span>
+              </div>
             </div>
           </div>
         </div>

@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface PayrollRepository extends JpaRepository<Payroll, Long> {
     List<Payroll> findByTransactionDateBetween(LocalDate start, LocalDate end);
+  //  List<Payroll> findByCustomerIdAndTransactionDateBetween(Long customerId, LocalDate start, LocalDate end);
+    List<Payroll> findByCustomerIdAndTransactionDateBefore(Long customerId, LocalDate date);
 }

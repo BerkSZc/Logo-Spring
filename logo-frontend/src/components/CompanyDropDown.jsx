@@ -42,14 +42,17 @@ const CompanyDropDown = () => {
         className="
           flex items-center gap-2
           bg-indigo-600 text-white
-          px-4 py-1.5
+          px-3 py-1
           rounded-full
           text-sm font-bold
           shadow-lg hover:bg-indigo-500 transition-all
+          leading-none
         "
       >
         <span className="text-xs">🏢</span>
-        {currentCompanyName.toUpperCase()}
+        <span className="max-w-[100px]">
+          {currentCompanyName.toUpperCase()}
+        </span>
         <span className="text-[10px] opacity-70">▼</span>
       </button>
 

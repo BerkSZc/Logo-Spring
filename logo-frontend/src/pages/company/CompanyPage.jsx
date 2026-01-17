@@ -1,4 +1,3 @@
-import React from "react";
 import { useTransferLogic } from "./hooks/useTransferLogic";
 import { CompanyCard } from "./components/CompanyCard";
 import { YearManager } from "./components/YearManager";
@@ -56,8 +55,10 @@ const CompanyPage = () => {
             year={state.year}
             years={state.years}
             newYear={state.newYear}
+            shouldTransfer={state.shouldTransfer}
             onYearChange={handlers.changeYear}
             onYearRemove={handlers.removeYear}
+            onTransferChange={handlers.setShouldTransfer}
             onYearAdd={handlers.handleAddYear}
             onNewYearChange={handlers.setNewYear}
           />

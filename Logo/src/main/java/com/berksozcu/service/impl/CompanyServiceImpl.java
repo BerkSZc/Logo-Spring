@@ -43,7 +43,8 @@ public class CompanyServiceImpl implements ICompanyService {
         //Kopyalanacak Tablolar
         String[] allTables = {"customer", "material", "material_price_history"
                 , "payment_company", "purchase_invoice", "purchase_invoice_item", "received_collection",
-                "sales_invoice", "sales_invoice_item", "app_user", "payroll", "currency_rate"};
+                "sales_invoice", "sales_invoice_item", "app_user", "payroll", "currency_rate",
+                "opening_voucher"};
 
         List<String> tablesWithData = List.of("customer", "material", "app_user", "currency_rate");
         try (Connection connection = dataSource.getConnection()) {

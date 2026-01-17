@@ -13,7 +13,7 @@ export const useInvoiceLogic = () => {
   const { customers, getAllCustomers } = useClient();
   const { addSalesInvoice, getSalesInvoicesByYear } = useSalesInvoice();
   const { addPurchaseInvoice, getPurchaseInvoiceByYear } = usePurchaseInvoice();
-  const { convertCurrency } = useCurrency();
+  const { convertCurrency, getDailyRates } = useCurrency();
   const { year } = useYear();
 
   const initalItem = {
@@ -21,22 +21,77 @@ export const useInvoiceLogic = () => {
     unitPrice: "",
     quantity: "",
     kdv: 20,
+    kdvTutar: 0,
     lineTotal: 0,
   };
 
-  const [salesForm, setSalesForm] = useState({
+  const initialFormState = {
     date: new Date().toISOString().slice(0, 10),
     fileNo: "",
     customerId: "",
+    usdSellingRate: "",
+    eurSellingRate: "",
     items: [{ ...initalItem }],
-  });
+  };
 
-  const [purchaseForm, setPurchaseForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
-    fileNo: "",
-    customerId: "",
-    items: [{ ...initalItem }],
-  });
+  const [salesForm, setSalesForm] = useState({ ...initialFormState });
+  const [purchaseForm, setPurchaseForm] = useState({ ...initialFormState });
+
+  useEffect(() => {
+    const fetchAndSetRates = async () => {
+      // mode'a göre hangi formun tarihini kullanacağımızı seçiyoruz
+      const currentFormDate =
+        mode === "sales" ? salesForm.date : purchaseForm.date;
+
+      if (currentFormDate) {
+        // Backend'e tarihi parametre olarak gönderiyoruz
+        const rates = await getDailyRates(currentFormDate);
+
+        if (rates) {
+          const rateData = {
+            usdSellingRate: rates.USD || "",
+            eurSellingRate: rates.EUR || "",
+          };
+
+          const updateFormWithRates = (prev) => {
+            const updatedItems = prev.items.map((item) => {
+              const material = materials.find(
+                (m) => m.id === Number(item.materialId)
+              );
+              if (!material) return item;
+
+              const mCurrency =
+                mode === "sales"
+                  ? material.salesCurrency
+                  : material.purchaseCurrency;
+              const mPrice =
+                mode === "sales" ? material.salesPrice : material.purchasePrice;
+
+              let newPrice = item.unitPrice;
+              if (mCurrency === "USD") newPrice = mPrice * (rates.USD || 1);
+              else if (mCurrency === "EUR")
+                newPrice = mPrice * (rates.EUR || 1);
+              else if (mCurrency === "TRY") newPrice = mPrice;
+              return { ...item, unitPrice: newPrice };
+            });
+            return { ...prev, ...rateData, items: updatedItems };
+          };
+
+          if (mode === "sales") setSalesForm(updateFormWithRates);
+          else setPurchaseForm(updateFormWithRates);
+
+          // Kurlar geldiğinde formu güncelle
+          if (mode === "sales") {
+            setSalesForm((prev) => ({ ...prev, ...rateData }));
+          } else {
+            setPurchaseForm((prev) => ({ ...prev, ...rateData }));
+          }
+        }
+      }
+    };
+
+    fetchAndSetRates();
+  }, [mode, salesForm.date, purchaseForm.date, getDailyRates]);
 
   useEffect(() => {
     getMaterials();
@@ -118,6 +173,69 @@ export const useInvoiceLogic = () => {
         return { ...prev, items: newItems };
       });
     }
+  };
+
+  // Döviz kurlarını güncelleyen yardımcı fonksiyon
+  const handleRateChange = (field, value) => {
+    let val = value.replace(/[^0-9.]/g, "");
+
+    if (val.includes(".")) {
+      const [intPart, decPart] = val.split(".");
+      if (decPart.length > 2) {
+        val = `${intPart}.${decPart.slice(0, 2)}`;
+      }
+    }
+
+    if (val.length === 3 && !val.includes(".")) {
+      val = val.slice(0, 2) + "." + val.slice(2);
+    }
+
+    if (val.length > 5) return;
+
+    const numericRate = Number(val) || 0;
+    const isSales = mode === "sales";
+    const setter = isSales ? setSalesForm : setPurchaseForm;
+
+    setter((prev) => {
+      const updatedForm = { ...prev, [field]: val };
+
+      const updatedItems = updatedForm.items.map((item) => {
+        const material = materials.find(
+          (m) => m.id === Number(item.materialId)
+        );
+        if (material) {
+          const isSalesMode = mode === "sales";
+          const mCurrency = isSalesMode
+            ? material.salesCurrency
+            : material.purchaseCurrency;
+          const mPrice = isSalesMode
+            ? material.salesPrice
+            : material.purchasePrice;
+
+          let newUnitPrice = item.unitPrice;
+
+          if (field === "usdSellingRate" && mCurrency === "USD") {
+            newUnitPrice = mPrice * numericRate;
+          } else if (field === "eurSellingRate" && mCurrency === "EUR") {
+            newUnitPrice = mPrice * numericRate;
+          }
+
+          const qty = Number(item.quantity) || 0;
+          const kdvRate = Number(item.kdv) || 0;
+          const lineTotal = newUnitPrice * qty;
+
+          return {
+            ...item,
+            unitPrice: newUnitPrice,
+            lineTotal: lineTotal,
+            kdvTutar: (lineTotal * kdvRate) / 100,
+          };
+        }
+        return item;
+      });
+
+      return { ...updatedForm, items: updatedItems };
+    });
   };
 
   const resetForm = () => {
@@ -210,6 +328,7 @@ export const useInvoiceLogic = () => {
       setSalesForm,
       setPurchaseForm,
       handleItemChange,
+      handleRateChange,
       addItem,
       removeItem,
       submitForm,

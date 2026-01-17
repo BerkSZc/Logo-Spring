@@ -1,0 +1,42 @@
+package com.berksozcu.entites.customer;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "opening_voucher")
+@Getter
+@Setter
+public class OpeningVoucher {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
+    @Column(name = "customer_name")
+    private String customerName;
+
+    @Column(name = "file_no")
+    private String fileNo;
+
+    private String description;
+
+    private LocalDate date;
+
+    @Column(precision = 18, scale = 2)
+    private BigDecimal debit;
+
+    @Column(precision = 18, scale = 2)
+    private BigDecimal credit;
+
+    @Column(precision = 18, scale = 2)
+    private BigDecimal amount;
+}

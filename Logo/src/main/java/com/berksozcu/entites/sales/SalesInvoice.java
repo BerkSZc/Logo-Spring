@@ -46,6 +46,12 @@ public class SalesInvoice {
     @Column(name = "total_price", precision = 18, scale = 2)
     private BigDecimal totalPrice;
 
+    @Column(name = "eur_selling_rate", precision = 18, scale = 2)
+    private BigDecimal eurSellingRate;
+
+    @Column(name = "usd_selling_rate", precision = 18, scale = 2)
+    private BigDecimal usdSellingRate;
+
     @OneToMany(mappedBy = "salesInvoice", cascade=CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<SalesInvoiceItem> items = new ArrayList<>();

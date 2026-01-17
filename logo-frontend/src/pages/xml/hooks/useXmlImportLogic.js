@@ -8,6 +8,7 @@ export const useXmlImportLogic = () => {
   const customerInputRef = useRef(null);
   const collectionInputRef = useRef(null);
   const payrollInputRef = useRef(null);
+  const voucherInputRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -18,6 +19,7 @@ export const useXmlImportLogic = () => {
     importCollections,
     importSalesInvoice,
     importPayrolls,
+    importVouchers,
   } = useImportXml();
 
   const upload = async (file, type) => {
@@ -31,8 +33,10 @@ export const useXmlImportLogic = () => {
       else if (type === "cash") await importCollections(file);
       else if (type === "sales-invoice") await importSalesInvoice(file);
       else if (type === "payroll") await importPayrolls(file);
+      else if (type === "vouchers") await importVouchers(file);
     } finally {
       setLoading(false);
+      if (voucherInputRef.current) voucherInputRef.current = "";
     }
   };
 
@@ -45,6 +49,7 @@ export const useXmlImportLogic = () => {
       customerInputRef,
       collectionInputRef,
       payrollInputRef,
+      voucherInputRef,
     },
     handlers: { upload },
   };

@@ -90,11 +90,14 @@ public class CustomerServiceImpl implements ICustomerService {
         oldCustomer.setVdNo(updateCustomer.getVdNo());
         oldCustomer.setCountry(updateCustomer.getCountry());
 
+        BigDecimal newOpeningBalance = updateCustomer.getOpeningBalance() != null ? updateCustomer.getOpeningBalance() : BigDecimal.ZERO;
+        BigDecimal oldOpeningBalance = oldCustomer.getOpeningBalance() != null ? oldCustomer.getOpeningBalance() : BigDecimal.ZERO;
+        BigDecimal currentBalance =  oldCustomer.getBalance() != null ? oldCustomer.getBalance() : BigDecimal.ZERO;
 
-        BigDecimal openingDiff = updateCustomer.getOpeningBalance().subtract(oldCustomer.getOpeningBalance());
-        oldCustomer.setBalance(oldCustomer.getBalance().add(openingDiff));
+        BigDecimal openingDiff = oldOpeningBalance.subtract(newOpeningBalance);
+        oldCustomer.setBalance(currentBalance.add(openingDiff));
 
-        oldCustomer.setOpeningBalance(updateCustomer.getOpeningBalance());
+        oldCustomer.setOpeningBalance(newOpeningBalance);
 
         customerRepository.save(oldCustomer);
     }

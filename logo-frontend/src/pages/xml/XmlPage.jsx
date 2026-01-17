@@ -79,6 +79,13 @@ function XmlPage() {
             className="hidden"
             onChange={(e) => handlers.upload(e.target.files[0], "cash")}
           />
+          <input
+            type="file"
+            accept=".xml"
+            ref={refs.voucherInputRef}
+            className="hidden"
+            onChange={(e) => handlers.upload(e.target.files[0], "vouchers")}
+          />
 
           {/* BUTTONS */}
           <ImportButton
@@ -95,6 +102,14 @@ function XmlPage() {
             variant="emerald"
             disabled={state.loading}
             onClick={() => refs.salesInvoiceInputRef.current.click()}
+          />
+
+          <ImportButton
+            label="Açılış Fişleri (Devir Bakiyesi) XML"
+            icon="📂"
+            variant="dark-green"
+            disabled={state.loading}
+            onClick={() => refs.voucherInputRef.current.click()}
           />
 
           <ImportButton

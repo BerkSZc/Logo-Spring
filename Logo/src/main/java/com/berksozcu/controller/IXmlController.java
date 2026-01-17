@@ -19,4 +19,6 @@ public interface IXmlController {
 
      ResponseEntity<?> importPayrolls(@RequestParam("file") MultipartFile file);
 
+     ResponseEntity<?> importVouchers(@RequestParam("file") MultipartFile file);
+
 }

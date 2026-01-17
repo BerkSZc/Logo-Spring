@@ -13,6 +13,7 @@ import com.berksozcu.repository.CustomerRepository;
 import com.berksozcu.repository.MaterialPriceHistoryRepository;
 import com.berksozcu.repository.MaterialRepository;
 import com.berksozcu.repository.SalesInvoiceRepository;
+import com.berksozcu.service.ICurrencyRateService;
 import com.berksozcu.service.ISalesInvoiceService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
@@ -41,8 +42,10 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
     private ModelMapper modelMapper;
 
     @Autowired
-    private MaterialPriceHistoryRepository repository;
+    private MaterialPriceHistoryRepository materialPriceHistoryRepository;
 
+    @Autowired
+    private ICurrencyRateService currencyRateService;
 
     @Override
     @Transactional
@@ -50,15 +53,21 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
         Customer customer = customerRepository.findById(id).orElseThrow(
                 () -> new BaseException(new ErrorMessage(MessageType.MUSTERI_BULUNAMADI)));
 
-        if(customer.isArchived()) {
+        if (customer.isArchived()) {
             throw new BaseException(new ErrorMessage(MessageType.ARSIV_MUSTERI));
         }
 
-        if(salesInvoiceRepository.existsByFileNo(salesInvoice.getFileNo())) {
+        if (salesInvoiceRepository.existsByFileNo(salesInvoice.getFileNo())) {
             throw new BaseException(new ErrorMessage(MessageType.FATURA_NO_MEVCUT));
         }
 
         salesInvoice.setCustomer(customer);
+
+        BigDecimal usdRate = currencyRateService.getRateOrDefault("USD", salesInvoice.getDate());
+        BigDecimal eurRate = currencyRateService.getRateOrDefault("EUR", salesInvoice.getDate());
+
+        salesInvoice.setEurSellingRate(eurRate);
+        salesInvoice.setUsdSellingRate(usdRate);
 
         BigDecimal totalPrice = BigDecimal.ZERO;
         BigDecimal kdvToplam = BigDecimal.ZERO;
@@ -93,12 +102,14 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
         salesInvoice.setKdvToplam(kdvToplam);
         salesInvoice.setTotalPrice(totalPrice);
 
-        customer.setBalance(customer.getBalance().add(totalPrice));
+        BigDecimal currentBalance = customer.getBalance() != null ? customer.getBalance() : BigDecimal.ZERO;
+
+        customer.setBalance(currentBalance.add(totalPrice));
 
         salesInvoiceRepository.save(salesInvoice);
         customerRepository.save(customer);
 
-        for(SalesInvoiceItem item : salesInvoice.getItems()) {
+        for (SalesInvoiceItem item : salesInvoice.getItems()) {
             MaterialPriceHistory history = new MaterialPriceHistory();
             history.setDate(salesInvoice.getDate());
             history.setInvoiceType(InvoiceType.SALES);
@@ -106,7 +117,8 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
             history.setCustomerName(customer.getName());
             history.setPrice(item.getUnitPrice());
             history.setQuantity(item.getQuantity());
-            repository.save(history);
+            history.setInvoiceId(salesInvoice.getId());
+            materialPriceHistoryRepository.save(history);
         }
 
         return salesInvoice;
@@ -129,8 +141,15 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
 
         customer.setBalance(customer.getBalance().subtract(oldInvoice.getTotalPrice()));
 
+        for (SalesInvoiceItem oldItem : oldInvoice.getItems()) {
+            materialPriceHistoryRepository.deleteByMaterialIdAndInvoiceId(oldItem.getMaterial().getId(), oldInvoice.getId());
+        }
+
+
         oldInvoice.setDate(salesInvoice.getDate());
         oldInvoice.setFileNo(salesInvoice.getFileNo());
+        oldInvoice.setEurSellingRate(salesInvoice.getEurSellingRate());
+        oldInvoice.setUsdSellingRate(salesInvoice.getUsdSellingRate());
 
         List<SalesInvoiceItem> oldItems = oldInvoice.getItems();
         List<SalesInvoiceItem> newItems = salesInvoice.getItems();
@@ -142,6 +161,7 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
         for (SalesInvoiceItem newItem : newItems) {
             Material material = materialRepository.findById(newItem.getMaterial().getId())
                     .orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.MALZEME_BULUNAMADI)));
+
 
             if (newItem.getId() == null) {
                 newItem.setMaterial(material);
@@ -157,7 +177,6 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
                 oldItem.setQuantity(newItem.getQuantity());
                 oldItem.setUnitPrice(newItem.getUnitPrice());
                 oldItem.setKdv(newItem.getKdv());
-
             }
         }
 
@@ -167,10 +186,8 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
         for (SalesInvoiceItem item : oldItems) {
             //KDV HESAPLAMA
             BigDecimal kdvOran = item.getKdv().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
-
             //Malzemenin bulunduğu satırın kdv tutarı
             BigDecimal kdvTutar = item.getUnitPrice().multiply(item.getQuantity()).multiply(kdvOran);
-
             //Malzemenin bulunduğu satırın Kdv siz fiyatı
             BigDecimal lineTotal = item.getUnitPrice().multiply(item.getQuantity());
 
@@ -179,14 +196,27 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
 
             kdvToplam = kdvToplam.add(kdvTutar).setScale(2, RoundingMode.HALF_UP);
             total = total.add(lineTotal).setScale(2, RoundingMode.HALF_UP);
+
+            MaterialPriceHistory history = new MaterialPriceHistory();
+            history.setMaterial(item.getMaterial());
+            history.setInvoiceId(oldInvoice.getId());
+            history.setInvoiceType(InvoiceType.SALES);
+            history.setPrice(item.getUnitPrice());
+            history.setQuantity(item.getQuantity());
+            history.setDate(oldInvoice.getDate());
+            history.setCustomerName(customer.getName());
+            materialPriceHistoryRepository.save(history);
         }
         total = total.add(kdvToplam).setScale(2, RoundingMode.HALF_UP);
+
+
 
         oldInvoice.setKdvToplam(kdvToplam);
         oldInvoice.setTotalPrice(total);
 
         // 5- Yeni toplamı müşterinin bakiyesine ekle
-        customer.setBalance(customer.getBalance().add(total));
+        BigDecimal currentBalance = customer.getBalance() != null ? customer.getBalance() : BigDecimal.ZERO;
+        customer.setBalance(currentBalance.add(total));
 
         customerRepository.save(customer);
 
@@ -198,9 +228,13 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
     @Transactional
     public void deleteSalesInvoice(Long id) {
         SalesInvoice salesInvoice = salesInvoiceRepository.findById(id)
-                        .orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.FATURA_BULUNAMADI)));
+                .orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.FATURA_BULUNAMADI)));
 
         Customer customer = salesInvoice.getCustomer();
+
+        for (SalesInvoiceItem salesInvoiceItem : salesInvoice.getItems()) {
+            materialPriceHistoryRepository.deleteByMaterialIdAndInvoiceId(salesInvoiceItem.getMaterial().getId(), id);
+        }
 
         customer.setBalance(customer.getBalance().subtract(salesInvoice.getTotalPrice()));
         customerRepository.save(customer);
@@ -211,7 +245,7 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
     @Override
     public List<SalesInvoice> getSalesInvoicesByYear(int year) {
         LocalDate start = LocalDate.of(year, 1, 1);
-        LocalDate end = LocalDate.of(year, 12 , 31);
+        LocalDate end = LocalDate.of(year, 12, 31);
         return salesInvoiceRepository.findByDateBetween(start, end);
     }
 }

@@ -28,6 +28,9 @@ public class MaterialPriceHistory {
     @Column(name = "invoice_type")
     private InvoiceType invoiceType;
 
+    @Column(name = "invoice_id")
+    private Long invoiceId;
+
     //fiyat
     @Column(precision = 18, scale = 2)
     private BigDecimal price;

@@ -17,7 +17,10 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 
 @Service
 public class CurrencyRateServiceImpl implements ICurrencyRateService {
@@ -51,16 +54,38 @@ public class CurrencyRateServiceImpl implements ICurrencyRateService {
         }
     }
 
+    @Override
+    public BigDecimal getRateOrDefault(String currency, LocalDate invoiceDate) {
+
+        return currencyRateRepository.findFirstByCurrencyAndLastUpdatedOrderByLastUpdatedDesc(
+                currency, invoiceDate)
+                .map(CurrencyRate :: getSellingRate)
+                .orElse(BigDecimal.ONE);
+    }
+
+    @Override
+    public BigDecimal getTodaysRate(String code, LocalDate invoiceDate) {
+
+      return  currencyRateRepository.findFirstByCurrencyAndLastUpdatedOrderByLastUpdatedDesc(code, invoiceDate)
+                .map(CurrencyRate :: getSellingRate)
+                .orElse(BigDecimal.ONE);
+    }
 
     private void saveOrUpdateRate(String code, Element element) {
-        CurrencyRate rate = currencyRateRepository.findByCurrency(code).
+
+        LocalDate today = LocalDate.now();
+
+        CurrencyRate rate = currencyRateRepository.findByCurrencyAndLastUpdated(code, today).
                 orElse(new CurrencyRate());
 
         rate.setCurrency(code);
 
-        rate.setBuyingRate(new BigDecimal(element.getElementsByTagName("ForexBuying").item(0).getTextContent()));
-        rate.setSellingRate(new BigDecimal(element.getElementsByTagName("ForexSelling").item(0).getTextContent()));
-        rate.setLastUpdated(LocalDateTime.now());
+        String buyingRate = element.getElementsByTagName("ForexBuying").item(0).getTextContent();
+        String sellingRate =  element.getElementsByTagName("ForexSelling").item(0).getTextContent();
+
+        rate.setSellingRate(sellingRate != null ? new BigDecimal(sellingRate) : BigDecimal.ONE);
+        rate.setBuyingRate(buyingRate != null ? new BigDecimal(buyingRate) : BigDecimal.ONE);
+        rate.setLastUpdated(today);
 
         currencyRateRepository.save(rate);
     }

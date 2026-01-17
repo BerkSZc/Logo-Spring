@@ -75,11 +75,16 @@ export default function InvoicePage() {
           invoiceType={state.invoiceType}
           materials={state.materials}
           customers={state.customers}
+          onRateChange={handlers.handleRateChange}
           onCancel={() => {
             handlers.setEditingInvoice(null);
             handlers.setForm(null);
           }}
           onSave={handlers.handleSave}
+          modalTotals={state.modalTotals}
+          addItem={handlers.addItem}
+          removeItem={handlers.removeItem}
+          handlePriceSelect={handlers.handlePriceSelect}
         />
 
         <InvoicePrintPreview

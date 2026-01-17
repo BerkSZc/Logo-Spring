@@ -1,0 +1,33 @@
+package com.berksozcu.controller.impl;
+
+import com.berksozcu.controller.IOpeningVoucherController;
+import com.berksozcu.entites.customer.OpeningVoucher;
+import com.berksozcu.repository.CustomerRepository;
+import com.berksozcu.service.IOpeningVoucherService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+
+@RestController
+@RequestMapping("/rest/api/voucher")
+public class OpeningVoucherControllerImpl implements IOpeningVoucherController {
+
+    @Autowired
+    private IOpeningVoucherService openingVoucherService;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+
+    @PostMapping("/transfer-all")
+    public String transferAll(@RequestParam int targetYear) {
+        openingVoucherService.transferAllCustomers(targetYear);
+        return "Transfer tamamlandı";
+    }
+
+    @GetMapping("/get-by-year")
+    public OpeningVoucher getOpeningVoucherByCustomerAndYear(@RequestParam Long customerId, @RequestParam LocalDate date) {
+       return openingVoucherService.getOpeningVoucherByCustomer(customerId, date);
+    }
+}

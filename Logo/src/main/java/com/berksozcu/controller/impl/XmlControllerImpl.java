@@ -83,5 +83,16 @@ public class XmlControllerImpl implements IXmlController {
         }
     }
 
+    @Override
+    @PostMapping("/vouchers")
+    public ResponseEntity<?> importVouchers(@RequestParam("file") MultipartFile file) {
+        try {
+            importService.importOpeningVouchers(file);
+            return ResponseEntity.ok("XML başarıyla aktarıldı!");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Hata: " + e.getMessage());
+        }
+    }
+
 
 }
