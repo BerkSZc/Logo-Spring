@@ -42,7 +42,8 @@ export const useClientLogic = () => {
   const [form, setForm] = useState({
     name: "",
     balance: 0,
-    openingBalance: 0,
+    debit: 0,
+    credit: 0,
     address: "",
     country: "",
     local: "",
@@ -63,7 +64,7 @@ export const useClientLogic = () => {
         payments,
         collections,
         payrolls,
-        year
+        year,
       );
       setStatementData(data);
     }
@@ -122,17 +123,21 @@ export const useClientLogic = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const payload = { ...form };
+    const netOpeningBalance =
+      Number(form.debit || 0) - Number(form.credit || 0);
+    const payload = { ...form, openingBalance: netOpeningBalance };
+
     if (!editClient) payload.balance = form.openingBalance;
     if (editClient) {
-      updateCustomer(editClient.id, form);
+      updateCustomer(editClient.id, form, year);
       setEditClient(null);
     } else {
-      addCustomer(form);
+      addCustomer({ ...payload, balance: netOpeningBalance });
     }
     setForm({
       name: "",
-      openingBalance: 0,
+      debit: 0,
+      credit: 0,
       balance: 0,
       address: "",
       country: "",
@@ -142,8 +147,11 @@ export const useClientLogic = () => {
     });
   };
 
-  const handleEdit = (customer) => {
+  const handleEdit = async (customer) => {
     if (customer.archived) return;
+
+    const date = `${year}-01-01`;
+    const voucher = await getOpeningVoucherByYear(customer.id, date);
 
     setOpenMenuId(null);
 
@@ -151,7 +159,8 @@ export const useClientLogic = () => {
     setForm({
       name: customer.name || "",
       balance: customer.balance || "",
-      openingBalance: customer.openingBalance || "",
+      debit: voucher.debit || 0,
+      credit: voucher.credit || 0,
       address: customer.address || "",
       country: customer.country || "",
       local: customer.local || "",
@@ -166,7 +175,8 @@ export const useClientLogic = () => {
     setForm({
       name: "",
       balance: 0,
-      openingBalance: 0,
+      debit: 0,
+      credit: 0,
       address: "",
       country: "",
       local: "",

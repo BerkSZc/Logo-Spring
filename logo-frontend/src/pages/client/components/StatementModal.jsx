@@ -42,8 +42,9 @@ export default function StatementModal({
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-10 bg-gray-950 flex justify-center">
-          <div className="bg-white w-[210mm] min-h-[297mm] p-[20mm] text-black shadow-2xl">
+        <div className="flex-1 overflow-y-auto p-4 md:p-10 bg-gray-950 flex justify-center items-start">
+          {/* shadow ve padding ayarlarıyla A4 formu */}
+          <div className="bg-white w-full max-w-[210mm] min-h-[297mm] p-[15mm] text-black shadow-[0_0_50px_rgba(0,0,0,0.5)] box-border">
             <div className="flex justify-between border-b-4 border-black pb-4 mb-8">
               <h1 className="text-3xl font-black uppercase">Cari Ekstre</h1>
               <div className="text-right font-bold">{year}</div>
@@ -52,7 +53,7 @@ export default function StatementModal({
               <h3 className="text-xl font-bold">{selectedCustomer?.name}</h3>
               <p className="text-sm">{selectedCustomer?.address}</p>
             </div>
-            <table className="w-full text-[12px]">
+            <table className="w-full text-[11px] table-fixed border-collapse">
               <thead className="border-y-2 border-black">
                 <tr className="bg-gray-100 uppercase font-bold">
                   <td className="p-2">Tarih</td>
@@ -64,20 +65,20 @@ export default function StatementModal({
               </thead>
               <tbody>
                 {statementData.map((item, idx) => (
-                  <tr key={idx} className="border-b">
-                    <td className="p-2">{item.date}</td>
-                    <td className="p-2">{item.desc}</td>
-                    <td className="p-2 text-right">
+                  <tr key={idx} className="border-b border-gray-200">
+                    <td className="p-2 align-top ">{item.date}</td>
+                    <td className="p-2 align-top break-all">{item.desc}</td>
+                    <td className="p-2 text-right align-top">
                       {item.debit > 0
                         ? item.debit.toLocaleString("tr-TR")
                         : "-"}
                     </td>
-                    <td className="p-2 text-right">
+                    <td className="p-2 text-right align-top">
                       {item.credit > 0
                         ? item.credit.toLocaleString("tr-TR")
                         : "-"}
                     </td>
-                    <td className="p-2 text-right font-bold">
+                    <td className="p-2 text-right align-top font-bold whitespace-nowrap">
                       {item.balance.toLocaleString("tr-TR")} ₺
                     </td>
                   </tr>

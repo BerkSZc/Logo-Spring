@@ -27,7 +27,7 @@ export const useClient = create((set, get) => ({
     }
   },
 
-  updateCustomer: async (id, updateCustomer) => {
+  updateCustomer: async (id, updateCustomer, currentYear) => {
     try {
       await axiosInstance.put(
         `/customer/update-customer/${id}`,
@@ -36,7 +36,8 @@ export const useClient = create((set, get) => ({
           headers: {
             "Content-Type": "application/json",
           },
-        }
+          params: { currentYear },
+        },
       );
       toast.success("Müşteri değiştirildi");
       await get().getAllCustomers();
@@ -53,12 +54,12 @@ export const useClient = create((set, get) => ({
     try {
       await axiosInstance.post(
         `/customer/archive?archived=${archived}`,
-        idList
+        idList,
       );
       toast.success(
         archived
           ? `${idList.length} müşteri arşivlendi`
-          : `${idList.length} müşteri arşivden çıkartıldı`
+          : `${idList.length} müşteri arşivden çıkartıldı`,
       );
       await get().getAllCustomers();
     } catch (error) {

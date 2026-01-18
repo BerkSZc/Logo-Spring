@@ -12,6 +12,6 @@ public interface ICustomerController {
      RootEntity<Customer> findCustomerById(Long id);
      RootEntity<Customer> addCustomer(Customer customer);
      RootEntity<List<Customer>> getAllCustomer();
-     void updateCustomer(Long id, Customer updateCustomer);
+     void updateCustomer(Long id, Customer updateCustomer,  int currentYear);
      void setArchived(@RequestBody List<Long> ids, @RequestParam boolean archived);
 }

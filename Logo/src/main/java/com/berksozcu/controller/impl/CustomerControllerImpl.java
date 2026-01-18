@@ -42,8 +42,9 @@ public class CustomerControllerImpl extends RestBaseController implements ICusto
 
     @Override
     @PutMapping("/update-customer/{id}")
-    public void updateCustomer(@PathVariable(name = "id") Long id, @RequestBody Customer updateCustomer) {
-        customerService.updateCustomer(id, updateCustomer);
+    public void updateCustomer(@PathVariable(name = "id") Long id, @RequestBody Customer updateCustomer,
+    @RequestParam int currentYear) {
+        customerService.updateCustomer(id, updateCustomer, currentYear);
     }
 
     @Override
