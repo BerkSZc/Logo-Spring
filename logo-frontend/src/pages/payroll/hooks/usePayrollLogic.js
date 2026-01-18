@@ -11,6 +11,7 @@ export const usePayrollLogic = () => {
 
   const [type, setType] = useState("cheque_in");
   const [editing, setEditing] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({
     transactionDate: new Date().toISOString().slice(0, 10),
@@ -22,6 +23,20 @@ export const usePayrollLogic = () => {
     bankBranch: "",
     comment: "",
   });
+
+  const payrollType = type === "cheque_in" || "cheque_out" ? "ÇEK" : "SENET";
+
+  useEffect(() => {
+    if (deleteTarget) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [deleteTarget]);
 
   useEffect(() => {
     if (year) {
@@ -91,7 +106,7 @@ export const usePayrollLogic = () => {
 
   const totalAmount = filteredList.reduce(
     (sum, item) => sum + Number(item.amount || 0),
-    0
+    0,
   );
 
   const resetForm = () => {
@@ -139,10 +154,15 @@ export const usePayrollLogic = () => {
     });
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bu kaydı silmek istediğinize emin misiniz?")) {
-      await deleteCheque(id);
-      getPayrollByYear(year);
+  const openDeleteModel = (item) => {
+    setDeleteTarget(item);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget) {
+      await deleteCheque(deleteTarget.id);
+      await getPayrollByYear(year);
+      setDeleteTarget(null);
     }
   };
 
@@ -155,8 +175,10 @@ export const usePayrollLogic = () => {
       currentTheme,
       filteredList,
       totalAmount,
+      deleteTarget,
       customers,
       year,
+      payrollType,
     },
     handlers: {
       setType,
@@ -164,8 +186,10 @@ export const usePayrollLogic = () => {
       setForm,
       handleSubmit,
       resetForm,
+      setDeleteTarget,
+      openDeleteModel,
       handleEditClick,
-      handleDelete,
+      confirmDelete,
     },
   };
 };

@@ -13,6 +13,6 @@ import java.util.Optional;
 public interface OpeningVoucherRepository extends JpaRepository<OpeningVoucher, Long> {
 
     Optional<OpeningVoucher> findByCustomerIdAndDate(Long customerId, LocalDate date);
+
     Optional<OpeningVoucher> findByCustomerIdAndDateBetween(Long customerId, LocalDate start, LocalDate end);
-    List<OpeningVoucher> findByCustomerIdAndDateBefore(Long customerId,LocalDate date);
 }

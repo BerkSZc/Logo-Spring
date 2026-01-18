@@ -8,7 +8,7 @@ public interface ICustomerService {
      Customer findCustomerById(Long id);
      Customer addCustomer(Customer customer);
      List<Customer> getAllCustomer();
-     void updateCustomer(Long id, Customer updateCustomer);
+     void updateCustomer(Long id, Customer updateCustomer, int currentYear);
      List<Customer> findByArchivedTrue();
      List<Customer> findByArchivedFalse();
      void setArchived(List<Long> ids, boolean archived);

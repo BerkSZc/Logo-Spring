@@ -487,15 +487,18 @@ public class XmlImportService {
                     openingBalance.setDate(voucherDate);
                     openingBalance.setDebit(BigDecimal.ZERO);
                     openingBalance.setCredit(BigDecimal.ZERO);
-                    openingBalance.setAmount(BigDecimal.ZERO);
                 }
 
+                BigDecimal customerCredit = customer.getCredit() != null ? customer.getCredit() : BigDecimal.ZERO;
+                BigDecimal customerDebit = customer.getDebit() != null ? customer.getDebit() : BigDecimal.ZERO;
+
+                customer.setCredit(customerCredit.add(newCredit).setScale(2, RoundingMode.HALF_UP));
+                customer.setDebit(customerDebit.add(newDebit).setScale(2, RoundingMode.HALF_UP));
 
                 openingBalance.setDebit(openingBalance.getDebit().add(newDebit));
                 openingBalance.setCredit(openingBalance.getCredit().add(newCredit));
 
                 BigDecimal rowEffect = newDebit.subtract(newCredit);
-                openingBalance.setAmount(openingBalance.getAmount().add(rowEffect));
 
                 openingBalance.setFileNo(tx.getTRANNO());
                 openingBalance.setDescription(tx.getDESCRIPTION() != null ? tx.getDESCRIPTION().trim() : "Devir Bakiye");

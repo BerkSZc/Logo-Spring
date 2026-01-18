@@ -42,6 +42,18 @@ export const useInvoicePageLogic = () => {
   });
 
   useEffect(() => {
+    if (printItem || deleteTarget || editingInvoice) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [printItem, deleteTarget, editingInvoice]);
+
+  useEffect(() => {
     if (!year) return;
     getMaterials();
     getAllCustomers();
@@ -98,7 +110,7 @@ export const useInvoicePageLogic = () => {
     setForm((prev) => {
       const updatedItems = prev.items.map((item) => {
         const material = materials.find(
-          (m) => m.id === Number(item.materialId)
+          (m) => m.id === Number(item.materialId),
         );
         if (!material) return item;
 
@@ -120,8 +132,8 @@ export const useInvoicePageLogic = () => {
 
         const qty = Number(item.quantity) || 0;
         const kdvRate = Number(item.kdv) || 0;
-        const newLineTotal = newUnitPrice * qty;
-        const newKdvTutar = (newLineTotal * kdvRate) / 100;
+        const newLineTotal = Number((newUnitPrice * qty).toFixed(2));
+        const newKdvTutar = Number(((newLineTotal * kdvRate) / 100).toFixed(2));
 
         return {
           ...item,
@@ -258,14 +270,14 @@ export const useInvoicePageLogic = () => {
         const { lineTotal, kdvTutar } = calculateRow(
           item.unitPrice,
           item.quantity,
-          item.kdv
+          item.kdv,
         );
         return {
           subTotal: acc.subTotal + lineTotal,
           kdvTotal: acc.kdvTotal + kdvTutar,
         };
       },
-      { subTotal: 0, kdvTotal: 0 }
+      { subTotal: 0, kdvTotal: 0 },
     );
   }, [form?.items]);
 

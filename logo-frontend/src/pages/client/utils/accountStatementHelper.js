@@ -7,7 +7,7 @@ export const accountStatementHelper = (
   payments,
   collections,
   payrolls,
-  year
+  year,
 ) => {
   let combined = [];
   if (!selectedCustomer) return [];
@@ -22,7 +22,6 @@ export const accountStatementHelper = (
   };
 
   // 1. AÇILIŞ FİŞİ (Mevcut Bakiye)
-  // undefined hatasını engellemek için year kontrolü
   const displayYear = year || new Date().getFullYear();
   if (
     selectedCustomer.openingBalance &&
@@ -68,17 +67,11 @@ export const accountStatementHelper = (
       const typeLabel = p.payrollType === "CHEQUE" ? "Çek" : "Senet";
       const isInput = p.payrollModel === "INPUT";
 
-      // Tarih formatını standartlaştır (Bazı veriler tireli gelebiliyor)
-      const formattedDate =
-        p.transactionDate && p.transactionDate.includes("-")
-          ? p.transactionDate.split("-").reverse().join(".")
-          : p.transactionDate;
-
       combined.push({
-        date: formattedDate,
-        desc: `${typeLabel} ${isInput ? "Girişi" : "Çıkışı"} (Vade: ${
-          p.expiredDate
-        } - No: ${p.fileNo})`,
+        date: formatDateToTR(p.transactionDate),
+        desc: `${typeLabel} ${isInput ? "Girişi" : "Çıkışı"} (Vade: ${formatDateToTR(
+          p.expiredDate,
+        )} - No: ${p.fileNo})`,
         debit: isInput ? 0 : Number(p.amount || 0),
         credit: isInput ? Number(p.amount || 0) : 0,
       });
@@ -108,11 +101,10 @@ export const accountStatementHelper = (
       });
     });
 
-  // 7. Tarihe göre sırala (Esnek Sıralama Mantığı)
+  // 7. Tarihe göre sırala
   combined.sort((a, b) => {
     const parseDate = (d) => {
       if (!d || typeof d !== "string") return new Date(0);
-      // GG.AA.YYYY -> YYYY-MM-DD çevirir, tireliyse direkt kullanır
       const normalized = d.includes(".") ? d.split(".").reverse().join("-") : d;
       return new Date(normalized);
     };

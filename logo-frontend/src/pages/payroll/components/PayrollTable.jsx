@@ -93,7 +93,7 @@ export default function PayrollTable({
                       ✏️
                     </button>
                     <button
-                      onClick={() => onDelete(item.id)}
+                      onClick={() => onDelete(item)}
                       className="p-2.5 bg-gray-800 hover:bg-red-500/20 text-red-500 rounded-xl transition-all shadow-lg border border-gray-700"
                     >
                       🗑️

@@ -37,6 +37,4 @@ public class OpeningVoucher {
     @Column(precision = 18, scale = 2)
     private BigDecimal credit;
 
-    @Column(precision = 18, scale = 2)
-    private BigDecimal amount;
 }

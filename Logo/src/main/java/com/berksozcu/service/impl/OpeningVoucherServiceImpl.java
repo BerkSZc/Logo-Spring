@@ -85,7 +85,6 @@ public class OpeningVoucherServiceImpl implements IOpeningVoucherService {
         voucher.setDate(calculationLimit);
         voucher.setDescription(targetYear + " Yılı Otomatik Devir");
 
-        BigDecimal currentAmount = voucher.getAmount() != null ? voucher.getAmount() : BigDecimal.ZERO;
 
         // Bakiyeyi Borç (Debit) veya Alacak (Credit) sütununa yerleştir
         if (finalBalance.compareTo(BigDecimal.ZERO) >= 0) {
@@ -95,8 +94,6 @@ public class OpeningVoucherServiceImpl implements IOpeningVoucherService {
             voucher.setDebit(BigDecimal.ZERO);
             voucher.setCredit(finalBalance.abs().setScale(2, RoundingMode.HALF_UP));
         }
-
-        voucher.setAmount(finalBalance.setScale(2, RoundingMode.HALF_UP));
 
         return openingVoucherRepository.save(voucher);
     }

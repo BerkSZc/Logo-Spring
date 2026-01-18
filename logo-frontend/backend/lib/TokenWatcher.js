@@ -5,8 +5,8 @@ export default function TokenWatcher() {
   const { logout } = useAuthentication();
   const timerRef = useRef(null);
 
-  // 15 dakika (milisaniye cinsinden: 15 * 60 * 1000)
-  const INACTIVITY_LIMIT = 15 * 60 * 1000;
+  // 10 saat (milisaniye cinsinden: 10 * 60 * 60 * 1000)
+  const INACTIVITY_LIMIT = 10 * 60 * 60 * 1000;
 
   const resetTimer = () => {
     // Mevcut zamanlayıcıyı temizle

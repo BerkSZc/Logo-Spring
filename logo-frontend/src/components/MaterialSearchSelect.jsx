@@ -16,13 +16,13 @@ export default function MaterialSearchSelect({
   const dropdownRef = useRef(null);
 
   const selectedMaterial = materials.find(
-    (m) => String(m.id) === String(value)
+    (m) => String(m.id) === String(value),
   );
 
   const filtered = materials.filter(
     (m) =>
       m.code?.toLowerCase().includes(search.toLowerCase()) ||
-      m.comment?.toLowerCase().includes(search.toLowerCase())
+      m.comment?.toLowerCase().includes(search.toLowerCase()),
   );
 
   useEffect(() => {
@@ -71,8 +71,8 @@ export default function MaterialSearchSelect({
           open
             ? search
             : selectedMaterial
-            ? `${selectedMaterial.code} – ${selectedMaterial.comment}`
-            : ""
+              ? `${selectedMaterial.code} – ${selectedMaterial.comment}`
+              : ""
         }
         placeholder={placeholder}
         onFocus={() => {
@@ -124,7 +124,7 @@ export default function MaterialSearchSelect({
               </div>
             ))}
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );

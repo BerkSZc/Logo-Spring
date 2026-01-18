@@ -56,7 +56,7 @@ export const useInvoiceLogic = () => {
           const updateFormWithRates = (prev) => {
             const updatedItems = prev.items.map((item) => {
               const material = materials.find(
-                (m) => m.id === Number(item.materialId)
+                (m) => m.id === Number(item.materialId),
               );
               if (!material) return item;
 
@@ -101,13 +101,13 @@ export const useInvoiceLogic = () => {
   const salesCalculation = useMemo(() => {
     const total = salesForm.items.reduce(
       (s, i) => s + (Number(i.unitPrice) * Number(i.quantity) || 0),
-      0
+      0,
     );
     const kdv = salesForm.items.reduce(
       (s, i) =>
         s +
         ((Number(i.unitPrice) * Number(i.quantity) || 0) * Number(i.kdv)) / 100,
-      0
+      0,
     );
     return { total, kdv, grandTotal: total + kdv };
   }, [salesForm.items]);
@@ -115,13 +115,13 @@ export const useInvoiceLogic = () => {
   const purchaseCalculation = useMemo(() => {
     const total = purchaseForm.items.reduce(
       (s, i) => s + (Number(i.unitPrice) * Number(i.quantity) || 0),
-      0
+      0,
     );
     const kdv = purchaseForm.items.reduce(
       (s, i) =>
         s +
         ((Number(i.unitPrice) * Number(i.quantity) || 0) * Number(i.kdv)) / 100,
-      0
+      0,
     );
     return { total, kdv, grandTotal: total + kdv };
   }, [purchaseForm.items]);
@@ -201,7 +201,7 @@ export const useInvoiceLogic = () => {
 
       const updatedItems = updatedForm.items.map((item) => {
         const material = materials.find(
-          (m) => m.id === Number(item.materialId)
+          (m) => m.id === Number(item.materialId),
         );
         if (material) {
           const isSalesMode = mode === "sales";
@@ -269,10 +269,18 @@ export const useInvoiceLogic = () => {
     const currentCalc = isSales ? salesCalculation : purchaseCalculation;
 
     const validItems = currentForm.items.filter(
-      (item) => item.materialId !== ""
+      (item) => item.materialId !== "",
     );
     if (validItems.length === 0) {
       toast.error("Faturaya en az bir malzeme seçerek eklemelisiniz!");
+      return;
+    }
+
+    const selectedYear = new Date(currentForm.date).getFullYear();
+    if (selectedYear != Number(year)) {
+      toast.error(
+        `Seçilen tarih ${selectedYear} yılına ait. Lütfen ${year} yılına uygun bir tarih seçin.`,
+      );
       return;
     }
 
