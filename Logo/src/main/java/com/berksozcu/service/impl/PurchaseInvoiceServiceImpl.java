@@ -199,9 +199,10 @@ public class PurchaseInvoiceServiceImpl implements IPurchaseInvoiceService {
         if (voucher.getFinalBalance() == null) {
             voucher.setFinalBalance(newPurchaseInvoice.getTotalPrice());
         }
+        BigDecimal finalBalance = voucher.getFinalBalance() != null ? voucher.getFinalBalance() : BigDecimal.ZERO;
 
         Customer customer = oldInvoice.getCustomer();
-        voucher.setFinalBalance(voucher.getFinalBalance().add(oldInvoice.getTotalPrice()));
+        voucher.setFinalBalance(finalBalance.add(oldInvoice.getTotalPrice()));
         voucher.setCredit(voucher.getCredit().add(oldInvoice.getTotalPrice()));
 
 
@@ -276,7 +277,7 @@ public class PurchaseInvoiceServiceImpl implements IPurchaseInvoiceService {
         oldInvoice.setKdvToplam(kdvToplam);
         oldInvoice.setTotalPrice(total);
 
-        voucher.setFinalBalance(voucher.getFinalBalance().subtract(total));
+        voucher.setFinalBalance(finalBalance.subtract(total));
         voucher.setCredit(voucher.getCredit().subtract(total));
         customerRepository.save(customer);
 

@@ -167,7 +167,9 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
 
         Customer customer = oldInvoice.getCustomer();
 
-        voucher.setFinalBalance(voucher.getFinalBalance().subtract(oldInvoice.getTotalPrice()));
+        BigDecimal finalBalance = voucher.getFinalBalance() != null ? voucher.getFinalBalance() : BigDecimal.ZERO;
+
+        voucher.setFinalBalance(finalBalance.subtract(oldInvoice.getTotalPrice()));
         voucher.setDebit(voucher.getDebit().add(oldInvoice.getTotalPrice()));
 
         for (SalesInvoiceItem oldItem : oldInvoice.getItems()) {
@@ -235,7 +237,7 @@ public class SalesInvoiceServiceImpl implements ISalesInvoiceService {
         oldInvoice.setTotalPrice(total);
 
         // 5- Yeni toplamı müşterinin bakiyesine ekle
-        voucher.setFinalBalance(voucher.getFinalBalance().add(total));
+        voucher.setFinalBalance(finalBalance.add(total));
         voucher.setDebit(voucher.getDebit().add(total));
         openingVoucherRepository.save(voucher);
         customerRepository.save(customer);

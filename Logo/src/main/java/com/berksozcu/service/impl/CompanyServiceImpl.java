@@ -6,6 +6,7 @@ import com.berksozcu.exception.ErrorMessage;
 import com.berksozcu.exception.MessageType;
 import com.berksozcu.repository.CompanyRepository;
 import com.berksozcu.service.ICompanyService;
+import com.berksozcu.service.IOpeningVoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -44,9 +45,10 @@ public class CompanyServiceImpl implements ICompanyService {
         String[] allTables = {"customer", "material", "material_price_history"
                 , "payment_company", "purchase_invoice", "purchase_invoice_item", "received_collection",
                 "sales_invoice", "sales_invoice_item", "app_user", "payroll", "currency_rate",
-                "opening_voucher"};
+                "opening_voucher", "company"};
 
-        List<String> tablesWithData = List.of("customer", "material", "app_user", "currency_rate");
+        List<String> tablesWithData = List.of("customer", "material", "app_user", "currency_rate", "company",
+                "material_price_history");
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
 
@@ -75,7 +77,6 @@ public class CompanyServiceImpl implements ICompanyService {
                 company.setName(companyName);
                 company.setSchemaName(schemaName);
                 company.setDescription(description);
-
 
                 companyRepository.save(company);
             } catch (SQLException e) {
