@@ -344,9 +344,6 @@ export const useInvoiceLogic = () => {
   const currentForm = mode === "sales" ? salesForm : purchaseForm;
   const currentCalc = mode === "sales" ? salesCalculation : purchaseCalculation;
 
-  const minDate = `${year}-01-01`;
-  const maxDate = `${year}-12-31`;
-
   return {
     state: {
       mode,
@@ -356,8 +353,6 @@ export const useInvoiceLogic = () => {
       customers,
       salesCalculation,
       purchaseCalculation,
-      maxDate,
-      minDate,
       currentForm,
       currentCalc,
     },

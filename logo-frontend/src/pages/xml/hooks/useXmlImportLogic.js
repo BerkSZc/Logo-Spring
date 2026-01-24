@@ -22,7 +22,14 @@ export const useXmlImportLogic = () => {
     importVouchers,
   } = useImportXml();
 
-  const upload = async (file, type) => {
+  const handleFileChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      upload(file, type, e.target);
+    }
+  };
+
+  const upload = async (file, type, targetInput) => {
     if (!file) return;
     setLoading(true);
 
@@ -36,7 +43,7 @@ export const useXmlImportLogic = () => {
       else if (type === "vouchers") await importVouchers(file);
     } finally {
       setLoading(false);
-      if (voucherInputRef.current) voucherInputRef.current = "";
+      if (targetInput) targetInput.value = "";
     }
   };
 
@@ -51,6 +58,6 @@ export const useXmlImportLogic = () => {
       payrollInputRef,
       voucherInputRef,
     },
-    handlers: { upload },
+    handlers: { handleFileChange },
   };
 };

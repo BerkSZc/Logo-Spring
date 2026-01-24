@@ -15,6 +15,8 @@ export default function PayrollPage() {
     customers,
     year,
     payrollType,
+    maxDate,
+    minDate,
   } = state;
 
   return (

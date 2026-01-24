@@ -10,8 +10,6 @@ export default function InvoiceForm() {
     purchaseForm,
     materials,
     customers,
-    maxDate,
-    minDate,
     currentForm,
     currentCalc,
   } = state;
@@ -61,8 +59,6 @@ export default function InvoiceForm() {
                         date: e.target.value,
                       })
                 }
-                max={maxDate}
-                min={minDate}
                 className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none transition-all"
               />
             </div>

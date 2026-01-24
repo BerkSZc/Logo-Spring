@@ -40,51 +40,49 @@ function XmlPage() {
             accept=".xml"
             ref={refs.purchaseInvoiceInputRef}
             className="hidden"
-            onChange={(e) => handlers.upload(e.target.files[0], "invoice")}
+            onChange={(e) => handlers.handleFileChange(e, "invoice")}
           />
           <input
             type="file"
             accept=".xml"
             ref={refs.salesInvoiceInputRef}
             className="hidden"
-            onChange={(e) =>
-              handlers.upload(e.target.files[0], "sales-invoice")
-            }
+            onChange={(e) => handlers.handleFileChange(e, "sales-invoice")}
           />
           <input
             type="file"
             accept=".xml"
             ref={refs.payrollInputRef}
             className="hidden"
-            onChange={(e) => handlers.upload(e.target.files[0], "payroll")}
+            onChange={(e) => handlers.handleFileChange(e, "payroll")}
           />
           <input
             type="file"
             accept=".xml"
             ref={refs.materialInputRef}
             className="hidden"
-            onChange={(e) => handlers.upload(e.target.files[0], "materials")}
+            onChange={(e) => handlers.handleFileChange(e, "materials")}
           />
           <input
             type="file"
             accept=".xml"
             ref={refs.customerInputRef}
             className="hidden"
-            onChange={(e) => handlers.upload(e.target.files[0], "customers")}
+            onChange={(e) => handlers.handleFileChange(e, "customers")}
           />
           <input
             type="file"
             accept=".xml"
             ref={refs.collectionInputRef}
             className="hidden"
-            onChange={(e) => handlers.upload(e.target.files[0], "cash")}
+            onChange={(e) => handlers.handleFileChange(e, "cash")}
           />
           <input
             type="file"
             accept=".xml"
             ref={refs.voucherInputRef}
             className="hidden"
-            onChange={(e) => handlers.upload(e.target.files[0], "vouchers")}
+            onChange={(e) => handlers.handleFileChange(e, "vouchers")}
           />
 
           {/* BUTTONS */}

@@ -89,7 +89,6 @@ export const useFinancialLogic = () => {
       toast.error("Mali yıl arasında ekleme yapın");
       return;
     }
-
     const customerId = Number(addForm.customerId);
     const price = Number(addForm.price);
     const payload = {
@@ -117,6 +116,7 @@ export const useFinancialLogic = () => {
 
   const handleEdit = (item) => {
     setEditing(item);
+
     setEditForm({
       date: item.date,
       customerId: item.customer?.id || "",
@@ -127,6 +127,7 @@ export const useFinancialLogic = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+
     const customerId = Number(editForm.customerId);
     const price = Number(editForm.price);
     const payload = {
@@ -136,6 +137,13 @@ export const useFinancialLogic = () => {
       price: price,
       customer: { id: customerId },
     };
+
+    const selectedYear = new Date(editForm.date).getFullYear();
+
+    if (selectedYear !== Number(year)) {
+      toast.error("Yeni tarih mali yıl aralığında olmalıdır!");
+      return;
+    }
 
     if (type === "received") {
       await editCollection(payload.id, payload);
@@ -175,8 +183,6 @@ export const useFinancialLogic = () => {
       filteredList,
       customers,
       year,
-      minDate: `${year}-01-01`,
-      maxDate: `${year}-12-31`,
     },
     handlers: {
       setType,

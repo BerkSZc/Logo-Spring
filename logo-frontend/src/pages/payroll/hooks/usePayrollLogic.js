@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useClient } from "../../../../backend/store/useClient.js";
 import { useYear } from "../../../context/YearContext.jsx";
 import { usePayroll } from "../../../../backend/store/usePayroll.js";
+import toast from "react-hot-toast";
 
 export const usePayrollLogic = () => {
   const { customers, getAllCustomers } = useClient();
@@ -13,8 +14,17 @@ export const usePayrollLogic = () => {
   const [editing, setEditing] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState("");
+
+  const getInitialDate = (selectedYear) => {
+    const currentActualYear = new Date().getFullYear();
+
+    return currentActualYear === Number(year)
+      ? new Date().toISOString().slice(0, 10)
+      : `${selectedYear}-01-01`;
+  };
+
   const [form, setForm] = useState({
-    transactionDate: new Date().toISOString().slice(0, 10),
+    transactionDate: getInitialDate(year),
     expiredDate: new Date().toISOString().slice(0, 10),
     customerId: "",
     amount: "",
@@ -111,7 +121,7 @@ export const usePayrollLogic = () => {
 
   const resetForm = () => {
     setForm({
-      transactionDate: new Date().toISOString().slice(0, 10),
+      transactionDate: getInitialDate(year),
       expiredDate: new Date().toISOString().slice(0, 10),
       customerId: "",
       amount: "",
@@ -125,6 +135,17 @@ export const usePayrollLogic = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const selectedYear = new Date(form.transactionDate).getFullYear();
+
+    if (selectedYear !== Number(year)) {
+      toast.error("İşlem tarihi mali yıl içinde olmalıdır!");
+      return;
+    }
+
+    if (!form.customerId) {
+      toast.error("Müşteri Seçin!");
+      return;
+    }
     const payload = {
       ...form,
       payrollType: type.includes("cheque") ? "CHEQUE" : "BOND",

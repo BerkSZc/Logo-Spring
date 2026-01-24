@@ -7,6 +7,7 @@ import { useCurrency } from "../../../../backend/store/useCurrency.js";
 import { useYear } from "../../../context/YearContext";
 import { useTenant } from "../../../context/TenantContext";
 import { generateInvoiceHTML } from "../../../utils/printHelpers.js";
+import toast from "react-hot-toast";
 
 export const useInvoicePageLogic = () => {
   const {
@@ -237,6 +238,13 @@ export const useInvoicePageLogic = () => {
         kdv: Number(i.kdv),
       })),
     };
+
+    const selectedYear = new Date(form.date).getFullYear();
+    if (selectedYear !== Number(year)) {
+      toast.error("Yeni tarih mali yıl içinde olmalıdır!");
+      return;
+    }
+
     invoiceType === "purchase"
       ? await editPurchaseInvoice(editingInvoice.id, payload)
       : await editSalesInvoice(editingInvoice.id, payload);
