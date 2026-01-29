@@ -103,6 +103,11 @@ public class XmlImportService {
                 continue;
             }
 
+            if(xmlInv.getCANCELLED() != null && xmlInv.getCANCELLED().equals(1)) {
+                System.out.println("İptal olmuş fatura atlandı: " + xmlInv.getDOC_NUMBER());
+                continue;
+            }
+
             PurchaseInvoice invoice = new PurchaseInvoice();
             LocalDate date = LocalDate.parse(xmlInv.getDATE(), DateTimeFormatter.ofPattern("dd.MM.yyyy"));
             // Tarih Logo formatı: 01.01.2025
@@ -227,6 +232,11 @@ public class XmlImportService {
 
             if (salesInvoiceRepository.existsByFileNo(xmlInv.getNUMBER())) {
                 System.out.println("Fatura no mevcut: " + xmlInv.getNUMBER());
+                continue;
+            }
+
+            if( xmlInv.getCANCELLED() != null && xmlInv.getCANCELLED().equals(1)) {
+                System.out.println("İptal edilmiş Fatura atlandı: " + xmlInv.getNUMBER());
                 continue;
             }
 
@@ -375,6 +385,7 @@ public class XmlImportService {
             customer.setLocal(c.getCITY());
             customer.setDistrict(c.getDISTRICT());
             customer.setAddress(c.getADDRESS1());
+            customer.setArchived(c.getRECORD_STATUS() != null && c.getRECORD_STATUS() == 1);
 
             customer.setVdNo(c.getTAX_ID());
 

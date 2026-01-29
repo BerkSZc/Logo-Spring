@@ -14,14 +14,15 @@ export const usePaymentCompany = create((set) => ({
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       toast.success("Firmaya ödeme gerçekleştirildi");
       set((state) => ({ payments: [...state.payments, res.data] }));
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at addPayment: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 
@@ -30,7 +31,9 @@ export const usePaymentCompany = create((set) => ({
       const res = await axiosInstance.get("/payment/find-all");
       set({ payments: res.data });
     } catch (error) {
-      toast.error("Error at getPayments: " + error);
+      const backendErr =
+        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
+      toast.error("Error at getPayments: " + backendErr);
     }
   },
   editPayment: async (id, payment) => {
@@ -44,7 +47,8 @@ export const usePaymentCompany = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at editPayment: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
   deletePaymentCompany: async (id) => {
@@ -54,7 +58,8 @@ export const usePaymentCompany = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at deletePayment: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
   getPaymentCollectionsByYear: async (year) => {

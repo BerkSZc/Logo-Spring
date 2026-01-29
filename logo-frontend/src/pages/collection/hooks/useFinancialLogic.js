@@ -123,21 +123,25 @@ export const useFinancialLogic = () => {
       customer: { id: customerId },
     };
 
-    if (type === "received") {
-      await addCollection(customerId, payload);
-      await getReceivedCollectionsByYear(year);
-    } else {
-      await addPayment(customerId, payload);
-      await getPaymentCollectionsByYear(year);
-    }
+    try {
+      if (type === "received") {
+        await addCollection(customerId, payload);
+        await getReceivedCollectionsByYear(year);
+      } else {
+        await addPayment(customerId, payload);
+        await getPaymentCollectionsByYear(year);
+      }
 
-    setAddForm({
-      date: getInitialDate(year),
-      customerId: "",
-      price: "",
-      comment: "",
-      fileNo: "",
-    });
+      setAddForm({
+        date: getInitialDate(year),
+        customerId: "",
+        price: "",
+        comment: "",
+        fileNo: "",
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleEdit = (item) => {

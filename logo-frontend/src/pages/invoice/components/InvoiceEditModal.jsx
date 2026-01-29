@@ -1,6 +1,5 @@
 import MaterialSearchSelect from "../../../components/MaterialSearchSelect";
 import MaterialPriceTooltip from "../../../components/MaterialPriceTooltip";
-import { useMemo } from "react";
 
 export default function InvoiceEditModal({
   editingInvoice,
@@ -235,13 +234,10 @@ export default function InvoiceEditModal({
             <div className="flex justify-between text-2xl font-black pt-3 border-t border-gray-700 mt-2">
               <span className="text-white">Genel Toplam:</span>
               <span className="text-emerald-400">
-                {(modalTotals.kdvTotal + modalTotals.subTotal).toLocaleString(
-                  "tr-TR",
-                  {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  },
-                )}{" "}
+                {modalTotals.generalTotal.toLocaleString("tr-TR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
                 ₺
               </span>
             </div>

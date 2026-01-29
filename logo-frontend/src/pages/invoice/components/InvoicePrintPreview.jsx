@@ -1,15 +1,37 @@
+import { useEffect, useState } from "react";
+import { useVoucher } from "../../../../backend/store/useVoucher";
+
 export default function InvoicePrintPreview({
   printItem,
   onCancel,
   onExecutePrint,
 }) {
+  const { getOpeningVoucherByYear } = useVoucher();
+  const [voucher, setVoucher] = useState(null);
+
+  useEffect(() => {
+    const loadBalance = async () => {
+      if (!printItem?.customer?.id || !printItem?.date) return;
+
+      const year = new Date(printItem.date).getFullYear();
+      const dateString = `${year}-01-01`;
+
+      const data = await getOpeningVoucherByYear(
+        printItem.customer.id,
+        dateString,
+      );
+      setVoucher(data);
+    };
+    loadBalance();
+  }, [printItem?.id]);
+
   if (!printItem) return null;
 
   const kdvToplam = Number(printItem.kdvToplam || 0);
   const totalPrice = Number(printItem.totalPrice || 0);
   const subTotal = totalPrice - kdvToplam;
 
-  const currentBalance = Number(printItem?.customer?.yearlyBalance || 0);
+  const currentBalance = Number(voucher?.finalBalance || 0);
   const usdRate = Number(printItem?.usdSellingRate || 0);
   const eurRate = Number(printItem?.eurSellingRate || 0);
 
@@ -48,7 +70,7 @@ export default function InvoicePrintPreview({
               Vazgeç
             </button>
             <button
-              onClick={() => onExecutePrint(printItem)}
+              onClick={() => onExecutePrint(printItem, voucher)}
               className="px-8 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 shadow-lg flex items-center gap-2"
             >
               <span>🖨️</span> Şimdi Yazdır

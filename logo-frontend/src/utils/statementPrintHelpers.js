@@ -1,3 +1,5 @@
+//Hesap ekstresini yazdırmaya yarar.
+
 export const generateStatementHTML = (customer, statementData, year) => {
   const totalDebit = statementData.reduce(
     (sum, item) => sum + (item.debit || 0),

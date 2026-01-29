@@ -25,7 +25,8 @@ export const useClient = create((set, get) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at addCustomer:" + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 
@@ -47,6 +48,7 @@ export const useClient = create((set, get) => ({
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
       toast.error("Error at updateCustomer:" + backendErr);
+      throw error;
     }
   },
 

@@ -16,7 +16,8 @@ export const useReceivedCollection = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at addCollection: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 
@@ -42,7 +43,8 @@ export const useReceivedCollection = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at editCollections: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
   deleteReceivedCollection: async (id) => {
@@ -52,7 +54,8 @@ export const useReceivedCollection = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at deleteReceivedCollection: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
   getReceivedCollectionsByYear: async (year) => {

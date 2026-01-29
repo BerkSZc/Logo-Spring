@@ -79,11 +79,11 @@ export const useInvoicePageLogic = () => {
     };
   }, [openMenuId]);
 
-  const executePrint = (inv) => {
+  const executePrint = async (inv, voucher) => {
     if (!inv) return;
     const printWindow = window.open("", "_blank", "width=1000, height=800");
     if (printWindow) {
-      const html = generateInvoiceHTML(inv, invoiceType);
+      const html = generateInvoiceHTML(inv, invoiceType, voucher);
       printWindow.document.open();
       printWindow.document.write(html);
       printWindow.document.close();
@@ -133,14 +133,17 @@ export const useInvoicePageLogic = () => {
 
         const qty = Number(item.quantity) || 0;
         const kdvRate = Number(item.kdv) || 0;
-        const newLineTotal = Number((newUnitPrice * qty).toFixed(2));
-        const newKdvTutar = Number(((newLineTotal * kdvRate) / 100).toFixed(2));
+        const { lineTotal, kdvTutar } = calculateRow(
+          newUnitPrice,
+          qty,
+          kdvRate,
+        );
 
         return {
           ...item,
           unitPrice: newUnitPrice,
-          lineTotal: newLineTotal,
-          kdvTutar: newKdvTutar,
+          lineTotal,
+          kdvTutar,
         };
       });
 
@@ -173,10 +176,15 @@ export const useInvoicePageLogic = () => {
 
     setForm((prev) => {
       const newItems = [...prev.items];
+      const qty = Number(newItems[index].quantity) || 0;
+      const kdv = Number(newItems[index].kdv) || 0;
+      const { lineTotal, kdvTutar } = calculateRow(finalPrice, qty, kdv);
       newItems[index] = {
         ...newItems[index],
         materialId: String(materialId),
         unitPrice: finalPrice,
+        lineTotal,
+        kdvTutar,
       };
       return { ...prev, items: newItems };
     });
@@ -188,7 +196,20 @@ export const useInvoicePageLogic = () => {
     } else {
       setForm((prev) => {
         const newItems = [...prev.items];
-        newItems[index] = { ...newItems[index], [field]: value };
+
+        const updatedItem = { ...newItems[index], [field]: value };
+
+        const { lineTotal, kdvTutar } = calculateRow(
+          updatedItem.unitPrice,
+          updatedItem.quantity,
+          updatedItem.kdv,
+        );
+
+        newItems[index] = {
+          ...updatedItem,
+          lineTotal: lineTotal,
+          kdvTutar: kdvTutar,
+        };
         return { ...prev, items: newItems };
       });
     }
@@ -265,28 +286,38 @@ export const useInvoicePageLogic = () => {
     setDeleteTarget(null);
   };
 
+  const roundHalfUp = (num) => {
+    return Math.round((num + Number.EPSILON) * 100) / 100;
+  };
+
   const calculateRow = (price, qty, kdvRate) => {
-    const lineTotal = (Number(price) || 0) * (Number(qty) || 0);
-    const kdvTutar = (lineTotal * (Number(kdvRate) || 0)) / 100;
+    const p = Number(price) || 0;
+    const q = Number(qty) || 0;
+    const k = Number(kdvRate) || 0;
+
+    const lineTotal = roundHalfUp(p * q);
+
+    const kdvTutar = roundHalfUp((lineTotal * k) / 100);
+
     return { lineTotal, kdvTutar };
   };
 
   const modalTotals = useMemo(() => {
-    if (!form || !form.items) return { subTotal: 0, kdvTotal: 0 };
-    return form.items.reduce(
-      (acc, item) => {
-        const { lineTotal, kdvTutar } = calculateRow(
-          item.unitPrice,
-          item.quantity,
-          item.kdv,
-        );
-        return {
-          subTotal: acc.subTotal + lineTotal,
-          kdvTotal: acc.kdvTotal + kdvTutar,
-        };
-      },
-      { subTotal: 0, kdvTotal: 0 },
+    if (!form?.items) return { subTotal: 0, kdvTotal: 0, generalTotal: 0 };
+
+    const subTotal = roundHalfUp(
+      form.items.reduce((sum, i) => sum + Number(i.lineTotal || 0), 0),
     );
+
+    const kdvTotal = roundHalfUp(
+      form.items.reduce((sum, i) => sum + Number(i.kdvTutar || 0), 0),
+    );
+
+    return {
+      subTotal,
+      kdvTotal,
+      generalTotal: roundHalfUp(subTotal + kdvTotal),
+    };
   }, [form?.items]);
 
   const addItem = () => {
@@ -323,14 +354,13 @@ export const useInvoicePageLogic = () => {
       const qty = Number(updated[index].quantity) || 0;
       const kdv = Number(updated[index].kdv) || 0;
 
-      const currentLineTotal = price * qty;
-      const currentKdvTutar = (currentLineTotal * kdv) / 100;
+      const { lineTotal, kdvTutar } = calculateRow(price, qty, kdv);
 
       updated[index] = {
         ...updated[index],
         unitPrice: price,
-        lineTotal: currentLineTotal,
-        kdvTutar: currentKdvTutar,
+        lineTotal,
+        kdvTutar,
       };
       return { ...prev, items: updated };
     });

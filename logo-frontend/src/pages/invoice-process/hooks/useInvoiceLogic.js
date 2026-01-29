@@ -332,10 +332,7 @@ export const useInvoiceLogic = () => {
       }
       resetForm();
     } catch (error) {
-      const backendErr =
-        error?.response?.data?.exception?.message ||
-        "Fatura kaydedilirken bir hata oluştu.";
-      toast.error(backendErr);
+      console.error(error);
     }
   };
 

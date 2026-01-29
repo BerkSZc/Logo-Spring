@@ -16,7 +16,8 @@ export const usePurchaseInvoice = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at addPurchaseInvoice: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 
@@ -27,7 +28,8 @@ export const usePurchaseInvoice = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at getAllPurchaseInvoice:" + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 
@@ -42,7 +44,8 @@ export const usePurchaseInvoice = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at editPurchaseInvoice:" + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 
@@ -53,7 +56,8 @@ export const usePurchaseInvoice = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at deletePurchaseInvoice: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
   getPurchaseInvoiceByYear: async (year) => {

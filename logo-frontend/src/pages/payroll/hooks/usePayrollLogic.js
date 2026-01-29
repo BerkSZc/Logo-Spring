@@ -161,14 +161,17 @@ export const usePayrollLogic = () => {
       payrollType: type.includes("cheque") ? "CHEQUE" : "BOND",
       payrollModel: type.includes("_in") ? "INPUT" : "OUTPUT",
     };
-
-    if (editing) {
-      await editCheque(editing.id, payload);
-    } else {
-      await addCheque(form.customerId, payload);
+    try {
+      if (editing) {
+        await editCheque(editing.id, payload);
+      } else {
+        await addCheque(form.customerId, payload);
+      }
+      resetForm();
+      await getPayrollByYear(year);
+    } catch (error) {
+      console.log(error);
     }
-    resetForm();
-    await getPayrollByYear(year);
   };
 
   const handleEditClick = (item) => {

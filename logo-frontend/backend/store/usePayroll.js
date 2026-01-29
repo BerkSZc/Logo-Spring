@@ -15,7 +15,7 @@ export const usePayroll = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at getAllCompanies: " + backendErr);
+      toast.error("Error at getPayrollByYear: " + backendErr);
     }
   },
 
@@ -30,7 +30,8 @@ export const usePayroll = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at getAllCompanies: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 
@@ -45,7 +46,8 @@ export const usePayroll = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at getAllCompanies: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
   deleteCheque: async (id) => {
@@ -55,7 +57,8 @@ export const usePayroll = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at getAllCompanies: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 }));

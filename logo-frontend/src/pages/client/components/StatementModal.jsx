@@ -1,5 +1,7 @@
 import { generateStatementHTML } from "../../../utils/statementPrintHelpers.js";
 
+//Hesap ekstresi ön izleme alanı
+
 export default function StatementModal({
   showPrintModal,
   setShowPrintModal,
