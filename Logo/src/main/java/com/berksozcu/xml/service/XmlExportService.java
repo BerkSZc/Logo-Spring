@@ -227,6 +227,7 @@ public class XmlExportService {
             cXml.setTITLE(c.getName());
             cXml.setTAX_ID(c.getVdNo());
             cXml.setADDRESS1(c.getAddress());
+            cXml.setRECORD_STATUS(c.isArchived() ? 1 : 0);
 
             customerXmlList.add(cXml);
         }

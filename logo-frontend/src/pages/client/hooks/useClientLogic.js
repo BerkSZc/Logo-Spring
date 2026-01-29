@@ -158,29 +158,32 @@ export const useClientLogic = () => {
       vdNo: form.vdNo,
       code: form.code.trim().toUpperCase(),
     };
+    try {
+      if (editClient) {
+        await updateCustomer(editClient.id, customerPayload, year);
+        setEditClient(null);
+      } else {
+        // Yeni kayıt
+        await addCustomer(customerPayload, year);
+      }
 
-    if (editClient) {
-      await updateCustomer(editClient.id, customerPayload, year);
-      setEditClient(null);
-    } else {
-      // Yeni kayıt
-      await addCustomer(customerPayload, year);
+      const dateString = `${year}-01-01`;
+      await getAllOpeningVoucherByYear(dateString);
+
+      setForm({
+        name: "",
+        yearlyDebit: 0,
+        yearlyCredit: 0,
+        address: "",
+        country: "",
+        local: "",
+        district: "",
+        vdNo: "",
+        code: "",
+      });
+    } catch (error) {
+      console.error(error);
     }
-
-    const dateString = `${year}-01-01`;
-    await getAllOpeningVoucherByYear(dateString);
-
-    setForm({
-      name: "",
-      yearlyDebit: 0,
-      yearlyCredit: 0,
-      address: "",
-      country: "",
-      local: "",
-      district: "",
-      vdNo: "",
-      code: "",
-    });
   };
 
   const handleEdit = async (customer) => {

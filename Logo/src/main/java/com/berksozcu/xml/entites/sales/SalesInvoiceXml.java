@@ -29,6 +29,9 @@ public class SalesInvoiceXml {
     @XmlElement(name = "TOTAL_VAT")
     private BigDecimal TOTAL_VAT;
 
+    @XmlElement(name = "CANCELLED")
+    private Integer CANCELLED;
+
     @XmlElement(name = "TRANSACTIONS")
     private TransactionsXml TRANSACTIONS;
 }

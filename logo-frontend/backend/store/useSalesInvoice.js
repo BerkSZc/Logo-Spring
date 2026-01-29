@@ -16,7 +16,8 @@ export const useSalesInvoice = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at addSalesInvoice: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 
@@ -42,7 +43,8 @@ export const useSalesInvoice = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at editPurchaseInvoice:" + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 
@@ -53,7 +55,8 @@ export const useSalesInvoice = create((set) => ({
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at deleteSalesInvoice: " + backendErr);
+      toast.error(backendErr);
+      throw error;
     }
   },
 

@@ -31,9 +31,8 @@ export const useCompany = create((set, get) => ({
       await get().getAllCompanies();
       toast.success("Şirket oluşturuldu");
     } catch (error) {
-      const backendErr =
-        error?.response?.data?.exception?.message || "Bilinmeyen Hata";
-      toast.error("Error at addCompany: " + error.message);
+      const backendErr = error?.response?.data || "Bilinmeyen Hata";
+      toast.error(backendErr);
     }
   },
 }));

@@ -32,4 +32,7 @@ public class CustomerXml {
 
     @XmlElement(name = "TAX_ID")
     private String TAX_ID;
+
+    @XmlElement(name = "RECORD_STATUS")
+    private Integer RECORD_STATUS;
 }

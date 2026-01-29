@@ -1,5 +1,5 @@
 //Fatura yazdırma templatei
-export const generateInvoiceHTML = (inv, invoiceType) => {
+export const generateInvoiceHTML = (inv, invoiceType, voucher) => {
   const kdvToplam = Number(inv?.kdvToplam || 0);
   const totalPrice = Number(inv?.totalPrice || 0);
   const subTotal = totalPrice - kdvToplam || 0;
@@ -8,7 +8,7 @@ export const generateInvoiceHTML = (inv, invoiceType) => {
   const typeTitle = isPurchase ? "Satın Alma Faturası" : "Satış Faturası";
   const primaryColor = isPurchase ? "" : "#1e3a8a";
 
-  const currentBalance = Number(inv?.customer?.yearlyBalance || 0);
+  const currentBalance = voucher.finalBalance;
   const usdRate = Number(inv?.usdSellingRate || 0);
   const eurRate = Number(inv?.eurSellingRate || 0);
 
@@ -166,7 +166,7 @@ export const generateInvoiceHTML = (inv, invoiceType) => {
               <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 w-fit min-w-[180px]">
                 <p class="text-[8px] font-bold text-gray-400 uppercase mb-0.5 tracking-wider">GÜNCEL TOPLAM BAKİYE</p>
                 <p class="text-lg font-bold text-gray-900 font-mono">
-                   ${currentBalance.toLocaleString("tr-TR", {
+                   ${currentBalance?.toLocaleString("tr-TR", {
                      minimumFractionDigits: 2,
                    })} ₺
                 </p>
