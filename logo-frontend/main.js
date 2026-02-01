@@ -52,6 +52,11 @@ function createWindow() {
   mainWindow.webContents.on("did-fail-load", () => {
     setTimeout(() => mainWindow.loadURL(START_URL), 2000);
   });
+
+  mainWindow.on("unresponsive", () => {
+    console.log("Uygulama yanıt vermiyor, yeniden yükleniyor...");
+    mainWindow.reload();
+  });
 }
 
 // 3. Güncelleme Kontrolü (Global Scope)
@@ -83,7 +88,7 @@ autoUpdater.on("error", (err) => {
 
 autoUpdater.on("download-progress", (progressObj) => {
   console.log(
-    `İndirme hızı: ${progressObj.bytesPerSecond} - Başarı: %${progressObj.percent}`
+    `İndirme hızı: ${progressObj.bytesPerSecond} - Başarı: %${progressObj.percent}`,
   );
 });
 
@@ -116,7 +121,7 @@ function startBackend() {
     dialog.showErrorBox(
       "Java Başlatma Hatası",
       "Bilgisayarınızda Java kurulu olmayabilir veya yol hatalıdır.\n Hata: " +
-        err.message
+        err.message,
     );
   });
 
@@ -148,7 +153,7 @@ function startBackend() {
   springBootProcess.stderr.on("data", (data) => {
     fs.appendFileSync(
       path.join(app.getPath("userData"), "spring-error.log"),
-      data.toString()
+      data.toString(),
     );
   });
 }
@@ -178,10 +183,12 @@ function killSpring() {
   } else {
     try {
       process.kill(-springBootProcess.pid);
-    } catch (e) {}
+    } catch (e) {
+      springBootProcess.kill("SIGKILL");
+    }
   }
 }
 
-app.on("quit", () => {
+app.on("before-quit", () => {
   killSpring();
 });

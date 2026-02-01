@@ -45,7 +45,7 @@ export function HomePage() {
           <StatCard
             label="İşlem Hacmi"
             title="Satın Alma"
-            value={purchase.length}
+            value={purchase?.length || 0}
             unit="Adet"
             colorClass="bg-blue-500/10 text-blue-500"
             hoverClass="hover:border-blue-500/50"
@@ -69,7 +69,7 @@ export function HomePage() {
           <StatCard
             label="Satış Gücü"
             title="Satış Faturaları"
-            value={sales.length}
+            value={sales?.length || 0}
             unit="Adet"
             colorClass="bg-emerald-500/10 text-emerald-500"
             hoverClass="hover:border-emerald-500/50"
@@ -93,7 +93,7 @@ export function HomePage() {
           <StatCard
             label="Portföy"
             title="Müşteriler"
-            value={customers.length}
+            value={customers?.length || 0}
             unit="Kayıt"
             colorClass="bg-purple-500/10 text-purple-500"
             hoverClass="hover:border-purple-500/50"

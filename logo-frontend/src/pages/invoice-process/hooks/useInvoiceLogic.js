@@ -8,13 +8,20 @@ import toast from "react-hot-toast";
 import { useCommonData } from "../../../../backend/store/useCommonData.js";
 
 export const useInvoiceLogic = () => {
-  const [mode, setMode] = useState("sales");
-  const { materials, getMaterials } = useMaterial();
-  const { customers, getAllCustomers } = useClient();
+  const { materials } = useMaterial();
+  const { customers } = useClient();
   const { addSalesInvoice, getSalesInvoicesByYear } = useSalesInvoice();
   const { addPurchaseInvoice, getPurchaseInvoiceByYear } = usePurchaseInvoice();
   const { convertCurrency, getDailyRates, getFileNo } = useCommonData();
   const { year } = useYear();
+
+  const [mode, setMode] = useState(() => {
+    return localStorage.getItem("invoice_mode") || "sales";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("invoice_mode", mode);
+  }, [mode]);
 
   const initalItem = {
     materialId: "",
@@ -77,48 +84,35 @@ export const useInvoiceLogic = () => {
   };
 
   useEffect(() => {
-    const updateRates = async () => {
-      const date = mode === "sales" ? salesForm.date : purchaseForm.date;
+    let isMounted = true;
+
+    const fetchData = async () => {
+      const currentForm = mode === "sales" ? salesForm : purchaseForm;
+      const date = currentForm.date;
       if (!date) return;
 
-      const rates = await getDailyRates(date);
-      if (!rates) return;
-
-      const rateData = {
-        usdSellingRate: rates.USD || "",
-        eurSellingRate: rates.EUR || "",
-      };
+      const [rates, nextNo] = await Promise.all([
+        getDailyRates(date),
+        getFileNo(date, mode.toUpperCase()),
+      ]);
+      if (!isMounted) return;
       const setter = mode === "sales" ? setSalesForm : setPurchaseForm;
 
       setter((prev) => ({
         ...prev,
-        ...rateData,
-        items: calculateItemsWithRates(prev.items, rates, materials, mode),
+        fileNo: nextNo || prev.fileNo,
+        usdSellingRate: rates?.USD || prev.usdSellingRate || "",
+        eurSellingRate: rates?.EUR || prev.eurSellingRate || "",
+        items: rates
+          ? calculateItemsWithRates(prev.items, rates, materials, mode)
+          : prev.items,
       }));
     };
-    updateRates();
-  }, [salesForm.date, purchaseForm.date, materials]);
-
-  useEffect(() => {
-    const updateFileNo = async () => {
-      const date = mode === "sales" ? salesForm.date : purchaseForm.date;
-      if (!date) return;
-
-      const type = mode === "sales" ? "SALES" : "PURCHASE";
-      const nextNo = await getFileNo(date, type);
-
-      if (nextNo) {
-        const setter = mode === "sales" ? setSalesForm : setPurchaseForm;
-        setter((prev) => ({ ...prev, fileNo: nextNo }));
-      }
+    fetchData();
+    return () => {
+      isMounted = false;
     };
-    updateFileNo();
-  }, [mode, salesForm.date, purchaseForm.date]);
-
-  useEffect(() => {
-    getMaterials();
-    getAllCustomers();
-  }, [getMaterials, getAllCustomers]);
+  }, [mode, salesForm.date, purchaseForm.date, materials]);
 
   const salesCalculation = useMemo(() => {
     const total = salesForm.items.reduce(
@@ -330,10 +324,10 @@ export const useInvoiceLogic = () => {
     try {
       if (isSales) {
         await addSalesInvoice(Number(currentForm.customerId), payload);
-        getSalesInvoicesByYear(year);
+        await getSalesInvoicesByYear(year);
       } else {
         await addPurchaseInvoice(Number(currentForm.customerId), payload);
-        getPurchaseInvoiceByYear(year);
+        await getPurchaseInvoiceByYear(year);
       }
       resetForm();
     } catch (error) {

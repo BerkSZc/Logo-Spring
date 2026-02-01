@@ -28,7 +28,6 @@ export const useInvoicePageLogic = () => {
   const { year } = useYear();
   const { tenant } = useTenant();
 
-  const [invoiceType, setInvoiceType] = useState("purchase");
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,6 +40,13 @@ export const useInvoicePageLogic = () => {
     totalPrice: 0,
     grandTotal: 0,
   });
+  const [invoiceType, setInvoiceType] = useState(() => {
+    return localStorage.getItem("invoice_type") || "sales";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("invoice_type", invoiceType);
+  }, [invoiceType]);
 
   useEffect(() => {
     if (printItem || deleteTarget || editingInvoice) {

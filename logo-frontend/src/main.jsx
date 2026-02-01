@@ -9,6 +9,7 @@ import TokenWatcher from "../backend/lib/TokenWatcher.js";
 import { TenantProvider } from "./context/TenantContext.jsx";
 import { YearProvider } from "./context/YearContext.jsx";
 import DisableContextMenu from "./context/DisableContextMenu.jsx";
+import GlobalErrorBoundary from "./components/GlobalErrorBoundary.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -18,11 +19,13 @@ createRoot(document.getElementById("root")).render(
           <YearProvider>
             <TokenWatcher />
             <Navbar />
-            <App />
+            <GlobalErrorBoundary>
+              <App />
+            </GlobalErrorBoundary>
             <Toaster />
           </YearProvider>
         </DisableContextMenu>
       </TenantProvider>
     </BrowserRouter>
-  </StrictMode>
+  </StrictMode>,
 );
