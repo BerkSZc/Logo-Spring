@@ -14,10 +14,16 @@ export const usePayrollLogic = () => {
   const { getFileNo } = useCommonData();
 
   const formRef = useRef(null);
-  const [type, setType] = useState("cheque_in");
   const [editing, setEditing] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [search, setSearch] = useState("");
+  const [type, setType] = useState(() => {
+    return localStorage.getItem("payroll_type") || "cheque_in";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("payroll_type", type);
+  }, [type]);
 
   const getInitialDate = (selectedYear) => {
     const currentActualYear = new Date().getFullYear();

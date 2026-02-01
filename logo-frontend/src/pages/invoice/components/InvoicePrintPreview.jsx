@@ -79,9 +79,8 @@ export default function InvoicePrintPreview({
         </div>
 
         {/* Önizleme Alanı */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-12 bg-gray-800/30 flex justify-center">
+        <div className="flex-1 overflow-y-auto p-4 md:p-12 bg-gray-800/30 flex justify-center items-start">
           <div className="bg-white w-[210mm] min-h-[297mm] p-[12mm] shadow-2xl text-black font-sans origin-top transform scale-[0.8] md:scale-100">
-            {/* Şirket Header - Fontlar Küçültüldü */}
             <div className="border-b-2 border-gray-200 pb-6 mb-8 flex justify-between items-start">
               <div className="flex flex-col gap-2 text-left">
                 <span
@@ -113,7 +112,7 @@ export default function InvoicePrintPreview({
               </div>
             </div>
 
-            {/* Müşteri Bilgileri - Fontlar Dengelendi */}
+            {/* Müşteri Bilgileri*/}
             <div className="p-5 border border-gray-200 bg-gray-50/50 rounded-xl mb-10 w-2/3 text-left">
               <h3 className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 border-b">
                 Müşteri Bilgileri
@@ -129,7 +128,7 @@ export default function InvoicePrintPreview({
               </p>
             </div>
 
-            {/* Kalemler Tablosu - Fontlar Küçültüldü */}
+            {/* Kalemler Tablosu */}
             <table className="w-full text-left border-collapse mb-10">
               <thead>
                 <tr className="border-b border-gray-300 text-[9px] font-bold uppercase text-gray-400 bg-gray-50/50">
@@ -253,7 +252,7 @@ export default function InvoicePrintPreview({
             </div>
 
             {/* Bakiye Bilgisi */}
-            <div className="mt-8 flex justify-end">
+            <div className="mt-8 flex justify-end pb-4">
               <div className="p-3 border border-emerald-200 rounded-xl w-fit min-w-[200px] bg-emerald-50/20 text-right">
                 <h3 className="text-[8px] font-bold text-emerald-700 uppercase tracking-widest mb-0.5">
                   {printItem?.date?.split("-")[0]} Yılı Dönem Bakiyesi

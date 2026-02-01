@@ -26,12 +26,18 @@ export const useFinancialLogic = () => {
 
   const { getFileNo } = useCommonData();
 
-  const [type, setType] = useState("received"); // received | payment
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const menuRef = useRef(null);
+  const [type, setType] = useState(() => {
+    return localStorage.getItem("collection_type") || "payment";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("collection_type", type);
+  }, [type]);
 
   const getInitialDate = (selectedYear) => {
     const currentActualYear = new Date().getFullYear();
