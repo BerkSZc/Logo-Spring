@@ -43,7 +43,7 @@ export default function InvoiceTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800/50">
-            {invoices.length > 0 ? (
+            {invoices?.length > 0 ? (
               invoices.map((inv) => (
                 <tr
                   key={inv.id}

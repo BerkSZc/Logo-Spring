@@ -119,7 +119,7 @@ export default function InvoiceEditModal({
               </tr>
             </thead>
             <tbody>
-              {form.items.map((item, i) => (
+              {(Array.isArray(form.items) ? form.items : []).map((item, i) => (
                 <tr key={i} className="bg-gray-800/50">
                   <td className="px-4 py-3 rounded-l-xl w-1/3">
                     <MaterialSearchSelect

@@ -16,35 +16,34 @@ export const ReportTable = ({ title, items, color }) => (
           </tr>
         </thead>
         <tbody>
-          {Array.isArray(items) &&
-            items.map((item, index) => (
-              <tr
-                key={index}
-                className="bg-gray-800/40 hover:bg-gray-800/60 transition-all"
-              >
-                <td className="px-6 py-4 rounded-l-2xl font-bold">
-                  {item.month} / {item.year}
-                </td>
-                <td className="px-6 py-4 font-mono text-sm">
-                  ₺{" "}
-                  {item.totalAmount?.toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                  })}
-                </td>
-                <td className="px-6 py-4 font-mono text-sm">
-                  ₺{" "}
-                  {item.totalKdv?.toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                  })}
-                </td>
-                <td className="px-6 py-4 text-right rounded-r-2xl font-black text-blue-400 font-mono">
-                  ₺{" "}
-                  {item.netTotal?.toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                  })}
-                </td>
-              </tr>
-            ))}
+          {(Array.isArray(items) ? items : []).map((item, index) => (
+            <tr
+              key={index}
+              className="bg-gray-800/40 hover:bg-gray-800/60 transition-all"
+            >
+              <td className="px-6 py-4 rounded-l-2xl font-bold">
+                {item.month} / {item.year}
+              </td>
+              <td className="px-6 py-4 font-mono text-sm">
+                ₺{" "}
+                {item.totalAmount?.toLocaleString("tr-TR", {
+                  minimumFractionDigits: 2,
+                })}
+              </td>
+              <td className="px-6 py-4 font-mono text-sm">
+                ₺{" "}
+                {item.totalKdv?.toLocaleString("tr-TR", {
+                  minimumFractionDigits: 2,
+                })}
+              </td>
+              <td className="px-6 py-4 text-right rounded-r-2xl font-black text-blue-400 font-mono">
+                ₺{" "}
+                {item.netTotal?.toLocaleString("tr-TR", {
+                  minimumFractionDigits: 2,
+                })}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

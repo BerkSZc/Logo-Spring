@@ -26,7 +26,7 @@ const ReportsPage = () => {
 
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex p-1 bg-gray-900/50 border border-gray-800 rounded-2xl w-fit">
-          {tabs.map((tab) => (
+          {(Array.isArray(tabs) ? tabs : []).map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}

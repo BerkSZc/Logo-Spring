@@ -33,7 +33,7 @@ export default function ClientTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800/50">
-            {customers.map((customer) => (
+            {(Array.isArray(customers) ? customers : []).map((customer) => (
               <ClientRow
                 key={customer.id}
                 customer={customer}

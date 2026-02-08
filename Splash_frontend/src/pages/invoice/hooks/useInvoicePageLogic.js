@@ -115,44 +115,45 @@ export const useInvoicePageLogic = () => {
     const numericRate = Number(formattedValue) || 0;
 
     setForm((prev) => {
-      const updatedItems = prev.items.map((item) => {
-        const material = materials.find(
-          (m) => m.id === Number(item.materialId),
-        );
-        if (!material) return item;
+      const updatedItems = (Array.isArray(prev.items) ? prev.items : []).map(
+        (item) => {
+          const material = materials.find(
+            (m) => m.id === Number(item.materialId),
+          );
+          if (!material) return item;
 
-        const mCurrency =
-          invoiceType === "sales"
-            ? material.salesCurrency
-            : material.purchaseCurrency;
-        const mPrice =
-          invoiceType === "sales"
-            ? material.salesPrice
-            : material.purchasePrice;
+          const mCurrency =
+            invoiceType === "sales"
+              ? material.salesCurrency
+              : material.purchaseCurrency;
+          const mPrice =
+            invoiceType === "sales"
+              ? material.salesPrice
+              : material.purchasePrice;
 
-        let newUnitPrice = item.unitPrice;
+          let newUnitPrice = item.unitPrice;
 
-        if (field === "usdSellingRate" && mCurrency === "USD")
-          newUnitPrice = mPrice * numericRate;
-        if (field === "eurSellingRate" && mCurrency === "EUR")
-          newUnitPrice = mPrice * numericRate;
+          if (field === "usdSellingRate" && mCurrency === "USD")
+            newUnitPrice = mPrice * numericRate;
+          if (field === "eurSellingRate" && mCurrency === "EUR")
+            newUnitPrice = mPrice * numericRate;
 
-        const qty = Number(item.quantity) || 0;
-        const kdvRate = Number(item.kdv) || 0;
-        const { lineTotal, kdvTutar } = calculateRow(
-          newUnitPrice,
-          qty,
-          kdvRate,
-        );
+          const qty = Number(item.quantity) || 0;
+          const kdvRate = Number(item.kdv) || 0;
+          const { lineTotal, kdvTutar } = calculateRow(
+            newUnitPrice,
+            qty,
+            kdvRate,
+          );
 
-        return {
-          ...item,
-          unitPrice: newUnitPrice,
-          lineTotal,
-          kdvTutar,
-        };
-      });
-
+          return {
+            ...item,
+            unitPrice: newUnitPrice,
+            lineTotal,
+            kdvTutar,
+          };
+        },
+      );
       return { ...prev, [field]: formattedValue, items: updatedItems };
     });
   };

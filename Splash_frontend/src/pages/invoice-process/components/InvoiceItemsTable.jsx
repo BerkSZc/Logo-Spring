@@ -74,7 +74,7 @@ export default function InvoiceItemsTable({
               </tr>
             </thead>
             <tbody>
-              {items.map((item, i) => (
+              {(Array.isArray(items) ? items : []).map((item, i) => (
                 <tr key={i} className="bg-gray-800/50 group">
                   <td className="px-4 py-3 rounded-l-xl w-1/3">
                     <MaterialSearchSelect
