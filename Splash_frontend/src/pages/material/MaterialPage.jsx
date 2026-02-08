@@ -70,8 +70,10 @@ export default function MaterialForm() {
                 </p>
               </div>
             ) : (
-              Array.isArray(state.filteredMaterials) &&
-              state.filteredMaterials.map((item) => (
+              (Array.isArray(state.filteredMaterials)
+                ? state.filteredMaterials
+                : []
+              ).map((item) => (
                 <MaterialCard
                   key={item.id}
                   item={item}

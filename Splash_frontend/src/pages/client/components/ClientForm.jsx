@@ -68,7 +68,7 @@ export default function ClientForm({
         onSubmit={handleSubmit}
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
       >
-        {formFields.map((field) => (
+        {(Array.isArray(formFields) ? formFields : []).map((field) => (
           <div key={field.key} className={`space-y-2 ${field.colSpan || ""}`}>
             <label
               className={`text-xs font-bold uppercase tracking-widest ml-1 ${field.color || "text-gray-500"}`}
@@ -89,7 +89,6 @@ export default function ClientForm({
           </div>
         ))}
 
-        {/* Tam Adres - .map dışında bırakmak daha esnek olabilir veya diziye eklenebilir */}
         <div className="md:col-span-2 space-y-2">
           <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
             Tam Adres

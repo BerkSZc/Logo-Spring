@@ -140,41 +140,43 @@ export default function InvoicePrintPreview({
                 </tr>
               </thead>
               <tbody className="text-[11px]">
-                {printItem?.items?.map((item, idx) => (
-                  <tr key={idx} className="border-b border-gray-100">
-                    <td className="py-3 px-2">
-                      <div className="font-semibold text-gray-900">
-                        {item?.material?.code}
-                      </div>
-                      <div className="text-[10px] text-gray-400 italic">
-                        {item?.material?.comment || ""}
-                      </div>
-                    </td>
-                    <td className="py-3 px-2 text-center font-mono text-gray-600">
-                      {item?.quantity}
-                    </td>
-                    <td className="py-3 px-2 text-right font-mono text-gray-600">
-                      {Number(item?.unitPrice).toLocaleString("tr-TR", {
-                        minimumFractionDigits: 2,
-                      })}{" "}
-                      ₺
-                    </td>
-                    <td className="py-3 px-2 text-right font-mono text-gray-400 italic">
-                      {Number(item?.kdvTutar || 0).toLocaleString("tr-TR", {
-                        minimumFractionDigits: 2,
-                      })}{" "}
-                      ₺
-                    </td>
-                    <td className="py-3 px-2 text-right font-bold text-gray-900">
-                      {Number(
-                        item?.lineTotal || item.unitPrice * item.quantity,
-                      ).toLocaleString("tr-TR", {
-                        minimumFractionDigits: 2,
-                      })}{" "}
-                      ₺
-                    </td>
-                  </tr>
-                ))}
+                {(Array.isArray(printItem.items) ? printItem.items : []).map(
+                  (item, idx) => (
+                    <tr key={idx} className="border-b border-gray-100">
+                      <td className="py-3 px-2">
+                        <div className="font-semibold text-gray-900">
+                          {item?.material?.code}
+                        </div>
+                        <div className="text-[10px] text-gray-400 italic">
+                          {item?.material?.comment || ""}
+                        </div>
+                      </td>
+                      <td className="py-3 px-2 text-center font-mono text-gray-600">
+                        {item?.quantity}
+                      </td>
+                      <td className="py-3 px-2 text-right font-mono text-gray-600">
+                        {Number(item?.unitPrice).toLocaleString("tr-TR", {
+                          minimumFractionDigits: 2,
+                        })}{" "}
+                        ₺
+                      </td>
+                      <td className="py-3 px-2 text-right font-mono text-gray-400 italic">
+                        {Number(item?.kdvTutar || 0).toLocaleString("tr-TR", {
+                          minimumFractionDigits: 2,
+                        })}{" "}
+                        ₺
+                      </td>
+                      <td className="py-3 px-2 text-right font-bold text-gray-900">
+                        {Number(
+                          item?.lineTotal || item.unitPrice * item.quantity,
+                        ).toLocaleString("tr-TR", {
+                          minimumFractionDigits: 2,
+                        })}{" "}
+                        ₺
+                      </td>
+                    </tr>
+                  ),
+                )}
               </tbody>
             </table>
 

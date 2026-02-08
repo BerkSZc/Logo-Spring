@@ -27,8 +27,8 @@ export const KDVSummary = ({ data }) => (
           </tr>
         </thead>
         <tbody>
-          {Array.isArray(data?.monthlySummary) &&
-            data.monthlySummary.map((item, index) => (
+          {(Array.isArray(data?.monthlySummary) ? data.monthlySummary : []).map(
+            (item, index) => (
               <tr
                 key={index}
                 className="bg-gray-800/40 hover:bg-gray-800/60 transition-all group"
@@ -56,7 +56,8 @@ export const KDVSummary = ({ data }) => (
                     : `- ₺ ${Math.abs(item.diff).toLocaleString()}`}
                 </td>
               </tr>
-            ))}
+            ),
+          )}
         </tbody>
       </table>
     </div>

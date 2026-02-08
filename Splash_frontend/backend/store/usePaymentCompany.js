@@ -18,7 +18,6 @@ export const usePaymentCompany = create((set) => ({
         },
       );
       toast.success("Firmaya ödeme gerçekleştirildi");
-      set((state) => ({ payments: [...state.payments, res.data] }));
     } catch (error) {
       const backendErr =
         error?.response?.data?.exception?.message || "Bilinmeyen Hata";

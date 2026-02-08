@@ -71,7 +71,7 @@ export const useInvoiceLogic = () => {
   );
 
   const calculateItemsWithRates = (items, rates, materials, mode) => {
-    return items.map((item) => {
+    return (Array.isArray(items) ? items : []).map((item) => {
       const material = materials.find((m) => m.id === Number(item.materialId));
       if (!material) return item;
 
@@ -228,7 +228,9 @@ export const useInvoiceLogic = () => {
     setter((prev) => {
       const updatedForm = { ...prev, [field]: val };
 
-      const updatedItems = updatedForm.items.map((item) => {
+      const updatedItems = (
+        Array.isArray(updatedForm.items) ? updatedForm.items : []
+      ).map((item) => {
         const material = materials.find(
           (m) => m.id === Number(item.materialId),
         );
@@ -320,18 +322,20 @@ export const useInvoiceLogic = () => {
       kdvToplam: currentCalc.kdv,
       totalPrice: currentCalc.total,
       ...(isSales ? { customer: { id: Number(currentForm.customerId) } } : {}),
-      items: currentForm.items.map((i) => {
-        const netTutar = Number(i.unitPrice) * Number(i.quantity);
-        const satirKdv = (netTutar * Number(i.kdv)) / 100;
-        return {
-          material: { id: Number(i.materialId) },
-          unitPrice: Number(i.unitPrice),
-          quantity: Number(i.quantity),
-          kdv: Number(i.kdv),
-          kdvTutar: satirKdv,
-          lineTotal: netTutar + satirKdv,
-        };
-      }),
+      items: (Array.isArray(currentForm.items) ? currentForm.items : []).map(
+        (i) => {
+          const netTutar = Number(i.unitPrice) * Number(i.quantity);
+          const satirKdv = (netTutar * Number(i.kdv)) / 100;
+          return {
+            material: { id: Number(i.materialId) },
+            unitPrice: Number(i.unitPrice),
+            quantity: Number(i.quantity),
+            kdv: Number(i.kdv),
+            kdvTutar: satirKdv,
+            lineTotal: netTutar + satirKdv,
+          };
+        },
+      ),
     };
 
     try {

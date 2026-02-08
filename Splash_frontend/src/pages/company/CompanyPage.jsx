@@ -39,14 +39,16 @@ const CompanyPage = () => {
               )}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {state.companies?.map((c) => (
-                <CompanyCard
-                  key={c.id}
-                  company={c}
-                  isSelected={state.tenant === c.schemaName}
-                  onSelect={handlers.changeTenant}
-                />
-              ))}
+              {(Array.isArray(state.companies) ? state.companies : [])?.map(
+                (c) => (
+                  <CompanyCard
+                    key={c.id}
+                    company={c}
+                    isSelected={state.tenant === c.schemaName}
+                    onSelect={handlers.changeTenant}
+                  />
+                ),
+              )}
             </div>
           </div>
 

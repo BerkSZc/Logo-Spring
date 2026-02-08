@@ -95,7 +95,7 @@ export const generateInvoiceHTML = (inv, invoiceType, voucher) => {
               </tr>
             </thead>
             <tbody class="text-[11px] divide-y divide-gray-50">
-              ${inv?.items
+              ${(Array.isArray(inv.items) ? inv?.items : [])
                 ?.map(
                   (item) => `
                 <tr>

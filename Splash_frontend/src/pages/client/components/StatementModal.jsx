@@ -66,8 +66,8 @@ export default function StatementModal({
                 </tr>
               </thead>
               <tbody>
-                {Array.isArray(statementData) &&
-                  statementData.map((item, idx) => (
+                {(Array.isArray(statementData) ? statementData : []).map(
+                  (item, idx) => (
                     <tr key={idx} className="border-b border-gray-200">
                       <td className="p-2 align-top ">{item.date}</td>
                       <td className="p-2 align-top break-all">{item.desc}</td>
@@ -89,7 +89,8 @@ export default function StatementModal({
                         ₺
                       </td>
                     </tr>
-                  ))}
+                  ),
+                )}
               </tbody>
             </table>
           </div>

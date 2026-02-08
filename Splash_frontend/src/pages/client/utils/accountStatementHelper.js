@@ -113,7 +113,7 @@ export const accountStatementHelper = (
 
   // 8. Yürüyen Bakiye Hesapla
   let runningBalance = 0;
-  return combined.map((item) => {
+  return (Array.isArray(combined) ? combined : []).map((item) => {
     runningBalance += (item.debit || 0) - (item.credit || 0);
     return {
       ...item,
