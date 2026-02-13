@@ -75,7 +75,7 @@ export default function MaterialForm() {
                 : []
               ).map((item) => (
                 <MaterialCard
-                  key={item.id || 0}
+                  key={item.id}
                   item={item || []}
                   onEdit={handlers.handleEdit}
                 />

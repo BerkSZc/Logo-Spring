@@ -28,7 +28,7 @@ const ReportsPage = () => {
         <div className="flex p-1 bg-gray-900/50 border border-gray-800 rounded-2xl w-fit">
           {(Array.isArray(tabs) ? tabs : []).map((tab) => (
             <button
-              key={tab.id || 0}
+              key={tab.id}
               onClick={() => setActiveTab(tab?.id)}
               className={`px-6 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
                 activeTab === tab?.id

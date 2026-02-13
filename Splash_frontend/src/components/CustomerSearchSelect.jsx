@@ -104,7 +104,7 @@ export default function CustomerSearchSelect({ customers, value, onChange }) {
                 const balanceDisplay = Number(myVoucher?.finalBalance ?? 0);
                 return (
                   <div
-                    key={c?.id || ""}
+                    key={c?.id}
                     onClick={() => {
                       onChange(c?.id);
                       setIsOpen(false);

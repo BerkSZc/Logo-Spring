@@ -68,7 +68,7 @@ const CompanyDropDown = () => {
           <div className="max-h-60 overflow-y-auto custom-scrollbar">
             {(Array.isArray(companies) ? companies : []).map((c) => (
               <button
-                key={c.id || 0}
+                key={c?.id}
                 onClick={() => {
                   changeTenant(c?.schemaName);
                   setOpen(false);
