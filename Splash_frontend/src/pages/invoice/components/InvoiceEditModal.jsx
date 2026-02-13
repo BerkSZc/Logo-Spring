@@ -3,7 +3,6 @@ import MaterialPriceTooltip from "../../../components/MaterialPriceTooltip";
 import CustomerSearchSelect from "../../../components/CustomerSearchSelect";
 
 export default function InvoiceEditModal({
-  editingInvoice,
   form,
   setForm,
   onItemChange,
@@ -17,13 +16,6 @@ export default function InvoiceEditModal({
   onCancel,
   onSave,
 }) {
-  if (!editingInvoice || !form) return null;
-
-  const handleLocalItemChange = (i, e) => {
-    const { name, value } = e.target;
-    onItemChange(i, name, value);
-  };
-
   return (
     <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-[100] backdrop-blur-md px-4">
       <div className="bg-[#0f172a] border border-gray-800 p-8 rounded-[3rem] w-full max-w-[1000px] max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -38,7 +30,7 @@ export default function InvoiceEditModal({
             </label>
             <input
               type="date"
-              value={form.date}
+              value={form?.date || ""}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
               className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-3 text-white outline-none focus:border-blue-500"
             />
@@ -49,7 +41,7 @@ export default function InvoiceEditModal({
             </label>
             <input
               type="text"
-              value={form.fileNo}
+              value={form?.fileNo || ""}
               onChange={(e) => setForm({ ...form, fileNo: e.target.value })}
               className="w-full bg-gray-800 border-2 border-gray-700 rounded-2xl px-5 py-3 text-white outline-none"
             />
@@ -60,7 +52,7 @@ export default function InvoiceEditModal({
             </label>
             <CustomerSearchSelect
               customers={customers}
-              value={form.customerId}
+              value={form?.customerId || ""}
               onChange={(id) => setForm({ ...form, customerId: id })}
             />
           </div>
@@ -74,8 +66,8 @@ export default function InvoiceEditModal({
                   $
                 </span>
                 <input
-                  type="text"
-                  value={form.usdSellingRate || ""}
+                  type="number"
+                  value={form?.usdSellingRate || ""}
                   onChange={(e) =>
                     onRateChange("usdSellingRate", e.target.value)
                   }
@@ -93,8 +85,8 @@ export default function InvoiceEditModal({
                   €
                 </span>
                 <input
-                  type="text"
-                  value={form.eurSellingRate || ""}
+                  type="number"
+                  value={form?.eurSellingRate || ""}
                   onChange={(e) =>
                     onRateChange("eurSellingRate", e.target.value)
                   }
@@ -124,7 +116,7 @@ export default function InvoiceEditModal({
                   <td className="px-4 py-3 rounded-l-xl w-1/3">
                     <MaterialSearchSelect
                       materials={materials}
-                      value={item.materialId}
+                      value={item?.materialId || ""}
                       onChange={(id) => {
                         onItemChange(i, "materialId", id);
                       }}
@@ -135,8 +127,8 @@ export default function InvoiceEditModal({
                       <input
                         type="number"
                         name="unitPrice"
-                        value={item.unitPrice}
-                        onChange={(e) => handleLocalItemChange(i, e)}
+                        value={item?.unitPrice || 0}
+                        onChange={(e) => onItemChange(i, e)}
                         className="w-24 bg-gray-900 border border-gray-700 rounded-lg px-1 py-2 text-white focus:border-blue-500 outline-none"
                       />
                       <MaterialPriceTooltip
@@ -151,8 +143,8 @@ export default function InvoiceEditModal({
                     <input
                       type="number"
                       name="quantity"
-                      value={item.quantity}
-                      onChange={(e) => handleLocalItemChange(i, e)}
+                      value={item?.quantity || 0}
+                      onChange={(e) => onItemChange(i, e)}
                       className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
                     />
                   </td>
@@ -160,20 +152,20 @@ export default function InvoiceEditModal({
                     <input
                       type="number"
                       name="kdv"
-                      value={item.kdv}
-                      onChange={(e) => handleLocalItemChange(i, e)}
+                      value={item?.kdv || 0}
+                      onChange={(e) => onItemChange(i, e)}
                       className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2"
                     />
                   </td>
                   <td className="px-4 py-3 text-right font-mono text-xs text-gray-400 italic">
-                    {Number(item.kdvTutar || 0).toLocaleString("tr-TR", {
+                    {Number(item?.kdvTutar || 0).toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}{" "}
                     ₺
                   </td>
                   <td className="px-4 py-3 text-right font-mono font-bold text-blue-400">
-                    {(Number(item.lineTotal) || 0).toLocaleString("tr-TR", {
+                    {(Number(item?.lineTotal) || 0).toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}{" "}
@@ -208,7 +200,7 @@ export default function InvoiceEditModal({
             <div className="flex justify-between text-gray-400 text-sm">
               <span>Ara Toplam:</span>
               <span className="font-mono text-white">
-                {modalTotals.subTotal.toLocaleString("tr-TR", {
+                {(Number(modalTotals?.subTotal) || 0).toLocaleString("tr-TR", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}{" "}
@@ -219,7 +211,7 @@ export default function InvoiceEditModal({
               <span>Hesaplanan KDV:</span>
               <span className="font-mono">
                 +
-                {modalTotals.kdvTotal.toLocaleString("tr-TR", {
+                {(Number(modalTotals.kdvTotal) || 0).toLocaleString("tr-TR", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}{" "}
@@ -229,10 +221,13 @@ export default function InvoiceEditModal({
             <div className="flex justify-between text-2xl font-black pt-3 border-t border-gray-700 mt-2">
               <span className="text-white">Genel Toplam:</span>
               <span className="text-emerald-400">
-                {modalTotals.generalTotal.toLocaleString("tr-TR", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{" "}
+                {(Number(modalTotals.generalTotal) || 0).toLocaleString(
+                  "tr-TR",
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  },
+                )}{" "}
                 ₺
               </span>
             </div>

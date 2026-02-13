@@ -21,8 +21,8 @@ export default function MaterialForm() {
         {/* FORM KARTI (Parçalanmış Bileşen) */}
         <MaterialFormCard
           formRef={refs.formRef}
-          editId={state.editId}
-          form={state.form}
+          editId={state?.editId}
+          form={state?.form || []}
           onChange={handlers.handleChange}
           onSubmit={handlers.handleSubmit}
           onCancel={handlers.handleCancel}
@@ -75,8 +75,8 @@ export default function MaterialForm() {
                 : []
               ).map((item) => (
                 <MaterialCard
-                  key={item.id}
-                  item={item}
+                  key={item.id || 0}
+                  item={item || []}
                   onEdit={handlers.handleEdit}
                 />
               ))

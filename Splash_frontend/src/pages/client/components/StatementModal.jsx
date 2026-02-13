@@ -52,8 +52,10 @@ export default function StatementModal({
               <div className="text-right font-bold">{year}</div>
             </div>
             <div className="mb-8 p-5 border-l-8 border-black bg-gray-50">
-              <h3 className="text-xl font-bold">{selectedCustomer?.name}</h3>
-              <p className="text-sm">{selectedCustomer?.address}</p>
+              <h3 className="text-xl font-bold">
+                {selectedCustomer?.name || ""}
+              </h3>
+              <p className="text-sm">{selectedCustomer?.address || ""}</p>
             </div>
             <table className="w-full text-[11px] table-fixed border-collapse">
               <thead className="border-y-2 border-black">
@@ -69,20 +71,28 @@ export default function StatementModal({
                 {(Array.isArray(statementData) ? statementData : []).map(
                   (item, idx) => (
                     <tr key={idx} className="border-b border-gray-200">
-                      <td className="p-2 align-top ">{item.date}</td>
-                      <td className="p-2 align-top break-all">{item.desc}</td>
+                      <td className="p-2 align-top ">{item.date || ""}</td>
+                      <td className="p-2 align-top break-all">
+                        {item.desc || ""}
+                      </td>
                       <td className="p-2 text-right align-top">
                         {item.debit > 0
-                          ? item.debit.toLocaleString("tr-TR")
+                          ? Number(item.debit).toLocaleString("tr-TR", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
                           : "-"}
                       </td>
                       <td className="p-2 text-right align-top">
                         {item.credit > 0
-                          ? item.credit.toLocaleString("tr-TR")
+                          ? Number(item.credit).toLocaleString("tr-TR", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
                           : "-"}
                       </td>
                       <td className="p-2 text-right align-top font-bold whitespace-nowrap">
-                        {item.balance.toLocaleString("tr-TR", {
+                        {(Number(item?.balance) || 0).toLocaleString("tr-TR", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}

@@ -1,13 +1,20 @@
 import { createContext, useContext, useState } from "react";
+import toast from "react-hot-toast";
+import { useTenant } from "./TenantContext";
 
 const YearContext = createContext();
 
 export const YearProvider = ({ children }) => {
   const currentYear = new Date().getFullYear();
+  const { tenant } = useTenant();
 
   const [years, setYears] = useState(() => {
-    const stored = localStorage.getItem("years");
-    return stored ? JSON.parse(stored) : [currentYear];
+    try {
+      const stored = localStorage.getItem("years");
+      return stored ? JSON.parse(stored) : [currentYear];
+    } catch (error) {
+      return [currentYear];
+    }
   });
 
   const [year, setYear] = useState(() => {
@@ -23,7 +30,15 @@ export const YearProvider = ({ children }) => {
 
   const addYear = async (newYear) => {
     const y = Number(newYear);
-    if (!y || years.includes(y)) return;
+    if (!y || years.includes(y)) {
+      toast.error("Mali yıl mevcut");
+      return;
+    }
+
+    if (!tenant) {
+      toast.error("Şirket seçin!");
+      return;
+    }
 
     const updatedYears = [...years, y].sort((a, b) => a - b);
     setYears(updatedYears);
@@ -38,7 +53,7 @@ export const YearProvider = ({ children }) => {
 
     // aktif yıl silindiyse başka bir yıla geç
     if (year === removeYear) {
-      const fallback = updatedYears[updatedYears.length - 1];
+      const fallback = updatedYears[updatedYears.length - 1 || currentYear];
       setYear(fallback);
       localStorage.setItem("year", fallback);
     }

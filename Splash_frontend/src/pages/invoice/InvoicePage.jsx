@@ -16,11 +16,11 @@ export default function InvoicePage() {
               Fatura Yönetimi
             </h1>
             <p className="text-gray-400 mt-2">
-              {state.year} Mali Yılı - Kayıtlı Faturalar
+              {state?.year || ""} Mali Yılı - Kayıtlı Faturalar
             </p>
           </div>
           <select
-            value={state.invoiceType}
+            value={state?.invoiceType || ""}
             onChange={(e) => handlers.setInvoiceType(e.target.value)}
             className="bg-gray-900 border-2 border-gray-800 text-white rounded-2xl px-6 py-3 font-bold cursor-pointer focus:border-blue-500 transition-all outline-none"
           >
@@ -34,7 +34,7 @@ export default function InvoicePage() {
           <input
             type="text"
             placeholder="Fatura no, müşteri adı veya tarihe göre ara..."
-            value={state.searchTerm}
+            value={state?.searchTerm || ""}
             onChange={(e) => handlers.setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-4 bg-gray-900/60 border-2 border-gray-800 rounded-2xl text-white outline-none backdrop-blur-sm focus:border-blue-500 transition-all"
           />
@@ -55,7 +55,9 @@ export default function InvoicePage() {
 
         {/* TABLO */}
         <InvoiceTable
-          invoices={state.filteredInvoices}
+          invoices={
+            Array.isArray(state.filteredInvoices) ? state?.filteredInvoices : []
+          }
           openMenuId={state.openMenuId}
           menuRef={state.menuRef}
           onToggleMenu={(id) => handlers.toggleMenu(id)}
@@ -63,38 +65,42 @@ export default function InvoicePage() {
           onDelete={handlers.setDeleteTarget}
           onPrint={handlers.setPrintItem}
           year={state.year}
+          formatDateToTR={state.formatDateToTR}
         />
 
         {/* MODALLAR */}
-        <InvoiceEditModal
-          editingInvoice={state.editingInvoice}
-          form={state.form}
-          onItemChange={handlers.handleItemChange}
-          setForm={handlers.setForm}
-          totals={state.totals}
-          invoiceType={state.invoiceType}
-          materials={state.materials}
-          customers={state.customers}
-          onRateChange={handlers.handleRateChange}
-          onCancel={() => {
-            handlers.setEditingInvoice(null);
-            handlers.setForm(null);
-          }}
-          onSave={handlers.handleSave}
-          modalTotals={state.modalTotals}
-          addItem={handlers.addItem}
-          removeItem={handlers.removeItem}
-          handlePriceSelect={handlers.handlePriceSelect}
-        />
+        {state?.editingInvoice && (
+          <InvoiceEditModal
+            form={state.form}
+            onItemChange={handlers.handleItemChange}
+            setForm={handlers.setForm}
+            totals={state.totals}
+            invoiceType={state.invoiceType}
+            materials={state.materials}
+            customers={state.customers}
+            onRateChange={handlers.handleRateChange}
+            onCancel={() => {
+              handlers.setEditingInvoice(null);
+              handlers.setForm(null);
+            }}
+            onSave={handlers.handleSave}
+            modalTotals={state.modalTotals}
+            addItem={handlers.addItem}
+            removeItem={handlers.removeItem}
+            handlePriceSelect={handlers.handlePriceSelect}
+          />
+        )}
 
-        <InvoicePrintPreview
-          printItem={state.printItem}
-          onCancel={() => handlers.setPrintItem(null)}
-          onExecutePrint={handlers.executePrint}
-        />
+        {state?.printItem && (
+          <InvoicePrintPreview
+            printItem={state.printItem}
+            onCancel={() => handlers.setPrintItem(null)}
+            onExecutePrint={handlers.executePrint}
+          />
+        )}
 
         {/* SİLME ONAY MODALI */}
-        {state.deleteTarget && (
+        {state?.deleteTarget && (
           <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-[110] backdrop-blur-md">
             <div className="bg-[#0f172a] border border-gray-800 p-8 rounded-[2.5rem] w-[450px] shadow-2xl text-center">
               <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -104,8 +110,8 @@ export default function InvoicePage() {
                 Faturayı Sil
               </h2>
               <p className="mb-8 text-gray-400">
-                <b>{state.deleteTarget.fileNo}</b> numaralı fatura kalıcı olarak
-                silinecektir. Emin misiniz?
+                <b>{state?.deleteTarget?.fileNo || ""}</b> numaralı fatura
+                kalıcı olarak silinecektir. Emin misiniz?
               </p>
               <div className="flex gap-4">
                 <button

@@ -16,9 +16,11 @@ export const MaterialCard = ({ item, onEdit }) => {
       <div className="space-y-3 flex-1">
         <div>
           <p className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
-            {item.code}
+            {item?.code || ""}
           </p>
-          <p className="text-sm text-gray-400 line-clamp-1">{item.comment}</p>
+          <p className="text-sm text-gray-400 line-clamp-1">
+            {item?.comment || ""}
+          </p>
         </div>
 
         {/* Fiyat Bilgileri Alanı */}
@@ -28,8 +30,8 @@ export const MaterialCard = ({ item, onEdit }) => {
               Alış
             </span>
             <span className="text-sm font-semibold text-blue-400">
-              {item.purchasePrice?.toFixed(2)}{" "}
-              {getCurrencySymbol(item.purchaseCurrency)}
+              {Number(item?.purchasePrice || 0).toFixed(2)}{" "}
+              {getCurrencySymbol(item?.purchaseCurrency)}
             </span>
           </div>
           <div className="w-px h-6 bg-gray-800"></div>
@@ -38,8 +40,8 @@ export const MaterialCard = ({ item, onEdit }) => {
               Satış
             </span>
             <span className="text-sm font-semibold text-emerald-400">
-              {item.salesPrice?.toFixed(2)}{" "}
-              {getCurrencySymbol(item.salesCurrency)}
+              {Number(item?.salesPrice || 0).toFixed(2)}{" "}
+              {getCurrencySymbol(item?.salesCurrency)}
             </span>
           </div>
         </div>
@@ -47,7 +49,7 @@ export const MaterialCard = ({ item, onEdit }) => {
 
       <div className="flex items-center gap-4">
         <span className="px-3 py-1 bg-gray-800 text-gray-400 border border-gray-700 rounded-lg text-xs font-mono font-bold tracking-wider">
-          {item.unit}
+          {item?.unit || ""}
         </span>
         <button
           onClick={() => onEdit(item)}

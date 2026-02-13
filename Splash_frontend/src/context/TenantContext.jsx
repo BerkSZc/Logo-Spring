@@ -12,7 +12,7 @@ export const TenantProvider = ({ children }) => {
   // Şirketleri state içinde tutuyoruz
   useEffect(() => {
     getAllCompanies();
-  }, []);
+  }, [getAllCompanies]);
 
   const changeTenant = (newTenant) => {
     const val = String(newTenant);

@@ -15,14 +15,14 @@ export default function MaterialSearchSelect({
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  const selectedMaterial = materials.find(
-    (m) => String(m.id) === String(value),
+  const selectedMaterial = (Array.isArray(materials) ? materials : []).find(
+    (m) => String(m?.id) === String(value),
   );
 
-  const filtered = materials.filter(
+  const filtered = (Array.isArray(materials) ? materials : []).filter(
     (m) =>
-      m.code?.toLowerCase().includes(search.toLowerCase()) ||
-      m.comment?.toLowerCase().includes(search.toLowerCase()),
+      (m?.code || "").toLowerCase().includes(search.toLowerCase()) ||
+      (m.comment || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export default function MaterialSearchSelect({
           open
             ? search
             : selectedMaterial
-              ? `${selectedMaterial.code} – ${selectedMaterial.comment}`
+              ? `${selectedMaterial?.code || ""} – ${selectedMaterial?.comment || ""}`
               : ""
         }
         placeholder={placeholder}
@@ -116,7 +116,7 @@ export default function MaterialSearchSelect({
 
             {(Array.isArray(filtered) ? filtered : []).map((m) => (
               <div
-                key={m.id}
+                key={m?.id || 0}
                 onClick={() => {
                   onChange(m.id);
                   setOpen(false);
@@ -124,7 +124,7 @@ export default function MaterialSearchSelect({
                 className="cursor-pointer p-3 border-b border-gray-800/50 hover:bg-blue-600/20 hover:text-blue-400 transition-colors text-sm text-gray-300 flex flex-col"
               >
                 <span className="font-bold text-white group-hover:text-blue-400">
-                  {m.code}
+                  {m.code || 0}
                 </span>
                 <span className="text-xs text-gray-500 mt-1">{m.comment}</span>
               </div>

@@ -37,7 +37,7 @@ export const MaterialFormCard = ({
           <input
             type="text"
             name="code"
-            value={form.code}
+            value={form.code || ""}
             onChange={onChange}
             className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 transition-all outline-none"
             placeholder="MZ-001"
@@ -51,7 +51,7 @@ export const MaterialFormCard = ({
           </label>
           <select
             name="unit"
-            value={form.unit}
+            value={form?.unit || "KG"}
             onChange={onChange}
             className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 transition-all outline-none"
           >
@@ -68,7 +68,7 @@ export const MaterialFormCard = ({
           <input
             type="text"
             name="comment"
-            value={form.comment}
+            value={form?.comment || ""}
             onChange={onChange}
             className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 transition-all outline-none"
             placeholder="Malzeme detayı..."
@@ -88,14 +88,14 @@ export const MaterialFormCard = ({
             <input
               type="number"
               name="purchasePrice"
-              value={form.purchasePrice || ""}
+              value={form?.purchasePrice || 0}
               onChange={onChange}
               className="w-2/3 bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none"
               placeholder="0.00"
             />
             <select
               name="purchaseCurrency"
-              value={form.purchaseCurrency}
+              value={form?.purchaseCurrency || "TRY"}
               onChange={onChange}
               className="w-1/3 bg-gray-800 border-2 border-gray-700 rounded-xl px-2 py-3 text-white focus:border-blue-500 outline-none"
             >
@@ -115,14 +115,14 @@ export const MaterialFormCard = ({
             <input
               type="number"
               name="salesPrice"
-              value={form.salesPrice || ""}
+              value={form?.salesPrice || 0}
               onChange={onChange}
               className="w-2/3 bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none"
               placeholder="0.00"
             />
             <select
               name="salesCurrency"
-              value={form.salesCurrency}
+              value={form.salesCurrency || "TRY"}
               onChange={onChange}
               className="w-1/3 bg-gray-800 border-2 border-gray-700 rounded-xl px-2 py-3 text-white focus:border-emerald-500 outline-none"
             >

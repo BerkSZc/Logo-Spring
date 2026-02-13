@@ -3,6 +3,7 @@ import { useMaterial } from "../../../../backend/store/useMaterial.js";
 
 export const useMaterialLogic = () => {
   const formRef = useRef(null);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ code: "", comment: "", unit: "KG" });
   const [editId, setEditId] = useState(null);
   const [search, setSearch] = useState("");
@@ -12,7 +13,7 @@ export const useMaterialLogic = () => {
 
   useEffect(() => {
     getMaterials();
-  }, []);
+  }, [getMaterials]);
 
   const initialForm = {
     code: "",
@@ -31,7 +32,9 @@ export const useMaterialLogic = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
 
+    setLoading(true);
     try {
       if (editId) {
         await updateMaterials(editId, form);
@@ -43,6 +46,8 @@ export const useMaterialLogic = () => {
       await getMaterials();
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,9 +57,9 @@ export const useMaterialLogic = () => {
       code: item.code || "",
       comment: item.comment || "",
       unit: item.unit || "KG",
-      purchasePrice: item.purchasePrice ?? "",
+      purchasePrice: item.purchasePrice || "",
       purchaseCurrency: item.purchaseCurrency || "TRY",
-      salesPrice: item.salesPrice ?? "",
+      salesPrice: item.salesPrice || "",
       salesCurrency: item.salesCurrency || "TRY",
     });
     formRef.current.scrollIntoView({ behavior: "smooth" });
@@ -62,8 +67,8 @@ export const useMaterialLogic = () => {
 
   const filteredMaterials = (Array.isArray(materials) ? materials : []).filter(
     (item) =>
-      item.code?.toLowerCase().includes(search.toLowerCase()) ||
-      item.comment?.toLowerCase().includes(search.toLowerCase()),
+      (item?.code || "").toLowerCase().includes(search.toLowerCase()) ||
+      (item?.comment || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleCancel = () => {

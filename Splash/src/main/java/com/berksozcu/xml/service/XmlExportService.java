@@ -375,7 +375,7 @@ public class XmlExportService {
                 ArpTransactionXml tx = new ArpTransactionXml();
                 tx.setARP_CODE(op.getCustomer().getCode());
                 tx.setCUSTOMER_NAME(op.getCustomerName());
-                tx.setDESCRIPTION(op.getDescription());
+                tx.setDESCRIPTION("Veri Dışarı Aktarımı");
                 tx.setCREDIT(op.getYearlyCredit().setScale(2, RoundingMode.HALF_UP).toString());
                 tx.setDEBIT(op.getYearlyDebit().setScale(2, RoundingMode.HALF_UP).toString());
                 vXml.setCompany_id(op.getCompany().getId());

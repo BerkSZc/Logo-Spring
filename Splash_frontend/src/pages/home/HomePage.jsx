@@ -5,14 +5,14 @@ import StatCard from "./components/StatCard";
 export function HomePage() {
   const { state } = useHomeLogic();
   const {
-    purchase,
-    sales,
-    customers,
-    totalAlacak,
-    totalBorc,
-    companyDisplayName,
-    year,
-    lastUpdate,
+    purchase = [],
+    sales = [],
+    customers = [],
+    totalCredits = 0,
+    totalDebts = 0,
+    companyDisplayName = "",
+    year = new Date().getFullYear(),
+    lastUpdate = "",
   } = state;
 
   return (
@@ -25,9 +25,9 @@ export function HomePage() {
               Dashboard
             </h1>
             <p className="text-gray-400 text-lg">
-              {year} Mali Yılı -{" "}
+              {year || ""} Mali Yılı -{" "}
               <span className="text-blue-500 font-mono">
-                {companyDisplayName}
+                {companyDisplayName || ""}
               </span>{" "}
               Çalışma Alanı Özeti
             </p>
@@ -36,7 +36,9 @@ export function HomePage() {
             <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">
               Son Güncelleme
             </p>
-            <p className="text-sm font-mono text-gray-300">{lastUpdate}</p>
+            <p className="text-sm font-mono text-gray-300">
+              {lastUpdate || ""}
+            </p>
           </div>
         </header>
 
@@ -132,7 +134,7 @@ export function HomePage() {
                   Toplam Alacak
                 </p>
                 <p className="text-xl font-bold text-emerald-400 font-mono">
-                  ₺ {totalAlacak.toLocaleString("tr-TR")}
+                  ₺ {(Number(totalCredits) || 0).toLocaleString("tr-TR")}
                 </p>
               </div>
               <div className="border-t border-gray-800 pt-3">
@@ -140,7 +142,7 @@ export function HomePage() {
                   Toplam Borç
                 </p>
                 <p className="text-xl font-bold text-red-400 font-mono">
-                  ₺ {totalBorc.toLocaleString("tr-TR")}
+                  ₺ {(Number(totalDebts) || 0).toLocaleString("tr-TR")}
                 </p>
               </div>
             </div>

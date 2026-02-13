@@ -27,7 +27,7 @@ export default function FinancialEditModal({
               <input
                 required
                 type="date"
-                value={editForm.date}
+                value={editForm?.date || ""}
                 onChange={(e) =>
                   setEditForm({ ...editForm, date: e.target.value })
                 }
@@ -41,7 +41,7 @@ export default function FinancialEditModal({
               <input
                 required
                 type="number"
-                value={editForm.price}
+                value={Number(editForm?.price) || ""}
                 onChange={(e) =>
                   setEditForm({ ...editForm, price: e.target.value })
                 }
@@ -54,7 +54,7 @@ export default function FinancialEditModal({
               Müşteri / Firma
             </label>
             <select
-              value={editForm.customerId}
+              value={editForm?.customerId || ""}
               onChange={(e) =>
                 setEditForm({ ...editForm, customerId: e.target.value })
               }
@@ -73,7 +73,7 @@ export default function FinancialEditModal({
             </label>
             <textarea
               rows="3"
-              value={editForm.comment || ""}
+              value={editForm?.comment || ""}
               onChange={(e) =>
                 setEditForm({ ...editForm, comment: e.target.value })
               }
@@ -87,7 +87,7 @@ export default function FinancialEditModal({
             <input
               required
               rows="3"
-              value={editForm.fileNo || ""}
+              value={editForm?.fileNo || ""}
               onChange={(e) =>
                 setEditForm({ ...editForm, fileNo: e.target.value })
               }

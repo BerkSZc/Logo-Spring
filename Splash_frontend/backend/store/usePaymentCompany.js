@@ -7,16 +7,12 @@ export const usePaymentCompany = create((set) => ({
 
   addPayment: async (id, paymentCompany, schemaName) => {
     try {
-      const res = await axiosInstance.post(
-        `/payment/add/${id}`,
-        paymentCompany,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          params: { schemaName },
+      await axiosInstance.post(`/payment/add/${id}`, paymentCompany, {
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        params: { schemaName },
+      });
       toast.success("Firmaya ödeme gerçekleştirildi");
     } catch (error) {
       const backendErr =

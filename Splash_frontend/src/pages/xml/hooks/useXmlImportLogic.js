@@ -3,6 +3,7 @@ import { useImportXml } from "../../../../backend/store/useImportXml";
 import { useExportXml } from "../../../../backend/store/useExportXml";
 import { useYear } from "../../../context/YearContext";
 import { useTenant } from "../../../context/TenantContext";
+import toast from "react-hot-toast";
 
 export const useXmlImportLogic = () => {
   const purchaseInvoiceInputRef = useRef(null);
@@ -40,6 +41,16 @@ export const useXmlImportLogic = () => {
 
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith(".xml") && file.type !== "text/xml") {
+      toast.error(
+        "Sadece xml dosyaları ile işlem yapılabilir Xml dosyası seçin!",
+      );
+      e.target.value = "";
+      return;
+    }
+
     if (file) {
       upload(file, type, e.target);
     }
@@ -74,6 +85,11 @@ export const useXmlImportLogic = () => {
   };
 
   const upload = async (file, type, targetInput) => {
+    if (!tenant) {
+      toast.error("Lüften ilk olarak şirket seçin");
+      if (targetInput) targetInput.value = "";
+      return;
+    }
     if (!file) return;
     setLoading(true);
 

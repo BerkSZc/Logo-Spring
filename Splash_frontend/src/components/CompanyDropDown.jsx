@@ -11,10 +11,12 @@ const CompanyDropDown = () => {
   const dropDownRef = useRef(null);
 
   const currentCompanyName =
-    companies.find((c) => c.schemaName === tenant)?.name || tenant;
+    (Array.isArray(companies) ? companies : []).find(
+      (c) => c?.schemaName === tenant,
+    )?.name || tenant;
 
   useEffect(() => {
-    if (companies.length === 0) {
+    if (companies?.length === 0) {
       getAllCompanies();
     }
 
@@ -66,9 +68,9 @@ const CompanyDropDown = () => {
           <div className="max-h-60 overflow-y-auto custom-scrollbar">
             {(Array.isArray(companies) ? companies : []).map((c) => (
               <button
-                key={c.id}
+                key={c.id || 0}
                 onClick={() => {
-                  changeTenant(c.schemaName);
+                  changeTenant(c?.schemaName);
                   setOpen(false);
                 }}
                 className={`
@@ -82,9 +84,9 @@ const CompanyDropDown = () => {
                 `}
               >
                 <div className="flex flex-col">
-                  <span>{c.name}</span>
+                  <span>{c?.name || ""}</span>
                   <span className="text-[10px] text-gray-400 font-mono">
-                    {c.schemaName}
+                    {c?.schemaName || ""}
                   </span>
                 </div>
                 {c.schemaName === tenant && (

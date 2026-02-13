@@ -68,7 +68,7 @@ export default function MaterialPriceTooltip({
       (mode === "CUSTOMER-YEARLY" || mode === "CUSTOMER-ALL") &&
       !customerId
     ) {
-      toast.error("Önce bir müşteri seçmelisiniz!"); //
+      toast.error("Önce bir müşteri seçmelisiniz!");
       return;
     }
     setSearchMode(mode);
@@ -86,10 +86,11 @@ export default function MaterialPriceTooltip({
   }, [selectedType, materialId, open]);
 
   const handlePrev = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
-  const handleNext = () =>
-    setCurrentIndex((prev) => Math.min(prev + 1, history.length - 1));
-
-  const currentItem = history?.[currentIndex];
+  const handleNext = () => {
+    const list = Array.isArray(history) ? history : [];
+    setCurrentIndex((prev) => Math.min(prev + 1, list.length - 1));
+  };
+  const currentItem = Array.isArray(history) ? history[currentIndex] : null;
 
   const handleSelect = (e) => {
     if (e) {
@@ -97,7 +98,7 @@ export default function MaterialPriceTooltip({
       e.stopPropagation();
     }
     if (currentItem && onSelect) {
-      onSelect(currentItem.price);
+      onSelect(Number(currentItem.price) || 0);
       setOpen(false);
     }
   };
@@ -252,7 +253,7 @@ export default function MaterialPriceTooltip({
                             : "text-emerald-400"
                         }`}
                       >
-                        {currentItem.price?.toLocaleString("tr-TR", {
+                        {(currentItem.price ?? 0)?.toLocaleString("tr-TR", {
                           minimumFractionDigits: 2,
                         })}{" "}
                         ₺
@@ -265,7 +266,7 @@ export default function MaterialPriceTooltip({
                           Miktar
                         </span>
                         <span className="text-gray-200 font-bold text-sm">
-                          {currentItem.quantity}
+                          {currentItem.quantity ?? 0}
                         </span>
                       </div>
                       <div className="text-right">
@@ -273,25 +274,25 @@ export default function MaterialPriceTooltip({
                           Tarih
                         </span>
                         <span className="text-gray-200 font-bold text-sm">
-                          {formatDateToTR(currentItem.date)}
+                          {formatDateToTR(currentItem?.date || "")}
                         </span>
                       </div>
                     </div>
 
-                    {currentItem.customerName && (
+                    {currentItem?.customerName && (
                       <div className="pt-2">
                         <span className="text-gray-500 text-[10px] uppercase block">
                           İlgili Cari
                         </span>
                         <span className="text-gray-300 text-xs font-medium truncate block italic">
-                          "{currentItem.customerName}"
+                          "{currentItem.customerName || ""}"
                         </span>
                       </div>
                     )}
                   </div>
 
                   <div className="absolute bottom-2 right-4 text-[10px] font-mono text-gray-700">
-                    {currentIndex + 1} / {history.length}
+                    {currentIndex + 1} / {history?.length}
                   </div>
                 </>
               ) : (

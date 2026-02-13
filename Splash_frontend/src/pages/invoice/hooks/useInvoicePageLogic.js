@@ -61,12 +61,21 @@ export const useInvoicePageLogic = () => {
   }, [printItem, deleteTarget, editingInvoice]);
 
   useEffect(() => {
-    if (!year) return;
-    getMaterials();
-    getAllCustomers();
-    invoiceType === "purchase"
-      ? getPurchaseInvoiceByYear(year)
-      : getSalesInvoicesByYear(year);
+    let ignore = false;
+
+    const fetchData = async () => {
+      if (!year) return;
+      await Promise.all([getMaterials(), getAllCustomers()]);
+      if (ignore) return;
+
+      invoiceType === "purchase"
+        ? await getPurchaseInvoiceByYear(year)
+        : await getSalesInvoicesByYear(year);
+    };
+    fetchData();
+    return () => {
+      ignore = true;
+    };
   }, [year, invoiceType, tenant]);
 
   useEffect(() => {
@@ -197,19 +206,26 @@ export const useInvoicePageLogic = () => {
     });
   };
 
-  const handleItemChange = (index, field, value) => {
-    if (field === "materialId") {
+  const handleItemChange = (index, e) => {
+    if (!editingInvoice || !form) return;
+
+    const { name, value, type } = e.target;
+
+    if (name === "materialId") {
       handleMaterialSelect(index, value);
     } else {
       setForm((prev) => {
         const newItems = [...prev.items];
 
-        const updatedItem = { ...newItems[index], [field]: value };
+        const finalValue =
+          type === "number" ? (value === "" ? 0 : value) : value;
+
+        const updatedItem = { ...newItems[index], [name]: finalValue };
 
         const { lineTotal, kdvTutar } = calculateRow(
-          updatedItem.unitPrice,
-          updatedItem.quantity,
-          updatedItem.kdv,
+          Number(updatedItem.unitPrice) || 0,
+          Number(updatedItem.quantity) || 0,
+          Number(updatedItem.kdv) || 0,
         );
 
         newItems[index] = {
@@ -236,18 +252,18 @@ export const useInvoicePageLogic = () => {
     });
 
     setForm({
-      date: invoice.date,
-      fileNo: invoice.fileNo,
+      date: invoice.date || "",
+      fileNo: invoice.fileNo || "",
       customerId: invoice.customer.id,
       usdSellingRate: invoice.usdSellingRate || "",
       eurSellingRate: invoice.eurSellingRate || "",
-      items: invoice.items.map((i) => ({
+      items: (Array.isArray(invoice?.items) ? invoice.items : []).map((i) => ({
         materialId: String(i.material.id),
-        unitPrice: i.unitPrice,
-        quantity: i.quantity,
-        kdv: i.kdv,
+        unitPrice: i.unitPrice || 0,
+        quantity: i.quantity || 0,
+        kdv: i.kdv || 0,
         lineTotal: i.lineTotal || i.unitPrice * i.quantity || 0,
-        kdvTutar: i.kdvTutar,
+        kdvTutar: i.kdvTutar || 0,
       })),
     });
   };
@@ -265,7 +281,7 @@ export const useInvoicePageLogic = () => {
       },
       usdSellingRate: Number(form.usdSellingRate),
       eurSellingRate: Number(form.eurSellingRate),
-      items: form.items.map((i) => ({
+      items: (Array.isArray(form.items) ? form.items : []).map((i) => ({
         id: i.id || null,
         material: { id: Number(i.materialId) },
         unitPrice: Number(i.unitPrice),
@@ -399,6 +415,17 @@ export const useInvoicePageLogic = () => {
     );
   });
 
+  const formatDateToTR = (dateString) => {
+    if (
+      !dateString ||
+      typeof dateString !== "string" ||
+      dateString.includes(".")
+    )
+      return dateString;
+    const [y, m, d] = dateString.split("-");
+    return `${d}.${m}.${y}`;
+  };
+
   return {
     state: {
       invoiceType,
@@ -415,6 +442,7 @@ export const useInvoicePageLogic = () => {
       year,
       materials,
       customers,
+      formatDateToTR,
     },
     handlers: {
       toggleMenu,

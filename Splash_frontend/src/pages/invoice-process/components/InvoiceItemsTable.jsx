@@ -79,7 +79,7 @@ export default function InvoiceItemsTable({
                   <td className="px-4 py-3 rounded-l-xl w-1/3">
                     <MaterialSearchSelect
                       materials={materials}
-                      value={item.materialId}
+                      value={item?.materialId}
                       onChange={(id) => onItemChange(mode, i, "materialId", id)}
                     />
                   </td>
@@ -88,13 +88,13 @@ export default function InvoiceItemsTable({
                       <input
                         type="number"
                         className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        value={item.unitPrice}
+                        value={item?.unitPrice || ""}
                         onChange={(e) =>
                           onItemChange(mode, i, "unitPrice", e.target.value)
                         }
                       />
                       <MaterialPriceTooltip
-                        materialId={item.materialId}
+                        materialId={item?.materialId}
                         customerId={customerId}
                         onSelect={(p, e) => {
                           if (e) e.stopPropagation();
@@ -108,7 +108,7 @@ export default function InvoiceItemsTable({
                     <input
                       type="number"
                       className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={item.quantity}
+                      value={item?.quantity || ""}
                       onChange={(e) =>
                         onItemChange(mode, i, "quantity", e.target.value)
                       }
@@ -118,7 +118,7 @@ export default function InvoiceItemsTable({
                     <input
                       type="number"
                       className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 focus:border-blue-500 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={item.kdv}
+                      value={item?.kdv || ""}
                       onChange={(e) =>
                         onItemChange(mode, i, "kdv", e.target.value)
                       }
@@ -126,9 +126,9 @@ export default function InvoiceItemsTable({
                   </td>
                   <td className="px-4 py-3 text-right font-mono text-xs text-gray-400">
                     {(
-                      (Number(item.unitPrice) *
-                        Number(item.quantity) *
-                        Number(item.kdv)) /
+                      (Number(item?.unitPrice) *
+                        Number(item?.quantity) *
+                        Number(item?.kdv)) /
                         100 || 0
                     ).toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
@@ -138,7 +138,7 @@ export default function InvoiceItemsTable({
                   </td>
                   <td className="px-4 py-3 text-right font-mono font-bold text-blue-400">
                     {(
-                      Number(item.unitPrice) * Number(item.quantity) || 0
+                      Number(item?.unitPrice) * Number(item?.quantity) || 0
                     ).toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,

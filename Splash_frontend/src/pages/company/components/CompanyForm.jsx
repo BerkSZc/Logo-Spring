@@ -18,7 +18,7 @@ export const CompanyForm = ({ newCompData, setNewCompData, onCreate }) => (
 
       <input
         placeholder="Şirket Adı"
-        value={newCompData.name}
+        value={newCompData.name || ""}
         onChange={(e) =>
           setNewCompData({ ...newCompData, name: e.target.value })
         }
@@ -26,7 +26,7 @@ export const CompanyForm = ({ newCompData, setNewCompData, onCreate }) => (
       />
       <input
         placeholder="Açıklama"
-        value={newCompData.desc}
+        value={newCompData.desc || ""}
         onChange={(e) =>
           setNewCompData({ ...newCompData, desc: e.target.value })
         }

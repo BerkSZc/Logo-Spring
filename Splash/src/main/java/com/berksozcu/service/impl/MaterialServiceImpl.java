@@ -1,6 +1,8 @@
 package com.berksozcu.service.impl;
 
+import com.berksozcu.entites.material.Currency;
 import com.berksozcu.entites.material.Material;
+import com.berksozcu.entites.material.MaterialUnit;
 import com.berksozcu.exception.BaseException;
 import com.berksozcu.exception.ErrorMessage;
 import com.berksozcu.exception.MessageType;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 @Service
 public class MaterialServiceImpl implements IMaterialService {
@@ -22,17 +24,18 @@ public class MaterialServiceImpl implements IMaterialService {
     @Override
     public Material addMaterial(Material newMaterial) {
 
-        if(materialRepository.existsByCode(newMaterial.getCode().trim())) {
+        String code = newMaterial.getCode() != null ? newMaterial.getCode().trim() : "";
+        if (materialRepository.existsByCode(code)) {
             throw new BaseException(new ErrorMessage(MessageType.MALZEME_KODU_MEVCUT));
         }
 
-        newMaterial.setCode(newMaterial.getCode());
-        newMaterial.setComment(newMaterial.getComment());
-        newMaterial.setUnit(newMaterial.getUnit());
-        newMaterial.setPurchasePrice(newMaterial.getPurchasePrice() != null ? newMaterial.getPurchasePrice() : BigDecimal.ZERO);
-        newMaterial.setSalesPrice(newMaterial.getSalesPrice() != null ? newMaterial.getPurchasePrice() : BigDecimal.ZERO);
-        newMaterial.setPurchaseCurrency(newMaterial.getPurchaseCurrency());
-        newMaterial.setSalesCurrency(newMaterial.getSalesCurrency());
+        newMaterial.setCode(code);
+        newMaterial.setComment(Objects.requireNonNullElse(newMaterial.getComment(), ""));
+        newMaterial.setUnit(Objects.requireNonNullElse(newMaterial.getUnit(), MaterialUnit.KG));
+        newMaterial.setPurchasePrice(safePrice(newMaterial.getPurchasePrice()));
+        newMaterial.setSalesPrice(safePrice(newMaterial.getSalesPrice()));
+        newMaterial.setPurchaseCurrency(Objects.requireNonNullElse(newMaterial.getPurchaseCurrency(), Currency.TRY));
+        newMaterial.setSalesCurrency(Objects.requireNonNullElse(newMaterial.getSalesCurrency(), Currency.TRY));
         return materialRepository.save(newMaterial);
     }
 
@@ -47,18 +50,23 @@ public class MaterialServiceImpl implements IMaterialService {
                 .orElseThrow(() ->
                         new BaseException(new ErrorMessage(MessageType.MALZEME_BULUNAMADI)));
 
-            if(materialRepository.existsByCode(updateMaterial.getCode())
-                    && !updateMaterial.getCode().equals(existingMaterial.getCode()))  {
-                throw new BaseException(new ErrorMessage(MessageType.MALZEME_KODU_MEVCUT));
-            }
-           existingMaterial.setComment(updateMaterial.getComment());
-           existingMaterial.setCode(updateMaterial.getCode());
-           existingMaterial.setUnit(updateMaterial.getUnit());
-           existingMaterial.setPurchaseCurrency(updateMaterial.getPurchaseCurrency());
-           existingMaterial.setSalesCurrency(updateMaterial.getSalesCurrency());
-           existingMaterial.setPurchasePrice(updateMaterial.getPurchasePrice());
-           existingMaterial.setSalesPrice(updateMaterial.getSalesPrice());
-           materialRepository.save(existingMaterial);
-       }
+        String code = updateMaterial.getCode() != null ? updateMaterial.getCode().trim() : "";
+
+        if (materialRepository.existsByCode(code)
+                && !updateMaterial.getCode().equals(existingMaterial.getCode())) {
+            throw new BaseException(new ErrorMessage(MessageType.MALZEME_KODU_MEVCUT));
+        }
+        existingMaterial.setCode(code);
+        existingMaterial.setComment(Objects.requireNonNullElse(updateMaterial.getComment(), ""));
+        existingMaterial.setUnit(Objects.requireNonNullElse(updateMaterial.getUnit(), MaterialUnit.ADET));
+        existingMaterial.setPurchaseCurrency(Objects.requireNonNullElse(updateMaterial.getPurchaseCurrency(), Currency.TRY));
+        existingMaterial.setSalesCurrency(Objects.requireNonNullElse(updateMaterial.getSalesCurrency(), Currency.TRY));
+        existingMaterial.setPurchasePrice(safePrice(updateMaterial.getPurchasePrice()));
+        existingMaterial.setSalesPrice(safePrice(updateMaterial.getSalesPrice()));
+        materialRepository.save(existingMaterial);
     }
 
+    private BigDecimal safePrice(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+}

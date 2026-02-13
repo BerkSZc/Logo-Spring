@@ -2,11 +2,11 @@
 
 export const generateStatementHTML = (customer, statementData, year) => {
   const totalDebit = statementData.reduce(
-    (sum, item) => sum + (item.debit || 0),
+    (sum, item) => sum + (item.debit ?? 0),
     0,
   );
   const totalCredit = statementData.reduce(
-    (sum, item) => sum + (item.credit || 0),
+    (sum, item) => sum + (item.credit ?? 0),
     0,
   );
   const finalBalance = totalDebit - totalCredit;
@@ -16,31 +16,31 @@ export const generateStatementHTML = (customer, statementData, year) => {
       (item) => `
     <tr style="page-break-inside: avoid;">
       <td style="padding: 6px; border-bottom: 1px solid #ddd; font-family: monospace; font-size: 10px;">${
-        item.date
+        item?.date || ""
       }</td>
       <td style="padding: 6px; border-bottom: 1px solid #ddd; font-size: 10px; word-wrap: break-word;">${
-        item.desc
+        item?.desc || ""
       }</td>
       <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; font-size: 10px;">
         ${
-          item.debit > 0
+          item?.debit > 0
             ? item.debit.toLocaleString("tr-TR", { minimumFractionDigits: 2 })
             : ""
         }
       </td>
       <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; font-size: 10px;">
         ${
-          item.credit > 0
+          item?.credit > 0
             ? item.credit.toLocaleString("tr-TR", { minimumFractionDigits: 2 })
             : ""
         }
       </td>
       <td style="padding: 6px; border-bottom: 1px solid #ddd; text-align: right; font-weight: bold; font-size: 10px; white-space: nowrap;">
-        ${Math.abs(item.balance).toLocaleString("tr-TR", {
+        ${Math.abs(item?.balance ?? 0).toLocaleString("tr-TR", {
           minimumFractionDigits: 2,
         })} 
         <span style="font-size: 8px;">${
-          item.balance >= 0 ? "(B)" : "(A)"
+          item?.balance >= 0 ? "(B)" : "(A)"
         }</span>
       </td>
     </tr>`,
@@ -51,7 +51,7 @@ export const generateStatementHTML = (customer, statementData, year) => {
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Ekstre - ${customer?.name}</title>
+        <title>Ekstre - ${customer?.name || ""}</title>
         <style>
           @page { 
             size: A4; 

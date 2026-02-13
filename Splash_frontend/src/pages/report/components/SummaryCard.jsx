@@ -9,10 +9,10 @@ export const SummaryCard = ({ title, value, color }) => (
     }`}
   >
     <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-2">
-      {title}
+      {title || ""}
     </p>
     <p className="text-2xl font-black text-white">
-      ₺ {value?.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
+      ₺ {Number(value).toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
     </p>
   </div>
 );

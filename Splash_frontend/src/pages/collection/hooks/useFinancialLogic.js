@@ -85,6 +85,7 @@ export const useFinancialLogic = () => {
   });
 
   useEffect(() => {
+    let ignore = false;
     const updateFileNo = async () => {
       const date = addForm.date;
       if (!date) return;
@@ -92,18 +93,31 @@ export const useFinancialLogic = () => {
       const mode = type === "received" ? "COLLECTION" : "PAYMENT";
       const nextNo = await getFileNo(date, mode);
 
-      if (nextNo) {
+      if (!ignore && nextNo) {
         setAddForm((prev) => ({ ...prev, fileNo: nextNo }));
       }
     };
     updateFileNo();
+    return () => {
+      ignore = true;
+    };
   }, [type, addForm.date, getFileNo]);
 
   useEffect(() => {
-    if (!year) return;
-    getAllCustomers();
-    getReceivedCollectionsByYear(year);
-    getPaymentCollectionsByYear(year);
+    let ignore = false;
+    const fetchData = async () => {
+      if (!year) return;
+      await Promise.all([
+        getAllCustomers(),
+        getReceivedCollectionsByYear(year),
+        getPaymentCollectionsByYear(year),
+      ]);
+      if (ignore) return;
+    };
+    fetchData();
+    return () => {
+      ignore = true;
+    };
   }, [
     year,
     getAllCustomers,
@@ -120,7 +134,7 @@ export const useFinancialLogic = () => {
         item.customer?.name?.toLowerCase().includes(text) ||
         item.comment?.toLowerCase().includes(text) ||
         item.date?.toLowerCase().includes(text) ||
-        String(item.price).includes(text)
+        String(item?.price || "0").includes(text)
       );
     },
   );
@@ -183,10 +197,10 @@ export const useFinancialLogic = () => {
     setEditing(item);
 
     setEditForm({
-      date: item.date,
-      customerId: item.customer?.id || "",
-      price: item.price,
-      comment: item.comment,
+      date: item.date || "",
+      customerId: item?.customer?.id || "",
+      price: Number(item?.price) || 0,
+      comment: item.comment || "",
       fileNo: item.fileNo || "",
     });
   };
@@ -199,9 +213,9 @@ export const useFinancialLogic = () => {
     const price = Number(editForm.price);
     const payload = {
       id: editing.id,
-      date: editForm.date,
+      date: editForm.date || "",
       comment: editForm.comment || "",
-      price: price,
+      price: price || 0,
       fileNo: editForm.fileNo || "",
       customer: { id: customerId },
       customerName: selectedCustomer?.name || "",

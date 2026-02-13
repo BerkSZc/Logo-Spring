@@ -10,6 +10,7 @@ export default function ClientTable({
   onEdit,
   onOpenStatement,
   onArchiveToggle,
+  vouchers,
 }) {
   return (
     <div className="bg-gray-900/20 border border-gray-800 rounded-[2.5rem] overflow-hidden">
@@ -45,6 +46,7 @@ export default function ClientTable({
                 onEdit={onEdit}
                 onOpenStatement={onOpenStatement}
                 onArchiveToggle={onArchiveToggle}
+                vouchers={vouchers}
               />
             ))}
           </tbody>

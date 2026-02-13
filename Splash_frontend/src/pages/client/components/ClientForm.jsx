@@ -73,7 +73,7 @@ export default function ClientForm({
             <label
               className={`text-xs font-bold uppercase tracking-widest ml-1 ${field.color || "text-gray-500"}`}
             >
-              {field.label}
+              {field.label || ""}
             </label>
             <input
               type={field.type}
