@@ -10,8 +10,10 @@ export default function InvoicePrintPreview({
   const [voucher, setVoucher] = useState(null);
 
   useEffect(() => {
+    let ignore = false;
     const loadBalance = async () => {
       if (!printItem?.customer?.id || !printItem?.date) return;
+      setVoucher(null);
 
       const year = new Date(printItem.date).getFullYear();
       const dateString = `${year}-01-01`;
@@ -20,9 +22,14 @@ export default function InvoicePrintPreview({
         printItem.customer.id,
         dateString,
       );
-      setVoucher(data);
+      if (!ignore) {
+        setVoucher(data);
+      }
     };
     loadBalance();
+    return () => {
+      ignore = true;
+    };
   }, [printItem?.id]);
 
   if (!printItem) return null;
@@ -59,7 +66,7 @@ export default function InvoicePrintPreview({
               Fatura Önizleme
             </h2>
             <p className="text-xs text-gray-500 mt-1">
-              {printItem.fileNo} numaralı belge yazdırılmaya hazır
+              {printItem?.fileNo || ""} numaralı belge yazdırılmaya hazır
             </p>
           </div>
           <div className="flex gap-3">
@@ -86,13 +93,13 @@ export default function InvoicePrintPreview({
                 <span
                   className={`px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase ${typeBadgeColor} w-fit`}
                 >
-                  {typeTitle}
+                  {typeTitle || ""}
                 </span>
                 <p className="font-mono font-bold text-lg tracking-tight leading-none mt-1">
-                  NO: {printItem?.fileNo}
+                  NO: {printItem?.fileNo || ""}
                 </p>
                 <p className="italic text-[11px] text-gray-600">
-                  Tarih: {formattedDate}
+                  Tarih: {formattedDate || ""}
                 </p>
               </div>
 
@@ -145,30 +152,35 @@ export default function InvoicePrintPreview({
                     <tr key={idx} className="border-b border-gray-100">
                       <td className="py-3 px-2">
                         <div className="font-semibold text-gray-900">
-                          {item?.material?.code}
+                          {item?.material?.code || ""}
                         </div>
                         <div className="text-[10px] text-gray-400 italic">
                           {item?.material?.comment || ""}
                         </div>
                       </td>
                       <td className="py-3 px-2 text-center font-mono text-gray-600">
-                        {item?.quantity}
+                        {item?.quantity || ""}
                       </td>
                       <td className="py-3 px-2 text-right font-mono text-gray-600">
-                        {Number(item?.unitPrice).toLocaleString("tr-TR", {
-                          minimumFractionDigits: 2,
-                        })}{" "}
+                        {(Number(item?.unitPrice) || 0).toLocaleString(
+                          "tr-TR",
+                          {
+                            minimumFractionDigits: 2,
+                          },
+                        )}{" "}
                         ₺
                       </td>
                       <td className="py-3 px-2 text-right font-mono text-gray-400 italic">
-                        {Number(item?.kdvTutar || 0).toLocaleString("tr-TR", {
+                        {(Number(item?.kdvTutar) || 0).toLocaleString("tr-TR", {
                           minimumFractionDigits: 2,
                         })}{" "}
                         ₺
                       </td>
                       <td className="py-3 px-2 text-right font-bold text-gray-900">
-                        {Number(
-                          item?.lineTotal || item.unitPrice * item.quantity,
+                        {(
+                          Number(
+                            item?.lineTotal || item.unitPrice * item.quantity,
+                          ) || 0
                         ).toLocaleString("tr-TR", {
                           minimumFractionDigits: 2,
                         })}{" "}
@@ -191,7 +203,7 @@ export default function InvoicePrintPreview({
                     <div className="flex justify-between">
                       <span className="text-gray-500">USD:</span>
                       <span className="font-bold">
-                        {usdRate.toLocaleString("tr-TR", {
+                        {usdRate?.toLocaleString("tr-TR", {
                           minimumFractionDigits: 4,
                         })}{" "}
                         ₺
@@ -202,7 +214,7 @@ export default function InvoicePrintPreview({
                     <div className="flex justify-between">
                       <span className="text-gray-500">EUR:</span>
                       <span className="font-bold">
-                        {eurRate.toLocaleString("tr-TR", {
+                        {eurRate?.toLocaleString("tr-TR", {
                           minimumFractionDigits: 4,
                         })}{" "}
                         ₺
@@ -221,7 +233,7 @@ export default function InvoicePrintPreview({
                 <div className="flex justify-between text-[10px] text-gray-500 font-medium px-1">
                   <span>ARA TOPLAM (MATRAH)</span>
                   <span className="font-mono text-gray-800">
-                    {subTotal.toLocaleString("tr-TR", {
+                    {subTotal?.toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
                     })}{" "}
                     ₺
@@ -230,7 +242,7 @@ export default function InvoicePrintPreview({
                 <div className="flex justify-between text-[10px] text-gray-500 font-medium px-1 border-b border-gray-100 pb-1">
                   <span>TOPLAM KDV</span>
                   <span className="font-mono text-gray-800">
-                    {kdvToplam.toLocaleString("tr-TR", {
+                    {kdvToplam?.toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
                     })}{" "}
                     ₺
@@ -244,7 +256,7 @@ export default function InvoicePrintPreview({
                     className="text-xl font-extrabold tracking-tight"
                     style={{ color: primaryColor }}
                   >
-                    {totalPrice.toLocaleString("tr-TR", {
+                    {totalPrice?.toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
                     })}{" "}
                     ₺
@@ -257,7 +269,7 @@ export default function InvoicePrintPreview({
             <div className="mt-8 flex justify-end pb-4">
               <div className="p-3 border border-emerald-200 rounded-xl w-fit min-w-[200px] bg-emerald-50/20 text-right">
                 <h3 className="text-[8px] font-bold text-emerald-700 uppercase tracking-widest mb-0.5">
-                  {printItem?.date?.split("-")[0]} Yılı Dönem Bakiyesi
+                  {(printItem?.date || "")?.split("-")[0]} Yılı Dönem Bakiyesi
                 </h3>
                 <p className="text-lg font-bold text-emerald-900 font-mono">
                   {currentBalance.toLocaleString("tr-TR", {

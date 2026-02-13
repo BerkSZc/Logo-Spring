@@ -28,11 +28,11 @@ export default function CollectionPage() {
               Finansal İşlemler
             </h1>
             <p className="text-gray-400 mt-2">
-              {year} Mali Yılı Tahsilat ve Ödeme Yönetimi
+              {year || ""} Mali Yılı Tahsilat ve Ödeme Yönetimi
             </p>
           </div>
           <select
-            value={type}
+            value={type || ""}
             onChange={(e) => handlers.setType(e.target.value)}
             className="bg-gray-900 border-2 border-gray-800 text-white rounded-2xl px-6 py-3 outline-none focus:border-blue-500 transition-all font-bold cursor-pointer"
           >
@@ -60,7 +60,7 @@ export default function CollectionPage() {
             <input
               type="text"
               placeholder="Listede ara..."
-              value={search}
+              value={search || ""}
               onChange={(e) => handlers.setSearch(e.target.value)}
               className="bg-gray-900 border-2 border-gray-800 rounded-xl px-4 py-2 text-sm focus:border-blue-500 outline-none"
             />
@@ -99,13 +99,13 @@ export default function CollectionPage() {
                         className="hover:bg-blue-500/5 transition-all group"
                       >
                         <td className="p-5 text-gray-300 font-mono text-sm">
-                          {handlers.formatDate(item.date)}
+                          {handlers.formatDate(item?.date) || ""}
                         </td>
                         <td className="p-5 font-bold text-white max-w-[300px] truncate">
-                          {item.fileNo}
+                          {item?.fileNo || ""}
                         </td>
                         <td className="p-5 font-bold text-white max-w-[300px] truncate">
-                          {item.customer?.name}
+                          {item.customer?.name || ""}
                         </td>
                         <td className="p-5 text-gray-400 text-sm max-w-[250px] truncate">
                           {item.comment || "-"}
@@ -119,8 +119,9 @@ export default function CollectionPage() {
                             }`}
                           >
                             ₺{" "}
-                            {Number(item.price).toLocaleString("tr-TR", {
+                            {(Number(item.price) || 0).toLocaleString("tr-TR", {
                               minimumFractionDigits: 2,
+                              maximumSignificantDigits: 2,
                             })}
                           </span>
                         </td>
@@ -174,20 +175,24 @@ export default function CollectionPage() {
       </div>
 
       {/* MODALLAR */}
-      <DeleteConfirmModal
-        deleteTarget={deleteTarget}
-        onCancel={() => handlers.setDeleteTarget(null)}
-        onConfirm={handlers.handleDelete}
-      />
+      {deleteTarget && (
+        <DeleteConfirmModal
+          deleteTarget={deleteTarget}
+          onCancel={() => handlers.setDeleteTarget(null)}
+          onConfirm={handlers.handleDelete}
+        />
+      )}
 
-      <FinancialEditModal
-        editing={editing}
-        editForm={editForm}
-        setEditForm={(val) => handlers.setEditForm(val)}
-        onCancel={() => handlers.handleEdit(null)}
-        onSave={handlers.handleSave}
-        customers={customers}
-      />
+      {editing && (
+        <FinancialEditModal
+          editing={editing}
+          editForm={editForm}
+          setEditForm={(val) => handlers.setEditForm(val)}
+          onCancel={() => handlers.handleEdit(null)}
+          onSave={handlers.handleSave}
+          customers={customers}
+        />
+      )}
     </div>
   );
 }

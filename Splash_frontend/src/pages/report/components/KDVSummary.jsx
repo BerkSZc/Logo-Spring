@@ -5,15 +5,19 @@ export const KDVSummary = ({ data }) => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <SummaryCard
         title="Toplam Alım KDV"
-        value={data.totalPurchaseKdv}
+        value={Number(data?.totalPurchaseKdv || 0)}
         color="emerald"
       />
       <SummaryCard
         title="Toplam Satış KDV"
-        value={data.totalSalesKdv}
+        value={Number(data?.totalSalesKdv || 0)}
         color="orange"
       />
-      <SummaryCard title="Net KDV Durumu" value={data.netKdv} color="blue" />
+      <SummaryCard
+        title="Net KDV Durumu"
+        value={Number(data?.netKdv || 0)}
+        color="blue"
+      />
     </div>
 
     <div className="overflow-x-auto">
@@ -30,28 +34,28 @@ export const KDVSummary = ({ data }) => (
           {(Array.isArray(data?.monthlySummary) ? data.monthlySummary : []).map(
             (item, index) => (
               <tr
-                key={index}
+                key={index || 0}
                 className="bg-gray-800/40 hover:bg-gray-800/60 transition-all group"
               >
                 <td className="px-6 py-4 rounded-l-2xl font-bold text-sm">
-                  {item.month} / {item.year}
+                  {item?.month || ""} / {item?.year || ""}
                 </td>
                 <td className="px-6 py-4 font-mono text-sm">
                   ₺{" "}
-                  {item.purchaseKdv?.toLocaleString("tr-TR", {
+                  {item?.purchaseKdv?.toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                   })}
                 </td>
                 <td className="px-6 py-4 font-mono text-sm">
                   ₺{" "}
-                  {item.salesKdv?.toLocaleString("tr-TR", {
+                  {item?.salesKdv?.toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                   })}
                 </td>
                 <td
-                  className={`px-6 py-4 text-right rounded-r-2xl font-bold font-mono text-sm ${item.diff > 0 ? "text-red-400" : "text-blue-400"}`}
+                  className={`px-6 py-4 text-right rounded-r-2xl font-bold font-mono text-sm ${item?.diff > 0 ? "text-red-400" : "text-blue-400"}`}
                 >
-                  {item.diff > 0
+                  {item?.diff > 0
                     ? `+ ₺ ${item.diff.toLocaleString()}`
                     : `- ₺ ${Math.abs(item.diff).toLocaleString()}`}
                 </td>

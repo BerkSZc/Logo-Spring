@@ -7,18 +7,8 @@ export default function InvoiceTable({
   onPrint,
   menuRef,
   year,
+  formatDateToTR,
 }) {
-  const formatDateToTR = (dateString) => {
-    if (
-      !dateString ||
-      typeof dateString !== "string" ||
-      dateString.includes(".")
-    )
-      return dateString;
-    const [y, m, d] = dateString.split("-");
-    return `${d}.${m}.${y}`;
-  };
-
   return (
     <div className="bg-gray-900/40 border border-gray-800 rounded-[2.5rem] overflow-hidden backdrop-blur-sm shadow-2xl">
       <div className="overflow-x-auto">
@@ -43,25 +33,26 @@ export default function InvoiceTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800/50">
-            {invoices?.length > 0 ? (
-              invoices.map((inv) => (
+            {(Array.isArray(invoices) ? invoices?.length : []) > 0 ? (
+              (Array.isArray(invoices) ? invoices : []).map((inv) => (
                 <tr
                   key={inv.id}
                   className="hover:bg-blue-500/5 transition-all group"
                 >
                   <td className="p-5 font-mono text-blue-400 font-bold">
-                    {inv.fileNo}
+                    {inv?.fileNo || ""}
                   </td>
                   <td className="p-5 text-gray-300 font-mono text-sm">
-                    {formatDateToTR(inv.date)}
+                    {formatDateToTR(inv?.date) || ""}
                   </td>
                   <td className="p-5 font-bold text-white">
-                    {inv.customer?.name}
+                    {inv.customer?.name || ""}
                   </td>
                   <td className="p-5 text-right font-mono text-lg font-bold text-emerald-400">
                     ₺{" "}
-                    {inv.totalPrice?.toLocaleString("tr-TR", {
+                    {(Number(inv.totalPrice) || 0)?.toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
                     })}
                   </td>
                   <td className="p-5 text-center relative">
@@ -118,7 +109,7 @@ export default function InvoiceTable({
                   colSpan="5"
                   className="p-20 text-center text-gray-600 italic"
                 >
-                  {year} yılına ait kayıt bulunamadı.
+                  {year || ""} yılına ait kayıt bulunamadı.
                 </td>
               </tr>
             )}

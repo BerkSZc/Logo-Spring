@@ -15,10 +15,10 @@ export default function DeleteConfirmModal({
           Kaydı Sil
         </h2>
         <p className="mb-8 text-gray-400 text-center leading-relaxed">
-          <b className="text-white">{deleteTarget.customer?.name}</b> için
+          <b className="text-white">{deleteTarget.customer?.name || ""}</b> için
           oluşturulan{" "}
           <span className="text-red-400 font-mono block text-xl mt-2 font-bold italic">
-            {Number(deleteTarget.price).toLocaleString()} ₺
+            {(Number(deleteTarget?.price) || 0).toLocaleString()} ₺
           </span>{" "}
           tutarındaki bu işlem kalıcı olarak silinecektir. Emin misiniz?
         </p>

@@ -60,9 +60,18 @@ export const useInvoiceLogic = () => {
   };
 
   useEffect(() => {
-    const newState = getInitialFormState(year);
-    setSalesForm((prev) => ({ ...prev, date: newState.date }));
-    setPurchaseForm((prev) => ({ ...prev, date: newState.date }));
+    let ignore = false;
+    const fetchData = () => {
+      const newState = getInitialFormState(year);
+      if (!ignore) {
+        setSalesForm((prev) => ({ ...prev, date: newState.date }));
+        setPurchaseForm((prev) => ({ ...prev, date: newState.date }));
+      }
+    };
+    fetchData();
+    return () => {
+      ignore = true;
+    };
   }, [year]);
 
   const [salesForm, setSalesForm] = useState(() => getInitialFormState(year));
@@ -90,7 +99,7 @@ export const useInvoiceLogic = () => {
   };
 
   useEffect(() => {
-    let isMounted = true;
+    let ignore = false;
 
     const fetchData = async () => {
       const currentForm = mode === "sales" ? salesForm : purchaseForm;
@@ -101,7 +110,7 @@ export const useInvoiceLogic = () => {
         getDailyRates(date),
         getFileNo(date, mode.toUpperCase()),
       ]);
-      if (!isMounted) return;
+      if (ignore) return;
       const setter = mode === "sales" ? setSalesForm : setPurchaseForm;
 
       setter((prev) => ({
@@ -116,7 +125,7 @@ export const useInvoiceLogic = () => {
     };
     fetchData();
     return () => {
-      isMounted = false;
+      ignore = true;
     };
   }, [
     mode,

@@ -3,7 +3,7 @@ export const ReportTable = ({ title, items, color }) => (
     <h3
       className={`text-sm font-bold uppercase tracking-widest ${color === "emerald" ? "text-emerald-400" : "text-orange-400"}`}
     >
-      {title} Detay Listesi
+      {title || ""} Detay Listesi
     </h3>
     <div className="overflow-x-auto">
       <table className="w-full text-left border-separate border-spacing-y-2">
@@ -18,27 +18,27 @@ export const ReportTable = ({ title, items, color }) => (
         <tbody>
           {(Array.isArray(items) ? items : []).map((item, index) => (
             <tr
-              key={index}
+              key={index || 0}
               className="bg-gray-800/40 hover:bg-gray-800/60 transition-all"
             >
               <td className="px-6 py-4 rounded-l-2xl font-bold">
-                {item.month} / {item.year}
+                {item?.month || ""} / {item?.year || ""}
               </td>
               <td className="px-6 py-4 font-mono text-sm">
                 ₺{" "}
-                {item.totalAmount?.toLocaleString("tr-TR", {
+                {Number(item?.totalAmount || 0).toLocaleString("tr-TR", {
                   minimumFractionDigits: 2,
                 })}
               </td>
               <td className="px-6 py-4 font-mono text-sm">
                 ₺{" "}
-                {item.totalKdv?.toLocaleString("tr-TR", {
+                {Number(item?.totalKdv || 0).toLocaleString("tr-TR", {
                   minimumFractionDigits: 2,
                 })}
               </td>
               <td className="px-6 py-4 text-right rounded-r-2xl font-black text-blue-400 font-mono">
                 ₺{" "}
-                {item.netTotal?.toLocaleString("tr-TR", {
+                {Number(item?.netTotal).toLocaleString("tr-TR", {
                   minimumFractionDigits: 2,
                 })}
               </td>

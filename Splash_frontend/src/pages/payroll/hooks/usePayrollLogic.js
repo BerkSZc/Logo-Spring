@@ -127,30 +127,38 @@ export const usePayrollLogic = () => {
   );
 
   useEffect(() => {
-    let isCancelled = false;
+    let ignore = false;
     if (!editing && form.transactionDate) {
       const fetchNo = async () => {
         const nextNo = await getFileNo(
           form.transactionDate,
           type.toUpperCase(),
         );
-        if (!isCancelled && nextNo) {
+        if (!ignore && nextNo) {
           setForm((prev) => ({ ...prev, fileNo: nextNo }));
         }
       };
       fetchNo();
     }
     return () => {
-      isCancelled = true;
+      ignore = true;
     };
   }, [type, form.transactionDate, editing, getFileNo]);
 
   useEffect(() => {
-    if (year) {
-      getAllCustomers();
-      getPayrollByYear(year);
-      setForm((prev) => ({ ...prev, transactionDate: getInitialDate(year) }));
-    }
+    let ignore = false;
+    const fetchData = async () => {
+      if (year) {
+        await Promise.all([getAllCustomers(), getPayrollByYear(year)]);
+      }
+      if (!ignore) {
+        setForm((prev) => ({ ...prev, transactionDate: getInitialDate(year) }));
+      }
+    };
+    fetchData();
+    return () => {
+      ignore = true;
+    };
   }, [year, getAllCustomers, getPayrollByYear]);
 
   const resetForm = async () => {

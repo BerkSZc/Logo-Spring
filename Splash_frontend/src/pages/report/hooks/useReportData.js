@@ -9,30 +9,42 @@ export const useReportData = () => {
   const { reports, getFullReport } = useReport();
 
   useEffect(() => {
-    if (tenant) {
-      getFullReport(year, tenant);
-    }
+    let ignore = false;
+    const fetchData = async () => {
+      if (tenant) {
+        await getFullReport(year, tenant);
+      }
+      if (ignore) return;
+    };
+    fetchData();
+    return () => {
+      ignore = true;
+    };
   }, [year, tenant, getFullReport]);
 
   const processedData = useMemo(() => {
-    const summaryList = reports?.kdvAnalysis || [];
+    const summaryList = Array.isArray(reports?.kdvAnalysis)
+      ? reports.kdvAnalysis
+      : [];
 
     const totalPurchaseKdv = summaryList.reduce(
-      (acc, curr) => acc + (curr.purchaseKdv || 0),
+      (acc, curr) => acc + (Number(curr?.purchaseKdv) || 0),
       0,
     );
     const totalSalesKdv = summaryList.reduce(
-      (acc, curr) => acc + (curr.salesKdv || 0),
+      (acc, curr) => acc + (Number(curr?.salesKdv) || 0),
       0,
     );
 
     return {
-      purchases: reports?.purchaseReports || [],
-      sales: reports?.salesReports || [],
-      monthlySummary: summaryList,
+      purchases: Array.isArray(reports?.purchaseReports)
+        ? reports.purchaseReports
+        : [],
+      sales: Array.isArray(reports?.salesReports) ? reports.salesReports : [],
+      monthlySummary: Array.isArray(summaryList) ? summaryList : [],
       totalPurchaseKdv,
       totalSalesKdv,
-      netKdv: totalSalesKdv - totalPurchaseKdv,
+      netKdv: Number(totalSalesKdv || 0) - Number(totalPurchaseKdv || 0),
     };
   }, [reports]);
 

@@ -27,10 +27,10 @@ export const ImportButton = ({
             variant === "blue"
               ? "bg-blue-600/20"
               : variant === "emerald"
-              ? "bg-emerald-600/20"
-              : variant === "purple"
-              ? "bg-purple-600/20"
-              : "bg-orange-600/20"
+                ? "bg-emerald-600/20"
+                : variant === "purple"
+                  ? "bg-purple-600/20"
+                  : "bg-orange-600/20"
           }`}
         >
           {icon}

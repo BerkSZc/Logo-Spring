@@ -4,16 +4,12 @@ import InvoiceItemsTable from "./components/InvoiceItemsTable";
 
 export default function InvoiceForm() {
   const { state, handlers } = useInvoiceLogic();
-  const {
-    mode,
-    salesForm,
-    purchaseForm,
-    materials,
-    customers,
-    currentForm,
-    currentCalc,
-  } = state;
+  const { mode, salesForm, purchaseForm } = state;
 
+  const actualForm = state?.currentForm || { items: [] };
+  const actualCalc = state?.currentCalc || { total: 0, kdv: 0, grandTotal: 0 };
+  const actualCustomers = state?.customers || [];
+  const actualMaterials = state?.materials || [];
   return (
     <div className="min-h-screen w-full bg-[#0a0f1a] text-gray-100 p-6 lg:p-12">
       <div className="max-w-6xl mx-auto space-y-8 text-left">
@@ -47,7 +43,7 @@ export default function InvoiceForm() {
               <input
                 type="date"
                 required
-                value={currentForm.date || ""}
+                value={actualForm.date || ""}
                 onChange={(e) =>
                   mode === "sales"
                     ? handlers.setSalesForm({
@@ -70,7 +66,7 @@ export default function InvoiceForm() {
                 type="text"
                 required
                 placeholder="Örn: FAT2025001"
-                value={currentForm.fileNo}
+                value={actualForm.fileNo}
                 onChange={(e) =>
                   mode === "sales"
                     ? handlers.setSalesForm({
@@ -90,8 +86,8 @@ export default function InvoiceForm() {
                 Müşteri / Firma
               </label>
               <CustomerSearchSelect
-                customers={customers}
-                value={currentForm.customerId}
+                customers={actualCustomers}
+                value={actualForm.customerId}
                 onChange={(id) =>
                   mode === "sales"
                     ? handlers.setSalesForm({ ...salesForm, customerId: id })
@@ -107,15 +103,15 @@ export default function InvoiceForm() {
           {/* TABLO VE DÖVİZ KURLARI */}
           <InvoiceItemsTable
             mode={mode}
-            items={currentForm.items}
-            materials={materials}
-            customerId={currentForm.customerId}
+            items={Array.isArray(actualForm.items) ? actualForm.items : []}
+            materials={actualMaterials}
+            customerId={actualForm.customerId}
             onItemChange={handlers.handleItemChange}
             onAddItem={handlers.addItem}
             onRemoveItem={handlers.removeItem}
             currencyRates={{
-              usd: currentForm.usdSellingRate,
-              eur: currentForm.eurSellingRate,
+              usd: actualForm.usdSellingRate,
+              eur: actualForm.eurSellingRate,
             }}
             onRateChange={handlers.handleRateChange}
           />
@@ -129,7 +125,7 @@ export default function InvoiceForm() {
               <div className="flex justify-between items-center text-gray-400 text-sm">
                 <span>Ara Toplam (Matrah):</span>
                 <span className="font-mono text-white">
-                  {currentCalc.total.toLocaleString("tr-TR", {
+                  {(Number(actualCalc.total) || 0).toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}{" "}
@@ -139,7 +135,7 @@ export default function InvoiceForm() {
               <div className="flex justify-between items-center text-gray-400 text-sm">
                 <span>KDV Toplam:</span>
                 <span className="font-mono text-blue-400 font-bold">
-                  {currentCalc.kdv.toLocaleString("tr-TR", {
+                  {(Number(actualCalc.kdv) || 0).toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}{" "}
@@ -149,10 +145,13 @@ export default function InvoiceForm() {
               <div className="flex justify-between items-center text-2xl font-black border-t border-gray-800 pt-3 mt-2">
                 <span className="text-white text-lg">Genel Toplam:</span>
                 <span className="text-emerald-400 font-mono tracking-tighter">
-                  {currentCalc.grandTotal.toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}{" "}
+                  {(Number(actualCalc.grandTotal) || 0).toLocaleString(
+                    "tr-TR",
+                    {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    },
+                  )}{" "}
                   ₺
                 </span>
               </div>

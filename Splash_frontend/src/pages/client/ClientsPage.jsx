@@ -9,8 +9,13 @@ export default function ClientsPage() {
   const { state, handlers, refs } = useClientLogic();
 
   // Seçili olan müşterilerin listesi (Arşiv aksiyonu için)
-  const selectedList = state.filteredCustomers.filter((c) =>
-    state.selectedCustomers.includes(c.id),
+  const selectedList = (
+    Array.isArray(state.filteredCustomers) ? state.filteredCustomers : []
+  ).filter((c) =>
+    (Array.isArray(state.selectedCustomers)
+      ? state.selectedCustomers
+      : []
+    ).includes(c.id),
   );
 
   return (
@@ -32,7 +37,7 @@ export default function ClientsPage() {
               <input
                 type="text"
                 placeholder="Müşteri ara..."
-                value={state.search}
+                value={state?.search || ""}
                 onChange={(e) => handlers.setSearch(e.target.value)}
                 className="pl-11 pr-4 py-3 bg-gray-900/40 border-2 border-gray-800 rounded-2xl w-full text-white focus:border-blue-500 transition-all outline-none"
               />
@@ -65,7 +70,7 @@ export default function ClientsPage() {
 
         {/* 2. BÖLÜM: KAYIT VE GÜNCELLEME FORMU */}
         <ClientForm
-          form={state.form}
+          form={state.form || {}}
           editClient={state.editClient}
           handleChange={handlers.handleChange}
           handleSubmit={handlers.handleSubmit}
@@ -102,44 +107,53 @@ export default function ClientsPage() {
             onEdit={handlers.handleEdit}
             onOpenStatement={handlers.handleOpenStatement}
             onArchiveToggle={handlers.handleArchiveToggle}
+            vouchers={state.vouchers}
           />
         </div>
       </div>
 
       {/* 4. BÖLÜM: MODALLAR VE KONTROLLER */}
-      <ArchiveConfirmModal
-        isOpen={state.showArchiveModal}
-        count={state.selectedCustomers.length}
-        action={state.archiveAction}
-        onCancel={() => handlers.setShowArchiveModal(false)}
-        onConfirm={handlers.handleArchiveModalSubmit}
-      />
+      {state.ArchiveConfirmModal && (
+        <ArchiveConfirmModal
+          isOpen={state.showArchiveModal}
+          count={state.selectedCustomers.length}
+          action={state.archiveAction}
+          onCancel={() => handlers.setShowArchiveModal(false)}
+          onConfirm={handlers.handleArchiveModalSubmit}
+        />
+      )}
 
-      <ContextMenu
-        contextMenu={state.contextMenu}
-        selectedCount={state.selectedCustomers.length}
-        isAllArchived={selectedList.every((c) => c.archived)}
-        onClose={() => handlers.setContextMenu(null)}
-        onEdit={(c) => {
-          handlers.handleEdit(c);
-          handlers.setContextMenu(null);
-        }}
-        onArchiveClick={() => {
-          handlers.setArchiveAction(
-            selectedList.every((c) => c.archived) ? "unarchive" : "archive",
-          );
-          handlers.setShowArchiveModal(true);
-          handlers.setContextMenu(null);
-        }}
-      />
+      {state.contextMenu && (
+        <ContextMenu
+          contextMenu={state.contextMenu}
+          selectedCount={state.selectedCustomers.length}
+          isAllArchived={
+            selectedList.length > 0 && selectedList.every((c) => c.archived)
+          }
+          onClose={() => handlers.setContextMenu(null)}
+          onEdit={(c) => {
+            handlers.handleEdit(c);
+            handlers.setContextMenu(null);
+          }}
+          onArchiveClick={() => {
+            handlers.setArchiveAction(
+              selectedList.every((c) => c.archived) ? "unarchive" : "archive",
+            );
+            handlers.setShowArchiveModal(true);
+            handlers.setContextMenu(null);
+          }}
+        />
+      )}
 
-      <StatementModal
-        showPrintModal={state.showPrintModal}
-        setShowPrintModal={handlers.setShowPrintModal}
-        selectedCustomer={state.selectedCustomerForStatement}
-        statementData={state.statementData}
-        year={state.year}
-      />
+      {state.showPrintModal && (
+        <StatementModal
+          showPrintModal={state.showPrintModal}
+          setShowPrintModal={handlers.setShowPrintModal}
+          selectedCustomer={state.selectedCustomerForStatement}
+          statementData={state.statementData}
+          year={state.year}
+        />
+      )}
     </div>
   );
 }

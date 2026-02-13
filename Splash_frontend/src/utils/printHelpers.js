@@ -1,16 +1,16 @@
 //Fatura yazdırma templatei
 export const generateInvoiceHTML = (inv, invoiceType, voucher) => {
-  const kdvToplam = Number(inv?.kdvToplam || 0);
-  const totalPrice = Number(inv?.totalPrice || 0);
+  const kdvToplam = Number(inv?.kdvToplam ?? 0);
+  const totalPrice = Number(inv?.totalPrice ?? 0);
   const subTotal = totalPrice - kdvToplam || 0;
 
   const isPurchase = invoiceType === "purchase";
   const typeTitle = isPurchase ? "Satın Alma Faturası" : "Satış Faturası";
   const primaryColor = isPurchase ? "" : "#1e3a8a";
 
-  const currentBalance = voucher.finalBalance;
-  const usdRate = Number(inv?.usdSellingRate || 0);
-  const eurRate = Number(inv?.eurSellingRate || 0);
+  const currentBalance = voucher?.finalBalance ?? 0;
+  const usdRate = Number(inv?.usdSellingRate ?? 0);
+  const eurRate = Number(inv?.eurSellingRate ?? 0);
 
   const formattedDate = inv?.date?.includes("-")
     ? inv.date.split("-").reverse().join(".")
@@ -19,7 +19,7 @@ export const generateInvoiceHTML = (inv, invoiceType, voucher) => {
   return `
   <html>
       <head>
-        <title>${typeTitle}_${inv?.fileNo}</title>
+        <title>${typeTitle}_${inv?.fileNo || ""}</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
@@ -101,27 +101,27 @@ export const generateInvoiceHTML = (inv, invoiceType, voucher) => {
                 <tr>
                   <td class="py-3 px-2">
                     <div class="font-semibold text-gray-900">${
-                      item?.material?.code
+                      item?.material?.code || ""
                     }</div>
                     <div class="text-[10px] text-gray-400 mt-0.5 italic">${
                       item?.material?.comment || ""
                     }</div>
                   </td>
                   <td class="py-3 px-2 text-center font-mono text-gray-600">${
-                    item?.quantity
+                    item?.quantity ?? 0
                   }</td>
                   <td class="py-3 px-2 text-right font-mono text-gray-600">${Number(
-                    item?.unitPrice,
+                    item?.unitPrice ?? 0,
                   ).toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                   })} ₺</td>
                   <td class="py-3 px-2 text-right font-mono text-gray-500">${Number(
-                    item?.kdvTutar || 0,
+                    item?.kdvTutar ?? 0,
                   ).toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                   })} ₺</td>
                   <td class="py-3 px-2 text-right font-bold text-gray-900">${Number(
-                    item.lineTotal,
+                    item.lineTotal ?? 0,
                   ).toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
                   })} ₺</td>

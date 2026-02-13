@@ -1,7 +1,6 @@
 // Müşteri seçme alanı
 
 import { useState, useRef, useEffect } from "react";
-
 import { useVoucher } from "../../backend/store/useVoucher.js";
 import { useClient } from "../../backend/store/useClient.js";
 import { useYear } from "../context/YearContext";
@@ -16,8 +15,8 @@ export default function CustomerSearchSelect({ customers, value, onChange }) {
   const { year } = useYear();
 
   // Seçili müşteriyi bul
-  const selectedCustomer = customers.find(
-    (c) => String(c.id) === String(value),
+  const selectedCustomer = (Array.isArray(customers) ? customers : []).find(
+    (c) => String(c?.id) === String(value),
   );
 
   // Dışarı tıklandığında dropdown'ı kapat
@@ -32,23 +31,28 @@ export default function CustomerSearchSelect({ customers, value, onChange }) {
   }, []);
 
   // Filtreleme (Büyük/Küçük harf duyarsız)
-  const filteredCustomers = customers.filter(
+  const filteredCustomers = (Array.isArray(customers) ? customers : []).filter(
     (c) =>
-      !c.archived && // Sadece arşivlenmemiş (archived: false) olanları al
-      c.name?.toLowerCase().includes(search?.toLowerCase()),
+      !c?.archived && // Sadece arşivlenmemiş (archived: false) olanları al
+      c?.name?.toLowerCase().includes(search?.toLowerCase()),
   );
 
   useEffect(() => {
+    let ignore = false;
     const fetchAndSyncData = async () => {
       await getAllCustomers();
+
+      if (ignore) return;
 
       if (year) {
         const dateString = `${year}-01-01`;
         await getAllOpeningVoucherByYear(dateString);
       }
     };
-
     fetchAndSyncData();
+    return () => {
+      ignore = true;
+    };
   }, [year, getAllCustomers, getAllOpeningVoucherByYear]);
 
   return (
@@ -90,30 +94,33 @@ export default function CustomerSearchSelect({ customers, value, onChange }) {
             />
           </div>
           <div className="max-h-60 overflow-y-auto">
-            {filteredCustomers.length > 0 ? (
+            {Array.isArray(filteredCustomers) &&
+            filteredCustomers.length > 0 ? (
               filteredCustomers.map((c) => {
-                const myVoucher = vouchers?.find(
-                  (v) => v?.customer?.id === c.id,
-                );
-                const balanceDisplay = myVoucher?.finalBalance ?? 0;
+                const myVoucher = (
+                  Array.isArray(vouchers) ? vouchers : []
+                ).find((v) => v?.customer?.id === c?.id);
 
+                const balanceDisplay = Number(myVoucher?.finalBalance ?? 0);
                 return (
                   <div
-                    key={c.id}
+                    key={c?.id || ""}
                     onClick={() => {
-                      onChange(c.id);
+                      onChange(c?.id);
                       setIsOpen(false);
                       setSearch("");
                     }}
                     className={`px-4 py-3 cursor-pointer transition-colors flex justify-between items-center ${
-                      String(value) === String(c.id)
+                      String(value) === String(c?.id)
                         ? "bg-blue-600 text-white"
                         : "text-gray-300 hover:bg-gray-800"
                     }`}
                   >
                     <div>
-                      <div className="font-bold">{c.name}</div>
-                      <div className="text-xs opacity-60">Kodu: {c.code}</div>
+                      <div className="font-bold">{c?.name || ""}</div>
+                      <div className="text-xs opacity-60">
+                        Kodu: {c?.code || 0}
+                      </div>
                     </div>
 
                     {/* Voucher'dan gelen dinamik bakiye */}

@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 @Service
 public class CustomerServiceImpl implements ICustomerService {
@@ -35,15 +35,8 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Override
     public Customer findCustomerById(Long id) {
-        Optional<Customer> optional = customerRepository.findById(id);
-        if (optional.isEmpty()) {
-            throw new BaseException(new ErrorMessage(MessageType.MUSTERI_BULUNAMADI));
-        }
-        Customer customer = new Customer();
-        customer.setId(optional.get().getId());
-        customer.setName(optional.get().getName());
-
-        return customer;
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new BaseException(new ErrorMessage(MessageType.MUSTERI_BULUNAMADI)));
     }
 
     @Override
@@ -55,25 +48,26 @@ public class CustomerServiceImpl implements ICustomerService {
         }
 
         Customer customer = new Customer();
-        customer.setName(newCustomer.getName());
-        customer.setAddress(newCustomer.getAddress());
-        customer.setCountry(newCustomer.getCountry());
-        customer.setLocal(newCustomer.getLocal());
-        customer.setDistrict(newCustomer.getDistrict());
-        customer.setVdNo(newCustomer.getVdNo());
-        customer.setCode(newCustomer.getCode());
+        customer.setName(Objects.requireNonNullElse(newCustomer.getName(), ""));
+        customer.setAddress(Objects.requireNonNullElse(newCustomer.getAddress(), ""));
+        customer.setCountry(Objects.requireNonNullElse(newCustomer.getCountry(), ""));
+        customer.setLocal(Objects.requireNonNullElse(newCustomer.getLocal(), ""));
+        customer.setDistrict(Objects.requireNonNullElse(newCustomer.getDistrict(), ""));
+        customer.setVdNo(Objects.requireNonNullElse(newCustomer.getVdNo(), ""));
+        customer.setCode(Objects.requireNonNullElse(newCustomer.getCode(), ""));
         customer.setArchived(false);
+        Customer savedCustomer = customerRepository.save(customer);
 
         LocalDate start = LocalDate.of(year, 1, 1);
         LocalDate end = LocalDate.of(year, 12, 31);
 
-       OpeningVoucher voucher = openingVoucherRepository.findByCustomerIdAndDateBetween(customer.getId(), start, end)
+        OpeningVoucher voucher = openingVoucherRepository.findByCustomerIdAndDateBetween(savedCustomer.getId(), start, end)
                 .orElseGet(() -> getDefaultVoucher(getCompany(schemaName), customer, start, newCustomer));
 
-       voucher.setYearlyCredit(newCustomer.getYearlyCredit());
-       voucher.setYearlyDebit(newCustomer.getYearlyDebit());
-       openingVoucherRepository.save(voucher);
-        return customerRepository.save(customer);
+        voucher.setYearlyCredit(safeGet(newCustomer.getYearlyCredit()));
+        voucher.setYearlyDebit(safeGet(newCustomer.getYearlyDebit()));
+        openingVoucherRepository.save(voucher);
+        return savedCustomer;
     }
 
     @Override
@@ -98,13 +92,13 @@ public class CustomerServiceImpl implements ICustomerService {
             throw new BaseException(new ErrorMessage(MessageType.MUSTERI_KOD_MEVCUT));
         }
 
-        oldCustomer.setName(updateCustomer.getName());
-        oldCustomer.setAddress(updateCustomer.getAddress());
-        oldCustomer.setLocal(updateCustomer.getLocal());
-        oldCustomer.setDistrict(updateCustomer.getDistrict());
-        oldCustomer.setVdNo(updateCustomer.getVdNo());
-        oldCustomer.setCountry(updateCustomer.getCountry());
-        oldCustomer.setCode(updateCustomer.getCode());
+        oldCustomer.setName(Objects.requireNonNullElse(updateCustomer.getName(), ""));
+        oldCustomer.setAddress(Objects.requireNonNullElse(updateCustomer.getAddress(), ""));
+        oldCustomer.setLocal(Objects.requireNonNullElse(updateCustomer.getLocal(), ""));
+        oldCustomer.setDistrict(Objects.requireNonNullElse(updateCustomer.getDistrict(), ""));
+        oldCustomer.setVdNo(Objects.requireNonNullElse(updateCustomer.getVdNo(), ""));
+        oldCustomer.setCountry(Objects.requireNonNullElse(updateCustomer.getCountry(), ""));
+        oldCustomer.setCode(Objects.requireNonNullElse(updateCustomer.getCode(), ""));
 
         LocalDate start = LocalDate.of(currentYear, 1, 1);
         LocalDate end = LocalDate.of(currentYear, 12, 31);
@@ -113,23 +107,23 @@ public class CustomerServiceImpl implements ICustomerService {
                 .orElseGet(() -> getDefaultVoucher(getCompany(schemaName), oldCustomer, start, updateCustomer));
 
 
-        BigDecimal updatedCredit = updateCustomer.getYearlyCredit();
-        BigDecimal updatedDebit = updateCustomer.getYearlyDebit();
+        BigDecimal updatedCredit = safeGet(updateCustomer.getYearlyCredit());
+        BigDecimal updatedDebit = safeGet(updateCustomer.getYearlyDebit());
 
-        BigDecimal oldCredit = openingVoucher.getYearlyCredit();
-        BigDecimal oldDebit = openingVoucher.getYearlyDebit();
+        BigDecimal oldCredit = safeGet(openingVoucher.getYearlyCredit());
+        BigDecimal oldDebit = safeGet(openingVoucher.getYearlyDebit());
 
         BigDecimal newCredit = updatedCredit.subtract(oldCredit);
         BigDecimal newDebit = updatedDebit.subtract(oldDebit);
 
         BigDecimal finalBalance = newDebit.subtract(newCredit).setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal currentBalance = openingVoucher.getFinalBalance() != null ? openingVoucher.getFinalBalance() : BigDecimal.ZERO;
+        BigDecimal currentBalance = safeGet(openingVoucher.getFinalBalance());
 
         openingVoucher.setYearlyCredit(updatedCredit);
         openingVoucher.setYearlyDebit(updatedDebit);
-        openingVoucher.setCredit(openingVoucher.getCredit().add(newCredit));
-        openingVoucher.setDebit(openingVoucher.getDebit().add(newDebit));
+        openingVoucher.setCredit(safeGet(openingVoucher.getCredit()).add(newCredit));
+        openingVoucher.setDebit(safeGet(openingVoucher.getDebit()).add(newDebit));
         openingVoucher.setFinalBalance(currentBalance.add(finalBalance));
 
         openingVoucherRepository.save(openingVoucher);
@@ -159,18 +153,21 @@ public class CustomerServiceImpl implements ICustomerService {
     private OpeningVoucher getDefaultVoucher(Company company, Customer customer, LocalDate date, DtoCustomer dtoCustomer) {
         OpeningVoucher voucher = new OpeningVoucher();
         voucher.setCompany(company);
-        voucher.setDate(date);
+        voucher.setDate(Objects.requireNonNullElse(date, LocalDate.now()));
         voucher.setCustomer(customer);
-        voucher.setCustomerName(customer.getName());
+        voucher.setCustomerName(Objects.requireNonNullElse(customer.getName(), ""));
         voucher.setDebit(BigDecimal.ZERO);
         voucher.setCredit(BigDecimal.ZERO);
-        voucher.setYearlyDebit(dtoCustomer.getYearlyDebit());
-        voucher.setYearlyCredit(dtoCustomer.getYearlyCredit());
-        voucher.setFinalBalance(dtoCustomer.getYearlyDebit().subtract(dtoCustomer.getYearlyCredit().setScale(2, RoundingMode.HALF_UP)));
+        voucher.setYearlyDebit(safeGet(dtoCustomer.getYearlyDebit()));
+        voucher.setYearlyCredit(safeGet(dtoCustomer.getYearlyCredit()));
+        voucher.setFinalBalance(safeGet(dtoCustomer.getYearlyDebit()).subtract(safeGet(dtoCustomer.getYearlyCredit())).setScale(2, RoundingMode.HALF_UP));
         voucher.setFileNo("001");
         voucher.setDescription("Eklendi");
         return openingVoucherRepository.save(voucher);
     }
 
+    private BigDecimal safeGet (BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
 }
 

@@ -56,15 +56,22 @@ export const useClientLogic = () => {
   });
 
   useEffect(() => {
+    let ignore = false;
     const refreshBalances = async () => {
-      if (year) {
-        await getAllCustomers();
-        const dateString = `${year}-01-01`;
-        await getAllOpeningVoucherByYear(dateString);
-      }
-    };
+      if (!year) return;
+      const dateString = `${year}-01-01`;
 
+      await Promise.all([
+        getAllCustomers(),
+        getAllOpeningVoucherByYear(dateString),
+      ]);
+
+      if (ignore) return;
+    };
     refreshBalances();
+    return () => {
+      ignore = true;
+    };
   }, [year, getAllCustomers, getAllOpeningVoucherByYear]);
 
   useEffect(() => {
@@ -119,7 +126,7 @@ export const useClientLogic = () => {
   const handleOpenStatement = async (customer) => {
     setOpenMenuId(null);
 
-    const customerVoucher = vouchers?.find(
+    const customerVoucher = (Array.isArray(vouchers) ? vouchers : []).find(
       (v) => v?.customer?.id === customer?.id,
     );
     const updatedCustomer = {
@@ -132,7 +139,7 @@ export const useClientLogic = () => {
     };
 
     setSelectedCustomerForStatement(updatedCustomer);
-    await Promise.all([
+    await Promise.allSettled([
       getSalesInvoicesByYear(year),
       getPurchaseInvoiceByYear(year),
       getPaymentCollectionsByYear(year),
@@ -150,14 +157,14 @@ export const useClientLogic = () => {
     }
 
     const customerPayload = {
-      name: form.name,
-      address: form.address,
-      country: form.country,
+      name: form.name || "",
+      address: form.address || "",
+      country: form.country || "",
       yearlyDebit: Number(form.yearlyDebit || 0),
       yearlyCredit: Number(form.yearlyCredit || 0),
-      local: form.local,
-      district: form.district,
-      vdNo: form.vdNo,
+      local: form.local || "",
+      district: form.district || "",
+      vdNo: form.vdNo || "",
       code: form.code.trim().toUpperCase(),
     };
     try {
@@ -190,7 +197,7 @@ export const useClientLogic = () => {
   const handleEdit = async (customer) => {
     if (customer.archived) return;
 
-    const customerVoucher = vouchers?.find(
+    const customerVoucher = (Array.isArray(vouchers) ? vouchers : []).find(
       (v) => String(v?.customer?.id) === String(customer?.id),
     );
 
@@ -249,6 +256,7 @@ export const useClientLogic = () => {
   const filteredCustomers = Array.isArray(customers)
     ? customers
         .filter((c) => {
+          if (!c) return false;
           if (!search) return true;
           return (
             (c.name || "")
@@ -279,6 +287,7 @@ export const useClientLogic = () => {
       archiveAction,
       filteredCustomers,
       year,
+      vouchers,
     },
     refs: { formRef },
     handlers: {

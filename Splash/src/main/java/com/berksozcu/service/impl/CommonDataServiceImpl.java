@@ -1,12 +1,8 @@
 package com.berksozcu.service.impl;
 
 import com.berksozcu.entites.currency.CurrencyRate;
-import com.berksozcu.entites.material_price_history.InvoiceType;
 import com.berksozcu.entites.payroll.PayrollModel;
 import com.berksozcu.entites.payroll.PayrollType;
-import com.berksozcu.exception.BaseException;
-import com.berksozcu.exception.ErrorMessage;
-import com.berksozcu.exception.MessageType;
 import com.berksozcu.repository.*;
 import com.berksozcu.service.ICommonDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 
 @Service
@@ -67,7 +64,9 @@ public class CommonDataServiceImpl implements ICommonDataService {
 
     @Override
     public BigDecimal getRateOrDefault(String currency, LocalDate invoiceDate) {
-
+        if (currency == null || invoiceDate == null) {
+            return BigDecimal.ONE;
+        }
         return currencyRateRepository.findFirstByCurrencyAndLastUpdatedOrderByLastUpdatedDesc(
                         currency, invoiceDate)
                 .map(CurrencyRate::getSellingRate)
@@ -90,8 +89,8 @@ public class CommonDataServiceImpl implements ICommonDataService {
         String lastNo;
         String prefix;
 
-     switch (type.toUpperCase()) {
-            case "PURCHASE" ->{
+        switch (type.toUpperCase()) {
+            case "PURCHASE" -> {
                 lastNo = purchaseInvoiceRepository.findMaxFileNoByYear(start, end);
                 prefix = "ALIS";
             }
@@ -127,10 +126,11 @@ public class CommonDataServiceImpl implements ICommonDataService {
                 lastNo = null;
                 prefix = "SOZ";
             }
-        };
+        }
+        ;
 
         if (lastNo == null || lastNo.isBlank() || !lastNo.startsWith(prefix)) {
-            return String.format("%s%d001", prefix ,date.getYear());
+            return String.format("%s%d001", prefix, date.getYear());
         }
 
         try {
@@ -150,7 +150,7 @@ public class CommonDataServiceImpl implements ICommonDataService {
         CurrencyRate rate = currencyRateRepository.findByCurrencyAndLastUpdated(code, today).
                 orElse(new CurrencyRate());
 
-        rate.setCurrency(code);
+        rate.setCurrency(Objects.requireNonNullElse(code, ""));
 
         String buyingRate = element.getElementsByTagName("ForexBuying").item(0).getTextContent();
         String sellingRate = element.getElementsByTagName("ForexSelling").item(0).getTextContent();

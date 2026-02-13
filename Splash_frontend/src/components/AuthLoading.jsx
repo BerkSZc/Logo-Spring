@@ -1,5 +1,3 @@
-import React from "react";
-
 const AuthLoading = () => {
   return (
     <div className="min-h-screen w-full bg-[#0a0f1a] flex items-center justify-center relative overflow-hidden">

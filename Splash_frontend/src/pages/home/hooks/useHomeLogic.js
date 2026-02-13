@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { usePurchaseInvoice } from "../../../../backend/store/usePurchaseInvoice.js";
 import { useSalesInvoice } from "../../../../backend/store/useSalesInvoice.js";
 import { useClient } from "../../../../backend/store/useClient.js";
@@ -20,30 +20,53 @@ export const useHomeLogic = () => {
   const { tenant } = useTenant();
 
   useEffect(() => {
-    getAllCompanies();
-    getAllCustomers();
-    getReceivedCollectionsByYear(year);
-    getPaymentCollectionsByYear(year);
-    getPurchaseInvoiceByYear(year);
-    getSalesInvoicesByYear(year);
+    let ignore = false;
+    const fetchData = async () => {
+      if (!year || !tenant) return;
+      await Promise.all([
+        getAllCompanies(),
+        getAllCustomers(),
+        getReceivedCollectionsByYear(year),
+        getPaymentCollectionsByYear(year),
+        getPurchaseInvoiceByYear(year),
+        getSalesInvoicesByYear(year),
+      ]);
+    };
+    if (ignore) return;
+
+    fetchData();
+    return () => {
+      ignore = true;
+    };
   }, [year, tenant]);
 
   // Finansal hesaplamalar
-  const totalAlacak = collections.reduce((sum, c) => sum + Number(c.price), 0);
-  const totalBorc = payments.reduce((sum, p) => sum + Number(p.price), 0);
+  const financialSummary = useMemo(() => {
+    const totalCredits = (Array.isArray(collections) ? collections : []).reduce(
+      (sum, c) => sum + Number(c?.price || 0),
+      0,
+    );
+    const totalDebts = (Array.isArray(payments) ? payments : []).reduce(
+      (sum, p) => sum + Number(p?.price || 0),
+      0,
+    );
+    return { totalCredits, totalDebts };
+  }, [collections, payments]);
 
-  const currentCompany = companies?.find((c) => c.schemaName === tenant);
+  const currentCompany = (Array.isArray(companies) ? companies : []).find(
+    (c) => c?.schemaName === tenant,
+  );
   const companyDisplayName = currentCompany
     ? currentCompany.name
     : tenant?.toUpperCase();
 
   return {
     state: {
-      purchase,
-      sales,
-      customers,
-      totalAlacak,
-      totalBorc,
+      purchase: Array.isArray(purchase) ? purchase : [],
+      sales: Array.isArray(sales) ? sales : [],
+      customers: Array.isArray(customers) ? customers : [],
+      totalCredits: financialSummary.totalCredits,
+      totalDebts: financialSummary.totalDebts,
       companyDisplayName,
       year,
       lastUpdate: new Date().toLocaleString("tr-TR"),

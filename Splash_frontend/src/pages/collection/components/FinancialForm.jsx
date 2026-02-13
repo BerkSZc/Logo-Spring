@@ -31,7 +31,7 @@ export default function FinancialForm({
           </label>
           <input
             type="date"
-            value={addForm.date}
+            value={addForm?.date || ""}
             required
             onChange={(e) => setAddForm({ ...addForm, date: e.target.value })}
             className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none transition"
@@ -43,7 +43,7 @@ export default function FinancialForm({
           </label>
           <CustomerSearchSelect
             customers={customers}
-            value={addForm.customerId}
+            value={addForm?.customerId || ""}
             onChange={(id) => setAddForm({ ...addForm, customerId: id })}
           />
         </div>
@@ -55,7 +55,7 @@ export default function FinancialForm({
             required
             type="number"
             placeholder="0.00"
-            value={addForm.price}
+            value={Number(addForm?.price) || ""}
             onChange={(e) => setAddForm({ ...addForm, price: e.target.value })}
             className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none transition"
           />
@@ -68,7 +68,7 @@ export default function FinancialForm({
             required
             type="text"
             placeholder="001"
-            value={addForm.fileNo}
+            value={addForm?.fileNo || ""}
             onChange={(e) => setAddForm({ ...addForm, fileNo: e.target.value })}
             className="w-full bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none transition"
           />
@@ -81,7 +81,7 @@ export default function FinancialForm({
             <input
               type="text"
               placeholder="Not ekleyin..."
-              value={addForm.comment}
+              value={addForm?.comment || ""}
               onChange={(e) =>
                 setAddForm({ ...addForm, comment: e.target.value })
               }

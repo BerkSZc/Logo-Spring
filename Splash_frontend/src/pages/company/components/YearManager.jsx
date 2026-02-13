@@ -54,7 +54,7 @@ export const YearManager = ({
                     >
                       {y} Mali Yılı {year === y && "✓"}
                     </button>
-                    {years.length > 1 && (
+                    {(Array.isArray(years) ? years : []).length > 1 && (
                       <button
                         onClick={() => {
                           onSetDeleteTarget(y);
@@ -93,7 +93,7 @@ export const YearManager = ({
             <input
               type="number"
               placeholder={`Sıradaki yıl: ${Number(year + 1)}`}
-              value={newYear}
+              value={newYear || ""}
               onChange={(e) => onNewYearChange(e.target.value)}
               className="flex-1 bg-gray-800 border-2 border-gray-700 rounded-xl px-4 py-3 text-white focus:border-green-500 outline-none transition"
             />

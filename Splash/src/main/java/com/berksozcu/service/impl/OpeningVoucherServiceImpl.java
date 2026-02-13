@@ -45,7 +45,7 @@ public class OpeningVoucherServiceImpl implements IOpeningVoucherService {
         OpeningVoucher closingVoucher =
                 openingVoucherRepository
                         .findByCustomerIdAndDate(customer.getId(), closingDate)
-                        .orElseGet(() -> getDefaultVoucher(company, customer, openingDate));
+                        .orElseGet(() -> getDefaultVoucher(company, customer, closingDate));
 
         closingVoucher.setFinalBalance(closingVoucher.getFinalBalance().setScale(2, RoundingMode.HALF_UP));
         openingVoucherRepository.save(closingVoucher);
@@ -59,8 +59,6 @@ public class OpeningVoucherServiceImpl implements IOpeningVoucherService {
         openingVoucher.setFinalBalance(closingVoucher.getFinalBalance());
         openingVoucher.setYearlyDebit(closingVoucher.getDebit());
         openingVoucher.setYearlyCredit(closingVoucher.getCredit());
-        openingVoucher.setDebit(BigDecimal.ZERO);
-        openingVoucher.setCredit(BigDecimal.ZERO);
 
         return openingVoucherRepository.save(openingVoucher);
     }

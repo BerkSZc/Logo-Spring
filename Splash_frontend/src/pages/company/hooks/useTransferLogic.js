@@ -37,24 +37,28 @@ export const useTransferLogic = () => {
   }, [getAllCompanies]);
 
   useEffect(() => {
+    let ignore = false;
     const fetchYears = async () => {
       const selectedCompany = companies?.find((c) => c.schemaName === tenant);
 
       if (selectedCompany?.id) {
         const data = await getAllYearByCompanyId(selectedCompany.id);
-        if (data) {
-          setYears(data.map((y) => y.yearValue));
+        if (!ignore) {
+          setYears((Array.isArray(data) ? data : []).map((y) => y.yearValue));
         }
       } else {
         setYears();
       }
     };
     fetchYears();
+    return () => {
+      ignore = true;
+    };
   }, [tenant, companies, getAllYearByCompanyId, setYears]);
 
   const handleAddYearClick = async () => {
     if (!newYear.trim()) return toast.error("Lütfen yıl girişi yapın!");
-    if (years.includes(Number(newYear)))
+    if ((Array.isArray(years) ? years : []).includes(Number(newYear)))
       return toast.error("Bu mali yıl mevcut");
     if (Number(year) + 1 !== Number(newYear)) {
       return await confirmAndAddYear(false);
@@ -86,16 +90,16 @@ export const useTransferLogic = () => {
     }
   };
 
-  const handleDeleteYear = async (year) => {
+  const handleDeleteYear = async (targetYear) => {
     const selectedCompany = companies?.find((c) => c.schemaName === tenant);
     if (!selectedCompany) {
       toast.error("Lütfen bir şirket seçin");
     }
     try {
-      await deleteYear(selectedCompany.id, year);
-      removeYear(year);
+      await deleteYear(selectedCompany.id, targetYear);
+      removeYear(targetYear);
       handleCloseDelete();
-      toast.success(`${year} mali yılı ve ilişkili tüm veriler silindi`);
+      toast.success(`${targetYear} mali yılı ve ilişkili tüm veriler silindi`);
     } catch (error) {
       toast.error("Hata: " + error?.response?.data?.exception?.message);
     }

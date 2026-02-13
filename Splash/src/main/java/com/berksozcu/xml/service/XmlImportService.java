@@ -38,7 +38,6 @@ import jakarta.transaction.Transactional;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Unmarshaller;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,10 +45,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -101,6 +97,8 @@ public class XmlImportService {
                                 m -> m
                         ));
 
+        Long invoiceCounter = 1L;
+
         for (InvoiceXml xmlInv : invoicesXml.getInvoices()) {
 
             if (invoiceRepository.existsByFileNo(xmlInv.getDOC_NUMBER())) {
@@ -110,6 +108,11 @@ public class XmlImportService {
 
             if (xmlInv.getCANCELLED() != null && xmlInv.getCANCELLED().equals(1)) {
                 System.out.println("İptal olmuş fatura atlandı: " + xmlInv.getDOC_NUMBER());
+                continue;
+            }
+
+            if (xmlInv.getDOC_NUMBER() == null || xmlInv.getDOC_NUMBER().isBlank()) {
+                System.out.println("Fatura No'su boş veya mevcut değil");
                 continue;
             }
 
@@ -176,7 +179,8 @@ public class XmlImportService {
                             tx.getPRICE(),
                             tx.getQUANTITY(),
                             InvoiceType.PURCHASE,
-                            customer);
+                            customer,
+                            invoiceCounter);
 
                     //Fatura Kalemleri
                     PurchaseInvoiceItem item = new PurchaseInvoiceItem();
@@ -200,6 +204,7 @@ public class XmlImportService {
                     );
                     itemList.add(item);
                 }
+                invoiceCounter++;
 
                 invoice.setItems(itemList);
 
@@ -223,6 +228,7 @@ public class XmlImportService {
                 .stream().collect(Collectors.toMap(m -> m.getCode().trim().toUpperCase(),
                         m -> m));
 
+        Long invoiceCounter = 1L;
         for (SalesInvoiceXml xmlInv : invoicesXml.getSalesInvoices()) {
 
             if (salesInvoiceRepository.existsByFileNo(xmlInv.getNUMBER())) {
@@ -288,7 +294,8 @@ public class XmlImportService {
                         tx.getPRICE(),
                         tx.getQUANTITY(),
                         InvoiceType.SALES,
-                        customer);
+                        customer,
+                        invoiceCounter);
 
                 // Fatura Kalemleri
                 SalesInvoiceItem item = new SalesInvoiceItem();
@@ -303,6 +310,7 @@ public class XmlImportService {
                 itemList.add(item);
                 item.setSalesInvoice(invoice);
             }
+            invoiceCounter++;
             // Satış faturası tutarını bakiyeye ekliyoruz
             voucher.setFinalBalance(voucher.getFinalBalance().add(invoice.getTotalPrice()).setScale(2, RoundingMode.HALF_UP));
             voucher.setDebit(voucher.getDebit().add(invoice.getTotalPrice()).setScale(2, RoundingMode.HALF_UP));
@@ -504,10 +512,7 @@ public class XmlImportService {
                 continue;
             }
 
-            if (existingPayrolls.contains(roll.getNumber())) {
-                System.out.println("İşlem no mevcut: " + roll.getNumber());
-                continue;
-            }
+
             String customerCode = roll.getMasterCode();
             Customer customer = customerRepository.findByCode(customerCode)
                     .orElse(null);
@@ -532,6 +537,10 @@ public class XmlImportService {
 
             if (roll.getTransactions() != null && roll.getTransactions().getList() != null) {
                 for (PayrollTxXml tx : roll.getTransactions().getList()) {
+                    if (existingPayrolls.contains(roll.getNumber() + "-" + tx.getNumber())) {
+                        System.out.println("İşlem no mevcut: " + roll.getNumber() + "-" + tx.getNumber());
+                        continue;
+                    }
 
                     Payroll payroll = new Payroll();
                     payroll.setCustomer(customer);
@@ -578,26 +587,18 @@ public class XmlImportService {
         if (vouchersXml.getVouchers() == null) return;
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        Map<String, BigDecimal[]> customerTotals = new HashMap<>();
 
+        int targetYear = LocalDate.now().getYear();
         for (ArpVoucherXml voucherXml : vouchersXml.getVouchers()) {
             if (voucherXml.getTransactions() == null || voucherXml.getTransactions().getList() == null) continue;
 
-            LocalDate voucherDate;
             try {
-                voucherDate = LocalDate.parse(voucherXml.getDate(), dtf);
+                targetYear = LocalDate.parse(voucherXml.getDate(), dtf).getYear();
 
-            } catch (Exception e) {
-                voucherDate = LocalDate.of(LocalDate.now().getYear(), 1, 1);
-            }
+            } catch (Exception ignored){}
 
             for (ArpTransactionXml tx : voucherXml.getTransactions().getList()) {
-                LocalDate start = LocalDate.of(voucherDate.getYear(), 1, 1);
-                LocalDate end = LocalDate.of(voucherDate.getYear(), 12, 31);
-
-                if (openingBalanceRepository.existsByDateBetweenAndCustomerCode(start.plusDays(1), end, tx.getARP_CODE())) {
-                    System.out.println("Açılış Bakiyesi Mevcut müşteri kodu: " + tx.getARP_CODE());
-                    continue;
-                }
 
                 String arpCode = tx.getARP_CODE() != null ? tx.getARP_CODE().trim() : "";
                 Customer customer = customerRepository.findByCode(arpCode).orElse(null);
@@ -610,25 +611,45 @@ public class XmlImportService {
                 BigDecimal newDebit = parseBigDecimal(tx.getDEBIT()).setScale(2, RoundingMode.HALF_UP);
                 BigDecimal newCredit = parseBigDecimal(tx.getCREDIT()).setScale(2, RoundingMode.HALF_UP);
 
-                OpeningVoucher openingBalance = openingBalanceRepository
-                        .findByCustomerIdAndDateBetween(customer.getId(), start, end)
-                        .orElseGet(() -> getDefaultVoucher(getCompany(schemaName), customer, start));
-
-                openingBalance.setCompany(getCompany(schemaName));
-                openingBalance.setYearlyCredit(openingBalance.getYearlyCredit().add(newCredit));
-                openingBalance.setYearlyDebit(openingBalance.getYearlyDebit().add(newDebit));
-                openingBalance.setCustomerName(customer.getName() != null ? customer.getName() : "");
-                openingBalance.setDebit(openingBalance.getDebit().add(newDebit));
-                openingBalance.setCredit(openingBalance.getCredit().add(newCredit));
-
-                BigDecimal rowEffect = newDebit.subtract(newCredit);
-
-                openingBalance.setFinalBalance(openingBalance.getFinalBalance().add(rowEffect));
-                openingBalance.setFileNo(tx.getTRANNO());
-                openingBalance.setDescription(tx.getDESCRIPTION() != null ? tx.getDESCRIPTION().trim() : "Devir Bakiye");
-
-                openingBalanceRepository.save(openingBalance);
+                customerTotals.computeIfAbsent(arpCode, k -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+                customerTotals.get(arpCode)[0] = customerTotals.get(arpCode)[0].add(newDebit);
+                customerTotals.get(arpCode)[1] = customerTotals.get(arpCode)[1].add(newCredit);
             }
+        }
+        LocalDate start = LocalDate.of(targetYear, 1, 1);
+        LocalDate end = LocalDate.of(targetYear, 12, 31);
+
+        for (Map.Entry<String, BigDecimal[]> entry : customerTotals.entrySet()) {
+            String code = entry.getKey();
+            BigDecimal totalDebit = entry.getValue()[0].setScale(2, RoundingMode.HALF_UP);
+            BigDecimal totalCredit = entry.getValue()[1].setScale(2, RoundingMode.HALF_UP);
+
+            Customer customer = customerRepository.findByCode(code).orElse(null);
+            if (customer == null) continue;
+
+            OpeningVoucher openingBalance = openingBalanceRepository
+                    .findByCustomerIdAndDateBetween(customer.getId(), start, end)
+                    .orElseGet(() -> getDefaultVoucher(getCompany(schemaName), customer, start));
+
+            if ("Veri Ekleme Devir İşlemi".equals(openingBalance.getDescription())) {
+                System.out.println("Devir Bilgisi Mevcut");
+                continue;
+            }
+
+            openingBalance.setCompany(getCompany(schemaName));
+            openingBalance.setYearlyCredit(totalCredit);
+            openingBalance.setYearlyDebit(totalDebit);
+            openingBalance.setCustomerName(customer.getName() != null ? customer.getName() : "");
+            openingBalance.setDebit(openingBalance.getDebit().add(totalDebit));
+            openingBalance.setCredit(openingBalance.getCredit().add(totalCredit));
+
+            BigDecimal rowEffect = totalDebit.subtract(totalCredit);
+
+            openingBalance.setFinalBalance(openingBalance.getFinalBalance().add(rowEffect));
+            openingBalance.setFileNo("Devir_2025");
+            openingBalance.setDescription("Veri Ekleme Devir İşlemi");
+
+            openingBalanceRepository.save(openingBalance);
         }
     }
 
@@ -637,7 +658,7 @@ public class XmlImportService {
         return new BigDecimal(value.replace(",", "."));
     }
 
-    private void saveMaterialPrice(Material material, LocalDate date, String customerName, BigDecimal price, BigDecimal quantity, InvoiceType invoiceType, Customer customer) {
+    private void saveMaterialPrice(Material material, LocalDate date, String customerName, BigDecimal price, BigDecimal quantity, InvoiceType invoiceType, Customer customer, Long invoiceId) {
         MaterialPriceHistory materialPriceHistory = new MaterialPriceHistory();
 
         materialPriceHistory.setMaterial(material);
@@ -647,6 +668,7 @@ public class XmlImportService {
         materialPriceHistory.setCustomerName(customerName);
         materialPriceHistory.setQuantity(quantity);
         materialPriceHistory.setCustomer(customer);
+        materialPriceHistory.setInvoiceId(invoiceId);
         materialPriceHistoryRepository.save(materialPriceHistory);
     }
 
@@ -666,7 +688,7 @@ public class XmlImportService {
         voucher.setYearlyCredit(BigDecimal.ZERO);
         voucher.setFinalBalance(BigDecimal.ZERO);
         voucher.setFileNo("001");
-        voucher.setDescription("Eklendi");
+        voucher.setDescription("Xml İmport Bilgisi");
         return openingBalanceRepository.save(voucher);
     }
 

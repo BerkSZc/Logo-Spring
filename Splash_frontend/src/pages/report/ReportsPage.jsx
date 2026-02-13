@@ -28,30 +28,34 @@ const ReportsPage = () => {
         <div className="flex p-1 bg-gray-900/50 border border-gray-800 rounded-2xl w-fit">
           {(Array.isArray(tabs) ? tabs : []).map((tab) => (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              key={tab.id || 0}
+              onClick={() => setActiveTab(tab?.id)}
               className={`px-6 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
-                activeTab === tab.id
+                activeTab === tab?.id
                   ? "bg-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.4)] text-white"
                   : "text-gray-500 hover:text-gray-300"
               }`}
             >
-              {tab.label}
+              {tab?.label || ""}
             </button>
           ))}
         </div>
 
         <div className="bg-gray-900/40 border border-gray-800 rounded-[2.5rem] p-8 backdrop-blur-xl min-h-[400px]">
-          {activeTab === "summary" && <KDVSummary data={data} />}
+          {activeTab === "summary" && <KDVSummary data={data || []} />}
           {activeTab === "purchases" && (
             <ReportTable
               title="Alımlar"
-              items={data.purchases}
+              items={Array.isArray(data?.purchases) ? data?.purchases : []}
               color="emerald"
             />
           )}
           {activeTab === "sales" && (
-            <ReportTable title="Satışlar" items={data.sales} color="orange" />
+            <ReportTable
+              title="Satışlar"
+              items={Array.isArray(data?.sales) ? data?.sales : []}
+              color="orange"
+            />
           )}
         </div>
       </div>
