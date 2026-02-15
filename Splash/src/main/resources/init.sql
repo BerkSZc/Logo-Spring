@@ -1,3 +1,24 @@
+DROP TYPE IF EXISTS public.unit_status CASCADE;
+CREATE TYPE public.unit_status AS ENUM ('KG', 'ADET', 'M');
+
+DROP TYPE IF EXISTS public.currency_status CASCADE;
+CREATE TYPE public.currency_status AS ENUM ('TRY', 'EUR', 'USD');
+
+DROP TYPE IF EXISTS public.invoice_status CASCADE;
+CREATE TYPE public.invoice_status AS ENUM ('PURCHASE', 'SALES', 'UNKNOWN');
+
+DROP TYPE IF EXISTS public.payroll_model_enum CASCADE;
+CREATE TYPE public.payroll_model_enum AS ENUM ('INPUT', 'OUTPUT');
+
+DROP TYPE IF EXISTS public.payroll_type_enum CASCADE;
+CREATE TYPE public.payroll_type_enum AS ENUM ('CHEQUE', 'BOND');
+
+CREATE CAST (varchar AS public.currency_status) WITH INOUT AS IMPLICIT;
+CREATE CAST (varchar AS public.unit_status) WITH INOUT AS IMPLICIT;
+CREATE CAST (varchar AS public.invoice_status) WITH INOUT AS IMPLICIT;
+CREATE CAST (varchar AS public.payroll_model_enum) WITH INOUT AS IMPLICIT;
+CREATE CAST (varchar AS public.payroll_type_enum) WITH INOUT AS IMPLICIT;
+
 CREATE TABLE IF NOT EXISTS customer (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -14,19 +35,15 @@ CREATE TABLE IF NOT EXISTS customer (
 -- 2. MALZEME TABLOSU
 -- ---------------------------
 
-
-  CREATE TYPE unit_status AS ENUM ('KG', 'ADET', 'M');
-  CREATE TYPE currency_status AS ENUM ('TRY', 'EUR', 'USD');
-
   CREATE TABLE IF NOT EXISTS material (
       id BIGSERIAL PRIMARY KEY ,
       code VARCHAR(50) NOT NULL,
       comment VARCHAR(255),
-      unit unit_status NOT NULL,
+      unit public.unit_status NOT NULL,
       purchase_price DECIMAL(18, 2) NOT NULL DEFAULT 0.00,
       sales_price DECIMAL(18, 2) NOT NULL DEFAULT 0.00,
-      purchase_currency currency_status NOT NULL DEFAULT 'TRY',
-      sales_currency currency_status NOT NULL DEFAULT 'TRY'
+      purchase_currency public.currency_status NOT NULL DEFAULT 'TRY',
+      sales_currency public.currency_status NOT NULL DEFAULT 'TRY'
   );
 
 -- ---------------------------
@@ -126,12 +143,11 @@ CREATE TABLE IF NOT EXISTS sales_invoice_item (
 -- ---------------------------
 -- 10. MALZEME FİYAT GEÇMİŞİ
 -- ---------------------------
-CREATE TYPE invoice_status AS ENUM ('PURCHASE', 'SALES', 'UNKNOWN');
 
 CREATE TABLE material_price_history (
     id BIGSERIAL PRIMARY KEY,
     material_id BIGINT,
-    invoice_type invoice_status,
+    invoice_type public.invoice_status,
     invoice_id BIGINT,
     price DECIMAL(18,2),
     date DATE,
@@ -184,16 +200,14 @@ CREATE TABLE IF NOT EXISTS payment_company (
 -- ---------------------------
 -- 13. BORDRO İŞLEMLERİ TABLOSU
 -- ---------------------------
-CREATE TYPE payroll_model_enum AS ENUM ('INPUT', 'OUTPUT');
-CREATE TYPE payroll_type_enum AS ENUM ('CHEQUE', 'BOND');
 
 -- Bordro İşlemleri (Çek-Senet İşlemleri)
 CREATE TABLE IF NOT EXISTS payroll (
     id SERIAL PRIMARY KEY,
     transaction_date DATE NOT NULL,
     expired_date DATE,
-    payroll_model payroll_model_enum NOT NULL,
-    payroll_type payroll_type_enum NOT NULL,
+    payroll_model public.payroll_model_enum NOT NULL,
+    payroll_type public.payroll_type_enum NOT NULL,
     customer_id BIGINT,
     company_id BIGINT,
     file_no VARCHAR(100),

@@ -69,7 +69,7 @@ public class CompanyServiceImpl implements ICompanyService {
     @Transactional(rollbackFor = Exception.class)
     public void createNewTenantSchema(String schemaName, String companyName, String description, String sourceSchema) throws SQLException {
         if (!schemaName.matches("^[a-zA-Z0-9_]+$")) {
-            throw new IllegalArgumentException("Geçersiz şema ismi!");
+            throw new BaseException(new ErrorMessage(MessageType.SIRKET_ISIM_HATA));
         }
         if (companyRepository.existsBySchemaName(schemaName))
             throw new BaseException(new ErrorMessage(MessageType.SIRKET_KODU_MEVCUT));
@@ -77,12 +77,12 @@ public class CompanyServiceImpl implements ICompanyService {
         String finalSource = checkSchemaExists(sourceSchema) ? sourceSchema : "splash";
 
         //Kopyalanacak Tablolar
-        String[] allTables = {"customer", "material", "company", "app_user", "currency_rate",
+        String[] allTables = {"customer", "material", "app_user", "currency_rate",
                 "purchase_invoice", "purchase_invoice_item", "sales_invoice", "sales_invoice_item",
                 "material_price_history", "received_collection",
-                "payment_company", "payroll", "opening_voucher", "fiscal_year"};
+                "payment_company", "payroll", "opening_voucher"};
 
-        List<String> tablesWithData = List.of("app_user", "company", "fiscal_year");
+        List<String> tablesWithData = List.of("app_user");
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
 
@@ -103,17 +103,6 @@ public class CompanyServiceImpl implements ICompanyService {
                         ));
                         updateSequence(statement, schemaName, tableName);
                     }
-                }
-                String insertIntoNewSchema = String.format(
-                        "INSERT INTO %s.company (name, schema_name, description) VALUES (?, ?, ?)",
-                        schemaName
-                );
-                try (PreparedStatement pstmt = connection.prepareStatement(insertIntoNewSchema)) {
-                    pstmt.setString(1, companyName);
-                    pstmt.setString(2, schemaName);
-                    pstmt.setString(3, description);
-                    pstmt.executeUpdate();
-                    updateSequence(statement, schemaName, "company");
                 }
                 connection.commit();
 
