@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "fiscal_year")
+@Table(name = "fiscal_year", schema = "splash")
 public class Year {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
